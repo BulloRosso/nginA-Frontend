@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "Noblivion",
+    "tagline": "Bewahren Sie Ihre Familienerinnerungen"
+  },
+  "navigation": {
+    "profile": "Profil",
+    "interview": "Interview",
+    "memories": "Erinnerungen",
+    "timeline": "Zeitleiste"
+  },
+  "actions": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "finish": "Fertig"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "invalidEmail": "Ungültige E-Mail-Adresse",
+    "invalidDate": "Ungültiges Datum"
+  }
+}

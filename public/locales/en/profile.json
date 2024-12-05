@@ -1,0 +1,32 @@
+{
+  "title": "Profile Setup",
+  "subtitle": "Enter Personal Information",
+  "form": {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "dateOfBirth": "Date of Birth",
+    "placeOfBirth": "Place of Birth",
+    "gender": {
+      "label": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "children": {
+      "label": "Children",
+      "add": "Add Child",
+      "placeholder": "Enter child's name"
+    },
+    "languages": {
+      "label": "Spoken Languages",
+      "add": "Add Language",
+      "placeholder": "Enter language"
+    },
+    "image": {
+      "label": "Profile Image",
+      "upload": "Upload Image",
+      "change": "Change Image",
+      "remove": "Remove Image"
+    }
+  }
+}

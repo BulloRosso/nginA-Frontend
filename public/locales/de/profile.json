@@ -1,0 +1,32 @@
+{
+  "title": "Profil-Einrichtung",
+  "subtitle": "Persönliche Informationen eingeben",
+  "form": {
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "dateOfBirth": "Geburtsdatum",
+    "placeOfBirth": "Geburtsort",
+    "gender": {
+      "label": "Geschlecht",
+      "male": "Männlich",
+      "female": "Weiblich",
+      "other": "Andere"
+    },
+    "children": {
+      "label": "Kinder",
+      "add": "Kind hinzufügen",
+      "placeholder": "Name des Kindes eingeben"
+    },
+    "languages": {
+      "label": "Gesprochene Sprachen",
+      "add": "Sprache hinzufügen",
+      "placeholder": "Sprache eingeben"
+    },
+    "image": {
+      "label": "Profilbild",
+      "upload": "Bild hochladen",
+      "change": "Bild ändern",
+      "remove": "Bild entfernen"
+    }
+  }
+}

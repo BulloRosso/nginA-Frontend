@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "Noblivion",
+    "tagline": "Preserve Your Family Memories"
+  },
+  "navigation": {
+    "profile": "Profile",
+    "interview": "Interview",
+    "memories": "Memories",
+    "timeline": "Timeline"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "invalidDate": "Invalid date"
+  }
+}
