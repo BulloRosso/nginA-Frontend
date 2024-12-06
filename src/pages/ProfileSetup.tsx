@@ -70,24 +70,30 @@ const ProfileSetup = () => {
   const navigate = useNavigate();
 
   // Load existing profile if available
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const response = await fetch('/api/profile');
-        if (response.ok) {
-          const data = await response.json();
-          setProfile(prev => ({
-            ...prev,
-            ...data,
-            dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
-          }));
-        }
-      } catch (error) {
-        console.error('Failed to load profile:', error);
-      }
-    };
-    loadProfile();
-  }, []);
+  const loadProfile = async () => {
+    try {
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) return;
+
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/profiles/${profileId}`);
+      if (!response.ok) throw new Error('Profile not found');
+
+      const data = await response.json();
+      setProfile(prev => ({
+        ...prev,
+        firstName: data.first_name,
+        lastName: data.last_name,
+        dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth) : null,
+        placeOfBirth: data.place_of_birth,
+        gender: data.gender,
+        children: data.children || [],
+        spokenLanguages: data.spoken_languages || [],
+        imageUrl: data.profile_image_url
+      }));
+    } catch (error) {
+      console.error('Failed to load profile:', error);
+    }
+  };
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -155,54 +161,46 @@ const ProfileSetup = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setSubmitError(null);
 
-    if (!validateProfile()) {
-      return;
-    }
+    if (!validateProfile()) return;
 
     setIsSubmitting(true);
     try {
-      // Create FormData for file upload
       const formData = new FormData();
-      formData.append('profile_image', profile.profileImage);
-      // Match ProfileCreate model fields exactly
+      if (profile.profileImage) {
+        formData.append('profile_image', profile.profileImage);
+      }
+
       const profileData = {
         first_name: profile.firstName,
         last_name: profile.lastName,
-        date_of_birth: profile.dateOfBirth ? 
-          profile.dateOfBirth.toISOString().split('T')[0] : null, // Format as YYYY-MM-DD
+        date_of_birth: profile.dateOfBirth?.toISOString().split('T')[0],
         place_of_birth: profile.placeOfBirth,
         gender: profile.gender,
-        children: profile.children ?? [],
-        spoken_languages: profile.spokenLanguages ?? []
+        children: profile.children,
+        spoken_languages: profile.spokenLanguages
       };
-
-      // Log data being sent
-      console.log("Sending profile data:", profileData);
 
       formData.append('profile', JSON.stringify(profileData));
 
       const response = await fetch('https://e5ede652-5081-48eb-9e93-64c13c6bbf50-00-2cmwk7hnytqn6.worf.replit.dev/api/v1/profiles', {
         method: 'POST',
-        body: formData,
-        redirect: 'follow',
-        headers: {
-          'Accept': 'application/json'
-        }
+        body: formData
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to save profile');
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to save profile');
       }
 
-      // Navigate to interview page
+      const data = await response.json();
+      localStorage.setItem('profileId', data.id);
       navigate('/interview');
     } catch (error) {
-      setSubmitError('Failed to save profile. Please try again.');
+      setSubmitError(error instanceof Error ? error.message : 'Failed to save profile');
     } finally {
       setIsSubmitting(false);
     }

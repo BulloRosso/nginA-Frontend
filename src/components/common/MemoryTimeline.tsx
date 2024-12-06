@@ -32,35 +32,44 @@ import {
   Pets as PetsIcon,
   Image as ImageIcon,
 } from '@mui/icons-material';
+import { Memory, Category } from '../../types/memory';
 
-// Category-specific colors and icons
-const categoryConfig = {
-  childhood: {
+interface MemoryTimelineProps {
+  memories: Memory[];
+  onMemorySelect: (memory: Memory) => void;
+}
+
+const categoryConfig: Record<Category, {
+  color: string;
+  icon: React.ComponentType;
+  label: string;
+}> = {
+  [Category.CHILDHOOD]: {
     color: '#FF9800',
     icon: EventIcon,
     label: 'Childhood'
   },
-  career: {
+  [Category.CAREER]: {
     color: '#2196F3',
     icon: WorkIcon,
     label: 'Career'
   },
-  travel: {
+  [Category.TRAVEL]: {
     color: '#4CAF50',
     icon: TravelIcon,
     label: 'Travel'
   },
-  relationships: {
+  [Category.RELATIONSHIPS]: {
     color: '#E91E63',
     icon: RelationshipsIcon,
     label: 'Relationships'
   },
-  hobbies: {
+  [Category.HOBBIES]: {
     color: '#9C27B0',
     icon: HobbiesIcon,
     label: 'Hobbies'
   },
-  pets: {
+  [Category.PETS]: {
     color: '#795548',
     icon: PetsIcon,
     label: 'Pets'
@@ -92,19 +101,18 @@ const MemoryCard = styled(Box)(({ theme }) => ({
   },
 }));
 
-const StyledTimelineDot = styled(TimelineDot)(({ color }) => ({
+const StyledTimelineDot = styled(TimelineDot)<{ color: string }>(({ color }) => ({
   backgroundColor: color,
 }));
 
-const MemoryTimeline = ({ memories, onMemorySelect }) => {
+const MemoryTimeline: React.FC<MemoryTimelineProps> = ({ memories, onMemorySelect }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedYear, setSelectedYear] = useState(null);
-  const [yearFilters, setYearFilters] = useState([]);
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const [yearFilters, setYearFilters] = useState<number[]>([]);
 
   useEffect(() => {
-    // Extract unique years from memories
     const years = [...new Set(memories.map(memory => 
-      new Date(memory.time_period).getFullYear()
+      memory.timePeriod.getFullYear()
     ))].sort((a, b) => b - a);
     setYearFilters(years);
   }, [memories]);
@@ -113,14 +121,14 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
     setIsOpen(!isOpen);
   };
 
-  const handleMemoryClick = (memory) => {
+  const handleMemoryClick = (memory: Memory) => {
     if (onMemorySelect) {
       onMemorySelect(memory);
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       year: 'numeric'
     });
@@ -128,7 +136,7 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
 
   const filteredMemories = selectedYear
     ? memories.filter(memory => 
-        new Date(memory.time_period).getFullYear() === selectedYear)
+        memory.timePeriod.getFullYear() === selectedYear)
     : memories;
 
   return (
@@ -163,7 +171,6 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
 
           <Divider />
 
-          {/* Year filters */}
           <Box sx={{ p: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Button
               size="small"
@@ -191,7 +198,7 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
                 <TimelineItem key={memory.id}>
                   <TimelineOppositeContent sx={{ flex: 0.2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      {formatDate(memory.time_period)}
+                      {formatDate(memory.timePeriod)}
                     </Typography>
                   </TimelineOppositeContent>
 
@@ -221,10 +228,10 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
                           : memory.description}
                       </Typography>
 
-                      {memory.image_urls && memory.image_urls.length > 0 && (
+                      {memory.imageUrls && memory.imageUrls.length > 0 && (
                         <Box sx={{ mt: 1 }}>
                           <ImageList cols={3} rowHeight={80} sx={{ m: 0 }}>
-                            {memory.image_urls.slice(0, 3).map((url, imgIndex) => (
+                            {memory.imageUrls.slice(0, 3).map((url, imgIndex) => (
                               <ImageListItem key={imgIndex}>
                                 <img
                                   src={url}
@@ -239,7 +246,7 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
                                 />
                               </ImageListItem>
                             ))}
-                            {memory.image_urls.length > 3 && (
+                            {memory.imageUrls.length > 3 && (
                               <Box
                                 sx={{
                                   position: 'absolute',
@@ -256,7 +263,7 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
                               >
                                 <ImageIcon fontSize="small" />
                                 <Typography variant="caption">
-                                  +{memory.image_urls.length - 3}
+                                  +{memory.imageUrls.length - 3}
                                 </Typography>
                               </Box>
                             )}
@@ -269,12 +276,24 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
                           {memory.emotions.map((emotion, index) => (
                             <Chip
                               key={index}
-                              label={emotion}
+                              label={`${emotion.type} (${emotion.intensity})`}
                               size="small"
                               variant="outlined"
                               sx={{ fontSize: '0.75rem' }}
                             />
                           ))}
+                        </Box>
+                      )}
+
+                      {memory.sentimentAnalysis && (
+                        <Box sx={{ mt: 1 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            Strongest emotion: {
+                              Object.entries(memory.sentimentAnalysis)
+                                .filter(([key]) => key !== 'intensity')
+                                .sort(([,a], [,b]) => (b as number) - (a as number))[0][0]
+                            }
+                          </Typography>
                         </Box>
                       )}
                     </MemoryCard>
@@ -288,4 +307,5 @@ const MemoryTimeline = ({ memories, onMemorySelect }) => {
     </>
   );
 };
-export default MemoryTimeline
+
+export default MemoryTimeline;
