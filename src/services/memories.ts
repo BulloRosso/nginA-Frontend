@@ -1,5 +1,5 @@
 import api from './api';
-import { Memory } from './memory';
+import { Memory } from '../types/memory';
 
 export const MemoryService = {
   getMemories: async (profileId: string) => {

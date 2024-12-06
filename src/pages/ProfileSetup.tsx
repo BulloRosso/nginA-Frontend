@@ -167,24 +167,36 @@ const ProfileSetup = () => {
     try {
       // Create FormData for file upload
       const formData = new FormData();
-      formData.append('profileImage', profile.profileImage);
-      formData.append('profile', JSON.stringify({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        dateOfBirth: profile.dateOfBirth.toISOString(),
-        placeOfBirth: profile.placeOfBirth,
+      formData.append('profile_image', profile.profileImage);
+      // Match ProfileCreate model fields exactly
+      const profileData = {
+        first_name: profile.firstName,
+        last_name: profile.lastName,
+        date_of_birth: profile.dateOfBirth ? 
+          profile.dateOfBirth.toISOString().split('T')[0] : null, // Format as YYYY-MM-DD
+        place_of_birth: profile.placeOfBirth,
         gender: profile.gender,
-        children: profile.children,
-        spokenLanguages: profile.spokenLanguages,
-      }));
+        children: profile.children ?? [],
+        spoken_languages: profile.spokenLanguages ?? []
+      };
 
-      const response = await fetch('/api/profile', {
+      // Log data being sent
+      console.log("Sending profile data:", profileData);
+
+      formData.append('profile', JSON.stringify(profileData));
+
+      const response = await fetch('https://e5ede652-5081-48eb-9e93-64c13c6bbf50-00-2cmwk7hnytqn6.worf.replit.dev/api/v1/profiles', {
         method: 'POST',
         body: formData,
+        redirect: 'follow',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save profile');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to save profile');
       }
 
       // Navigate to interview page
