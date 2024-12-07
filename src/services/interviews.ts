@@ -1,3 +1,4 @@
+// src/services/interviews.ts
 import api from './api';
 import { Interview, InterviewResponse } from '../types';
 
@@ -22,3 +23,5 @@ export const InterviewService = {
     return response.data;
   }
 };
+
+export default InterviewService;

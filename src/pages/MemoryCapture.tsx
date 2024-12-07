@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useRef } from 'react';
+// src/pages/MemoryCapture.tsx
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -8,28 +9,26 @@ import {
   Button,
   TextField,
   IconButton,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  CircularProgress,
+  Stack,
   ImageList,
   ImageListItem,
-  Fab,
+  Alert,
 } from '@mui/material';
 import {
-  Camera as CameraIcon,
   Mic as MicIcon,
   Stop as StopIcon,
+  Camera as CameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
-  Edit as EditIcon,
+  Send as SendIcon,
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
 import { useDropzone } from 'react-dropzone';
+import { InterviewService } from '../services/interviews';
+import MemoryService from '../services/memories';
+import { styled } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
+import { Category } from '../types/memory';
 
-// Styled components
 const CameraPreview = styled('video')({
   width: '100%',
   maxWidth: '600px',
@@ -56,25 +55,28 @@ const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
     backgroundSize: '200% 100%',
     animation: isRecording ? 'wave 1s linear infinite' : 'none',
   },
-  '@keyframes wave': {
-    '0%': { backgroundPosition: '100% 0' },
-    '100%': { backgroundPosition: '0 0' },
-  },
 }));
 
 const MemoryCapture = () => {
-  const [mediaMode, setMediaMode] = useState(null); // 'camera' | 'audio' | null
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
+  const [mediaMode, setMediaMode] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
   const [images, setImages] = useState([]);
+  const [error, setError] = useState(null);
+  const [transcript, setTranscript] = useState('');
 
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
-
-  // Speech recognition setup
   const recognitionRef = useRef(null);
+
+
+  
+  // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognitionRef.current = new SpeechRecognition();
@@ -82,9 +84,34 @@ const MemoryCapture = () => {
     recognitionRef.current.interimResults = true;
   }
 
+  // Start interview session on component mount
+  useEffect(() => {
+    const initInterview = async () => {
+      try {
+        setLoading(true);
+        const profileId = localStorage.getItem('profileId');
+        if (!profileId) {
+          throw new Error('No profile ID found');
+        }
+
+        // Start new interview session
+        const result = await InterviewService.startInterview(profileId);
+        setSessionId(result.session_id);
+        setQuestion(result.initial_question);
+      } catch (err) {
+        setError('Failed to start interview session');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initInterview();
+  }, []);
+
   // File upload handling
   const { getRootProps, getInputProps } = useDropzone({
-    accept: 'image/jpeg',
+    accept: { 'image/*': [] },
     onDrop: useCallback(async (acceptedFiles) => {
       const newImages = await Promise.all(
         acceptedFiles.map(async (file) => {
@@ -93,7 +120,7 @@ const MemoryCapture = () => {
             reader.onload = () => resolve(reader.result);
             reader.readAsDataURL(file);
           });
-          return { src: dataUrl, type: 'file' };
+          return { src: dataUrl, file };
         })
       );
       setImages([...images, ...newImages]);
@@ -103,16 +130,18 @@ const MemoryCapture = () => {
   // Camera handling
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        await videoRef.current.play();
         setMediaMode('camera');
       }
     } catch (err) {
-      console.error('Camera error:', err);
+      setError('Failed to access camera');
+      console.error(err);
     }
   };
 
@@ -121,9 +150,15 @@ const MemoryCapture = () => {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
-      canvas.getContext('2d').drawImage(videoRef.current, 0, 0);
-      const dataUrl = canvas.toDataURL('image/jpeg');
-      setImages([...images, { src: dataUrl, type: 'camera' }]);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob((blob) => {
+        const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        setImages([...images, { 
+          src: canvas.toDataURL('image/jpeg'), 
+          file 
+        }]);
+      }, 'image/jpeg');
     }
   };
 
@@ -140,7 +175,6 @@ const MemoryCapture = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
 
-      // Set up speech recognition
       if (recognitionRef.current) {
         recognitionRef.current.onresult = (event) => {
           const current = event.resultIndex;
@@ -154,7 +188,8 @@ const MemoryCapture = () => {
       setMediaMode('audio');
       mediaRecorderRef.current.start();
     } catch (err) {
-      console.error('Recording error:', err);
+      setError('Failed to start recording');
+      console.error(err);
     }
   };
 
@@ -174,95 +209,120 @@ const MemoryCapture = () => {
   // Memory submission
   const handleSubmit = async () => {
     try {
-      const formData = new FormData();
+      setLoading(true);
+      setError(null);
 
-      // Add text response
-      formData.append('response', response);
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId || !sessionId) {
+        throw new Error('Missing profile ID or session ID');
+      }
 
-      // Add images
-      images.forEach((image, index) => {
-        // Convert data URL to blob for server upload
-        if (image.type === 'camera' || image.type === 'file') {
-          const blob = dataURLtoBlob(image.src);
-          formData.append(`image_${index}`, blob);
-        }
-      });
+      // First, upload any images
+      const imageUrls = await Promise.all(
+        images.map(async (image) => {
+          const formData = new FormData();
+          formData.append('file', image.file);
+          const result = await MemoryService.uploadMedia(formData);
+          return result.url;
+        })
+      );
 
-      await fetch('/api/memories', {
-        method: 'POST',
-        body: formData,
-      });
+      // Create the memory with the current session ID
+      const memoryData = {
+        category: Category.CHILDHOOD,
+        description: response,
+        time_period: new Date().toISOString(),
+        location: {
+          name: "Unknown",
+          city: null,
+          country: null,
+          description: null
+        },
+        people: [],
+        emotions: [],
+        image_urls: imageUrls,
+        audio_url: null
+      };
 
-      // Reset state
+      await MemoryService.createMemory(profileId, sessionId, memoryData);
+
+      // Clear form
       setResponse('');
       setImages([]);
       setTranscript('');
+
+      // Get next question
+      const nextQuestion = await InterviewService.getNextQuestion(profileId, sessionId);
+      setQuestion(nextQuestion.text);
     } catch (err) {
-      console.error('Submission error:', err);
+      setError('Failed to save memory: ' + err.message);
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Utility function to convert data URL to Blob
-  const dataURLtoBlob = (dataURL) => {
-    const arr = dataURL.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: mime });
-  };
-
-  return (
-    <Container maxWidth="lg">
+return (
+    <Container maxWidth="md">
       <Box sx={{ my: 4 }}>
         <Card>
           <CardContent>
-            {/* Text/Speech Input Section */}
-            <Box sx={{ mb: 3 }}>
+            <Stack spacing={3}>
+              {error && (
+                <Alert severity="error" onClose={() => setError(null)}>
+                  {error}
+                </Alert>
+              )}
+
+              {/* AI Question */}
+              <Typography variant="h6" gutterBottom>
+                {question || t('interview.loading_question')}
+              </Typography>
+
+              {/* Text Input */}
               <TextField
                 fullWidth
                 multiline
                 rows={4}
                 value={response}
                 onChange={(e) => setResponse(e.target.value)}
-                placeholder="Share your memory..."
+                placeholder={t('interview.share_memory')}
+                disabled={loading}
               />
+
+              {/* Live Transcript */}
               {transcript && (
-                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                  Transcribing: {transcript}
+                <Typography variant="body2" color="textSecondary">
+                  {t('interview.transcribing')}: {transcript}
                 </Typography>
               )}
-            </Box>
 
-            {/* Media Capture Section */}
-            <Box sx={{ mb: 3 }}>
+              {/* Camera UI */}
               {mediaMode === 'camera' && (
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
-                  <CameraPreview ref={videoRef} autoPlay />
+                <Box sx={{ textAlign: 'center' }}>
+                  <CameraPreview ref={videoRef} autoPlay playsInline />
                   <Box sx={{ mt: 1 }}>
                     <Button
                       variant="contained"
                       onClick={capturePhoto}
                       startIcon={<CameraIcon />}
                     >
-                      Capture
+                      {t('interview.capture')}
                     </Button>
                     <Button
                       variant="outlined"
                       onClick={stopCamera}
                       sx={{ ml: 1 }}
                     >
-                      Close Camera
+                      {t('interview.close_camera')}
                     </Button>
                   </Box>
                 </Box>
               )}
 
+              {/* Audio UI */}
               {mediaMode === 'audio' && (
-                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                <Box sx={{ textAlign: 'center' }}>
                   <AudioWaveform isRecording={isRecording} />
                   <Button
                     variant="contained"
@@ -271,59 +331,23 @@ const MemoryCapture = () => {
                     startIcon={<StopIcon />}
                     sx={{ mt: 1 }}
                   >
-                    Stop Recording
+                    {t('interview.stop_recording')}
                   </Button>
                 </Box>
               )}
-            </Box>
 
-            {/* Image Gallery */}
-            {images.length > 0 && (
-              <ImageList sx={{ mb: 3 }} cols={3} rowHeight={164}>
-                {images.map((image, index) => (
-                  <ImageListItem key={index}>
-                    <img src={image.src} alt={`Memory ${index + 1}`} loading="lazy" />
-                  </ImageListItem>
-                ))}
-              </ImageList>
-            )}
-
-            {/* Media Controls */}
-            <SpeedDial
-              ariaLabel="Media capture controls"
-              sx={{ position: 'fixed', bottom: 16, right: 16 }}
-              icon={<SpeedDialIcon openIcon={<EditIcon />} />}
-            >
-              <SpeedDialAction
-                icon={<CameraIcon />}
-                tooltipTitle="Take Photo"
-                onClick={startCamera}
-              />
-              <SpeedDialAction
-                icon={<MicIcon />}
-                tooltipTitle={isRecording ? "Stop Recording" : "Start Recording"}
-                onClick={isRecording ? stopRecording : startRecording}
-              />
-              <SpeedDialAction
-                icon={<PhotoLibraryIcon />}
-                tooltipTitle="Upload Photos"
-                {...getRootProps()}
-              />
-            </SpeedDial>
-
-            {/* File Input (hidden) */}
-            <input {...getInputProps()} />
-
-            {/* Submit Button */}
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={!response && !images.length}
-              >
-                Save Memory
-              </Button>
-            </Box>
+              {/* Submit Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  variant="contained"
+                  onClick={handleSubmit}
+                  disabled={loading || (!response && !images.length)}
+                  endIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
+                >
+                  {t('interview.save_memory')}
+                </Button>
+              </Box>
+            </Stack>
           </CardContent>
         </Card>
       </Box>

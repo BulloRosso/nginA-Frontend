@@ -1,4 +1,4 @@
-import api from './api';
+// types/api.ts
 import { Memory } from './memory';
 
 export const MemoryService = {
