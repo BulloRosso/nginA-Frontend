@@ -124,7 +124,7 @@ class MemoryService {
    */
   static async deleteMemory(memoryId: UUID): Promise<void> {
     try {
-      await api.delete(`/api/v1/memories/${memoryId}`);
+      await api.delete(`/memories/${memoryId}`);
     } catch (error) {
       console.error('Failed to delete memory:', error);
       throw new Error('Failed to delete memory');

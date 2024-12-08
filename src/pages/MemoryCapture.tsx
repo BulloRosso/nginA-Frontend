@@ -28,6 +28,11 @@ import MemoryService from '../services/memories';
 import { styled } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { Category } from '../types/memory';
+import MemoryTimeline from '../components/memories/VerticalTimeline';
+import { Memory } from '../types/memory';
+import { createDefaultMemories } from '../utils/memoryDefaults';
+import { Profile } from '../types/profile';
+import { ProfileService } from '../services/profiles';
 
 const CameraPreview = styled('video')({
   width: '100%',
@@ -68,12 +73,12 @@ const MemoryCapture = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [transcript, setTranscript] = useState('');
-
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const recognitionRef = useRef(null);
-
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [memories, setMemories] = useState<Memory[]>([]);
 
   
   // Initialize speech recognition
@@ -84,6 +89,32 @@ const MemoryCapture = () => {
     recognitionRef.current.interimResults = true;
   }
 
+  useEffect(() => {
+    const fetchProfileAndMemories = async () => {
+      try {
+        setLoading(true);
+        const profileId = localStorage.getItem('profileId');
+        if (!profileId) {
+          throw new Error('No profile ID found');
+        }
+
+        // Fetch profile
+        const profileData = await ProfileService.getProfile(profileId);
+        setProfile(profileData);
+
+        // Fetch memories after profile is set
+        await fetchMemories();
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
+        setError('Failed to load profile or memories');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileAndMemories();
+  }, []); 
+  
   // Start interview session on component mount
   useEffect(() => {
     const initInterview = async () => {
@@ -108,6 +139,30 @@ const MemoryCapture = () => {
 
     initInterview();
   }, []);
+
+  const fetchMemories = useCallback(async () => {
+    try {
+      setLoading(true);
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      const fetchedMemories = await MemoryService.getMemories(profileId);
+
+      // If no memories and profile exists, create defaults
+      if (fetchedMemories.length === 0 && profile) {
+        setMemories(createDefaultMemories(profile));
+      } else {
+        setMemories(fetchedMemories);
+      }
+    } catch (err) {
+      console.error('Failed to fetch memories:', err);
+      setError('Failed to load memories');
+    } finally {
+      setLoading(false);
+    }
+  }, [profile]); // Add profile as dependency since it's used in the function
 
   // File upload handling
   const { getRootProps, getInputProps } = useDropzone({
@@ -265,6 +320,13 @@ const MemoryCapture = () => {
 return (
     <Container maxWidth="md">
       <Box sx={{ my: 4 }}>
+        <Card sx={{ mb: 2 }}>
+          <CardContent>
+            <Box > 
+              <MemoryTimeline memories={memories}  onMemoryDeleted={fetchMemories}  />
+            </Box>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent>
             <Stack spacing={3}>
