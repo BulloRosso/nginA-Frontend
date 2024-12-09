@@ -1,5 +1,5 @@
 // src/components/memories/VerticalTimeline.tsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import { 
   VerticalTimeline, 
   VerticalTimelineElement 
@@ -13,10 +13,20 @@ import {
   Favorite as RelationshipsIcon,
   SportsEsports as HobbiesIcon,
   Pets as PetsIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Image as ImageIcon,
 } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
+import {
+  IconButton,
+  Alert,
+  Snackbar,
+  Dialog,
+  DialogContent,
+} from '@mui/material';
 import MemoryService from '../../services/memories';
+import { useDropzone } from 'react-dropzone';
+import EditMemoryDialog from './EditMemoryDialog';
 
 interface TimelineProps {
   memories: Memory[];
@@ -59,6 +69,48 @@ const categoryConfig = {
 const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) => {
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [editingMemory, setEditingMemory] = React.useState<Memory | null>(null);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
+  const [selectedMemoryForUpload, setSelectedMemoryForUpload] = React.useState<string | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (!selectedMemoryForUpload) return;
+
+    try {
+      setIsUploading(true);
+      const urls = await MemoryService.addMediaToMemory(selectedMemoryForUpload, acceptedFiles);
+
+      if (onMemoryDeleted) {
+        onMemoryDeleted(); // Refresh the memories list
+      }
+
+      setIsUploadDialogOpen(false);
+    } catch (err) {
+      setError('Failed to upload images');
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [selectedMemoryForUpload, onMemoryDeleted]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'image/jpeg': [], 'image/png': [] },
+    onDrop
+  });
+
+  const handleEditSave = async (updatedMemory: Partial<Memory>) => {
+    try {
+      await MemoryService.updateMemory(updatedMemory.id!, updatedMemory);
+      if (onMemoryDeleted) {
+        onMemoryDeleted(); // Refresh the memories list
+      }
+      setEditingMemory(null);
+    } catch (err) {
+      setError('Failed to update memory');
+      console.error(err);
+    }
+  };
   
   const handleDelete = async (memoryId: string) => {
     if (!memoryId) return;
@@ -83,6 +135,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
 
 
   return (
+    <>
     <VerticalTimeline lineColor="#DDD">
       {memories.map((memory, index) => {
         const category = memory.category.toLowerCase();
@@ -91,6 +144,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
         const isEven = index % 2 === 0;
 
         return (
+          
           <VerticalTimelineElement
             key={memory.id}
             className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
@@ -110,18 +164,39 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
             }}
             contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
           >
-            {/* Delete button */}
-            <div className="absolute top-2 right-2">
-              <IconButton 
+            <div className="absolute top-2 right-2 flex space-x-2">
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSelectedMemoryForUpload(memory.id);
+                  setIsUploadDialogOpen(true);
+                }}
+                sx={{ 
+                  color: 'rgba(0, 0, 0, 0.54)',
+                  '&:hover': { color: '#2196F3' }
+                }}
+              >
+                <ImageIcon fontSize="small" />
+              </IconButton>
+
+              <IconButton
+                size="small"
+                onClick={() => setEditingMemory(memory)}
+                sx={{ 
+                  color: 'rgba(0, 0, 0, 0.54)',
+                  '&:hover': { color: '#4CAF50' }
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+
+              <IconButton
                 size="small"
                 onClick={() => handleDelete(memory.id)}
                 disabled={isDeleting === memory.id}
                 sx={{ 
                   color: 'rgba(0, 0, 0, 0.54)',
-                  '&:hover': { 
-                    color: '#f44336',
-                    backgroundColor: 'rgba(244, 67, 54, 0.04)'
-                  }
+                  '&:hover': { color: '#f44336' }
                 }}
               >
                 <DeleteIcon fontSize="small" />
@@ -151,17 +226,59 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                 ))}
               </div>
             )}
-            <div className="text-sm text-gray-500 mt-2 flex items-center justify-end">
-              {new Date(memory.created_at).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
-            </div>
+           
           </VerticalTimelineElement>
         );
       })}
     </VerticalTimeline>
+      {/* Edit Dialog */}
+      <EditMemoryDialog
+        open={!!editingMemory}
+        memory={editingMemory}
+        onClose={() => setEditingMemory(null)}
+        onSave={handleEditSave}
+      />
+
+      {/* Upload Dialog */}
+      <Dialog 
+        open={isUploadDialogOpen} 
+        onClose={() => setIsUploadDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogContent>
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+              ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+              ${isUploading ? 'opacity-50' : ''}
+            `}
+          >
+            <input {...getInputProps()} />
+            {isUploading ? (
+              <div className="flex justify-center">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : isDragActive ? (
+              <p>Drop the files here ...</p>
+            ) : (
+              <p>Drag 'n' drop some images here, or click to select files</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Snackbar */}
+      <Snackbar 
+        open={!!error} 
+        autoHideDuration={6000} 
+        onClose={() => setError(null)}
+      >
+        <Alert onClose={() => setError(null)} severity="error">
+          {error}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
