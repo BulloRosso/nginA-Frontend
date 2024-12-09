@@ -318,11 +318,11 @@ const MemoryCapture = () => {
   };
 
 return (
-    <Container maxWidth="md">
+    <Container >
       <Box sx={{ my: 4 }}>
         <Card sx={{ mb: 2 }}>
           <CardContent>
-            <Box > 
+            <Box sx={{ maxHeight: "600px", overflowY: "auto" }}> 
               <MemoryTimeline memories={memories}  onMemoryDeleted={fetchMemories}  />
             </Box>
           </CardContent>

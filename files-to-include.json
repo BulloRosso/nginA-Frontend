@@ -1,0 +1,29 @@
+{
+   "frontend_models": [
+      "/src/types/api.ts",
+      "/src/types/common.ts",
+      "/src/types/memory.ts",
+      "/src/types/profile.ts"
+   ],
+   "frontend_packages": [
+      "/package.json"
+   ],
+   "frontend_components": [
+      "/src/components/memories/EditMemoryDialog.tsx",
+      "/src/components/memories/VerticalTimeline.tsx",
+      "/src/components/profile/ProfileForm.tsx",
+      "/src/pages/InterviewPage.tsx",
+      "/src/pages/MemoryCapture.tsx",
+      "/src/pages/ProfileSelection.tsx",
+      "/src/pages/ProfileSetup.tsx"
+   ],
+   "frontend_services": [
+      "/src/services/api.ts",
+      "/src/services/interviews.ts",
+      "/src/services/memories.ts",
+      "/src/services/profiles.ts"
+   ],
+   "frontend_entrypoint": [
+    "/src/App.tsx"
+   ]
+}

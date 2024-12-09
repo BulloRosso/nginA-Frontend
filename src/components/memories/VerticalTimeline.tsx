@@ -159,12 +159,35 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
             contentStyle={{
               background: config.background,
               borderRadius: '8px',
+              paddingTop: '4px',
               boxShadow: '0 3px 6px rgba(0,0,0,0.1)',
               position: 'relative' // Added for absolute positioning of delete button
             }}
             contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
           >
-            <div className="absolute top-2 right-2 flex space-x-2">
+            
+            <p className="text-gray-600">
+              {memory.description}
+            </p>
+            {memory.location?.name && (
+              <p className="text-sm text-gray-500 mt-2">
+                📍 {memory.location.name}
+              </p>
+            )}
+            {memory.image_urls && memory.image_urls.length > 0 && (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {memory.image_urls.map((url, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    src={url}
+                    alt={`Memory ${imgIndex + 1}`}
+                    className="w-full h-24 object-cover rounded-lg"
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="absolute bottom-2 right-2 flex space-x-2">
               <IconButton
                 size="small"
                 onClick={() => {
@@ -202,31 +225,6 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                 <DeleteIcon fontSize="small" />
               </IconButton>
             </div>
-
-            <h3 className="text-lg font-bold mb-2 text-gray-800 pr-8"> {/* Added pr-8 for delete button space */}
-              {memory.category}
-            </h3>
-            <p className="text-gray-600">
-              {memory.description}
-            </p>
-            {memory.location?.name && (
-              <p className="text-sm text-gray-500 mt-2">
-                📍 {memory.location.name}
-              </p>
-            )}
-            {memory.image_urls && memory.image_urls.length > 0 && (
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                {memory.image_urls.map((url, imgIndex) => (
-                  <img
-                    key={imgIndex}
-                    src={url}
-                    alt={`Memory ${imgIndex + 1}`}
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
-           
           </VerticalTimelineElement>
         );
       })}
