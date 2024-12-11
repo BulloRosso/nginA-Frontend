@@ -16,7 +16,8 @@ import {
   Alert,
   Dialog,
   DialogContent,
-  DialogTitle
+  DialogTitle,
+  Grid
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -370,131 +371,184 @@ const MemoryCapture = () => {
   };
 
 return (
-    <Container >
-      <Box sx={{ my: 4 }}>
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <MemoryTimeline memories={memories}  onMemoryDeleted={fetchMemories}  />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent>
-            <Stack spacing={3}>
-              {error && (
-                <Alert severity="error" onClose={() => setError(null)}>
-                  {error}
-                </Alert>
-              )}
-
-              {/* AI Question */}
-              <Typography variant="h6" gutterBottom>
-                {question || t('interview.loading_question')}
-              </Typography>
-
-              {/* Text Input */}
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                value={response}
-                onChange={(e) => setResponse(e.target.value)}
-                placeholder={t('interview.share_memory')}
-                disabled={loading}
-              />
-
-              {/* Live Transcript */}
-              {transcript && (
-                <Typography variant="body2" color="textSecondary">
-                  {t('interview.transcribing')}: {transcript}
-                </Typography>
-              )}
-              
-              {/* Audio UI */}
-              {mediaMode === 'audio' && (
-                <Box sx={{ textAlign: 'center' }}>
-                  <AudioWaveform isRecording={isRecording} />
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={stopRecording}
-                    startIcon={<StopIcon />}
-                    sx={{ mt: 1 }}
-                  >
-                    {t('interview.stop_recording')}
-                  </Button>
-                </Box>
-              )}
-
-              {/* Image Preview Grid */}
-              {images.length > 0 && (
-                <ImageList sx={{ mt: 2 }} cols={4} rowHeight={164}>
-                  {images.map((image, index) => (
-                    <ImageListItem key={index}>
-                      <img
-                        src={image.src}
-                        alt={`Preview ${index + 1}`}
-                        loading="lazy"
-                        style={{ height: '100%', objectFit: 'cover' }}
-                      />
-                      <IconButton
-                        sx={{
-                          position: 'absolute',
-                          right: 4,
-                          top: 4,
-                          bgcolor: 'rgba(0, 0, 0, 0.5)',
-                          '&:hover': {
-                            bgcolor: 'rgba(0, 0, 0, 0.7)'
-                          }
-                        }}
-                        onClick={() => handleRemoveImage(index)}
+    <Container  maxWidth="xl" 
+        sx={{ 
+          height: 'calc(100vh - 32px)', // Full viewport height minus margin
+          py: 2 // Instead of my: 4, use padding to maintain height calc
+        }}
+      >
+        <Grid 
+          container 
+          spacing={3} 
+          sx={{ 
+            height: '100%',
+          }}
+        >
+          {/* Memory Input Area */}
+          <Grid item xs={12} md={6} xl={4} xxl={5} sx={{ height: '100%' }}>
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ 
+                flex: 1, 
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <Stack spacing={3} sx={{ flex: 1 }}>
+                  {error && (
+                    <Alert severity="error" onClose={() => setError(null)}>
+                      {error}
+                    </Alert>
+                  )}
+    
+                  {/* AI Question */}
+                  <Typography variant="h6" gutterBottom>
+                    {question || t('interview.loading_question')}
+                  </Typography>
+    
+                  {/* Text Input */}
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={response}
+                    onChange={(e) => setResponse(e.target.value)}
+                    placeholder={t('interview.share_memory')}
+                    disabled={loading}
+                    sx={{ flex: 1 }}
+                  />
+    
+                  {/* Live Transcript */}
+                  {transcript && (
+                    <Typography variant="body2" color="textSecondary">
+                      {t('interview.transcribing')}: {transcript}
+                    </Typography>
+                  )}
+                  
+                  {/* Audio UI */}
+                  {mediaMode === 'audio' && (
+                    <Box sx={{ textAlign: 'center' }}>
+                      <AudioWaveform isRecording={isRecording} />
+                      <Button
+                        variant="contained"
+                        color="error"
+                        onClick={stopRecording}
+                        startIcon={<StopIcon />}
+                        sx={{ mt: 1 }}
                       >
-                        <DeleteIcon sx={{ color: 'white' }} />
-                      </IconButton>
-                    </ImageListItem>
-                  ))}
-                </ImageList>
-              )}
-
-              {/* Control Buttons */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<PhotoLibraryIcon />}
-                    onClick={() => setIsUploadDialogOpen(true)}
-                  >
-                    {t('interview.add_images')}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CameraIcon />}
-                    onClick={startCamera}
-                    disabled={mediaMode === 'audio'} // Only disable if audio recording is active
-                  >
-                    {t('interview.use_camera')}
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    startIcon={<MicIcon />}
-                    onClick={startRecording}
-                    disabled={mediaMode !== null}
-                  >
-                    {t('interview.start_recording')}
-                  </Button>
-                </Box>
-                <Button
-                  variant="contained"
-                  onClick={handleSubmit}
-                  disabled={loading || (!response && !images.length)}
-                  endIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
-                >
-                  {t('interview.save_memory')}
-                </Button>
-              </Box>
-            </Stack>
-          </CardContent>
-        </Card>
-      </Box>
+                        {t('interview.stop_recording')}
+                      </Button>
+                    </Box>
+                  )}
+    
+                  {/* Image Preview Grid */}
+                  {images.length > 0 && (
+                    <ImageList sx={{ mt: 2 }} cols={4} rowHeight={164}>
+                      {images.map((image, index) => (
+                        <ImageListItem key={index}>
+                          <img
+                            src={image.src}
+                            alt={`Preview ${index + 1}`}
+                            loading="lazy"
+                            style={{ height: '100%', objectFit: 'cover' }}
+                          />
+                          <IconButton
+                            sx={{
+                              position: 'absolute',
+                              right: 4,
+                              top: 4,
+                              bgcolor: 'rgba(0, 0, 0, 0.5)',
+                              '&:hover': {
+                                bgcolor: 'rgba(0, 0, 0, 0.7)'
+                              }
+                            }}
+                            onClick={() => handleRemoveImage(index)}
+                          >
+                            <DeleteIcon sx={{ color: 'white' }} />
+                          </IconButton>
+                        </ImageListItem>
+                      ))}
+                    </ImageList>
+                  )}
+    
+                  {/* Control Buttons */}
+                  <Box sx={{ mt: 'auto', pt: 2 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      mb: 2
+                    }}>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<PhotoLibraryIcon />}
+                          onClick={() => setIsUploadDialogOpen(true)}
+                        >
+                          {t('interview.add_images')}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CameraIcon />}
+                          onClick={startCamera}
+                          disabled={mediaMode === 'audio'} // Only disable if audio recording is active
+                        >
+                          {t('interview.use_camera')}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<MicIcon />}
+                          onClick={startRecording}
+                          disabled={mediaMode !== null}
+                        >
+                          {t('interview.start_recording')}
+                        </Button>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleSubmit}
+                        disabled={loading || (!response && !images.length)}
+                        endIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
+                      >
+                        {t('interview.save_memory')}
+                      </Button>
+                    </Box>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+            </Grid>
+          
+            {/* Timeline Area */}
+            <Grid item xs={12} md={6} xl={8} xxl={7} sx={{ height: '100%' }}>
+               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardContent sx={{ 
+                    flex: 1, 
+                    overflowY: 'auto',
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      backgroundColor: '#f1f1f1',
+                      borderRadius: '4px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      backgroundColor: '#888',
+                      borderRadius: '4px',
+                      '&:hover': {
+                        backgroundColor: '#666',
+                      },
+                    },
+                  }}>
+                  <MemoryTimeline 
+                    memories={memories} 
+                    onMemoryDeleted={fetchMemories} 
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
 
       {/* Camera Dialog */}
       <Dialog

@@ -212,31 +212,31 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
 
 
   return (
-      <Grid container spacing={1} sx={{ height: '700px' }}>
-        <Grid 
-          item 
-          xs={12} 
-          md={10} 
-          lg={11}
-          sx={{ 
-            height: '100%',
-            overflowY: 'auto',
-            '&::-webkit-scrollbar': {
-              width: '8px',
-            },
-            '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f1f1f1',
-              borderRadius: '4px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#888',
-              borderRadius: '4px',
-              '&:hover': {
-                backgroundColor: '#666',
+        <Grid container spacing={1} sx={{ height: '100%' }}> {/* Changed from 700px to 100% */}
+          <Grid 
+            item 
+            xs={12} 
+            md={10} 
+            lg={11}
+            sx={{ 
+              height: '100%',
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '8px',
               },
-            },
-          }}
-        >
+              '&::-webkit-scrollbar-track': {
+                backgroundColor: '#f1f1f1',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#888',
+                borderRadius: '4px',
+                '&:hover': {
+                  backgroundColor: '#666',
+                },
+              },
+            }}
+          >
           <Box sx={{ height: '100%', pr: 2 }}>
               <VerticalTimeline lineColor="#DDD">
                 {filteredMemories.map((memory, index) => {

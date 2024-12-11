@@ -22,8 +22,8 @@ const resources = {
       },
       interview: {
         loading_question: "Loading question...",
-        add_images: "Add image(s)",
-        use_camera: "Use camera",
+        add_images: "Upload",
+        use_camera: "Snapshot",
         drag_or_click: "Drag or click to select image(s)",
         share_memory: "Share your memory...",
         transcribing: "Transcribing",
@@ -33,7 +33,7 @@ const resources = {
         stop_recording: "Stop Recording",
         save_memory: "Save Memory",
         upload_photo: "Upload Photo",
-        start_recording: "Start Recording",
+        start_recording: "Speak",
         initial_question: "Tell me about a memorable moment from your life..."
       }
     }
