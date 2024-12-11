@@ -322,9 +322,7 @@ return (
       <Box sx={{ my: 4 }}>
         <Card sx={{ mb: 2 }}>
           <CardContent>
-            <Box sx={{ maxHeight: "600px", overflowY: "auto" }}> 
-              <MemoryTimeline memories={memories}  onMemoryDeleted={fetchMemories}  />
-            </Box>
+            <MemoryTimeline memories={memories}  onMemoryDeleted={fetchMemories}  />
           </CardContent>
         </Card>
         <Card>
