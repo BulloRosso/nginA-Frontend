@@ -14,6 +14,9 @@ import {
   ImageList,
   ImageListItem,
   Alert,
+  Dialog,
+  DialogContent,
+  DialogTitle
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -21,6 +24,7 @@ import {
   Camera as CameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
   Send as SendIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { InterviewService } from '../services/interviews';
@@ -79,7 +83,8 @@ const MemoryCapture = () => {
   const recognitionRef = useRef(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
-
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -89,6 +94,28 @@ const MemoryCapture = () => {
     recognitionRef.current.interimResults = true;
   }
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'image/jpeg': [], 'image/png': [] },
+    onDrop: useCallback(async (acceptedFiles) => {
+      const newImages = await Promise.all(
+        acceptedFiles.map(async (file) => {
+          const dataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+          return { src: dataUrl, file };
+        })
+      );
+      setImages([...images, ...newImages]);
+      setIsUploadDialogOpen(false);
+    }, [images])
+  });
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setImages(images => images.filter((_, index) => index !== indexToRemove));
+  };
+  
   useEffect(() => {
     const fetchProfileAndMemories = async () => {
       try {
@@ -163,24 +190,6 @@ const MemoryCapture = () => {
       setLoading(false);
     }
   }, [profile]); // Add profile as dependency since it's used in the function
-
-  // File upload handling
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: { 'image/*': [] },
-    onDrop: useCallback(async (acceptedFiles) => {
-      const newImages = await Promise.all(
-        acceptedFiles.map(async (file) => {
-          const dataUrl = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(file);
-          });
-          return { src: dataUrl, file };
-        })
-      );
-      setImages([...images, ...newImages]);
-    }, [images])
-  });
 
   // Camera handling
   const startCamera = async () => {
@@ -272,17 +281,7 @@ const MemoryCapture = () => {
         throw new Error('Missing profile ID or session ID');
       }
 
-      // First, upload any images
-      const imageUrls = await Promise.all(
-        images.map(async (image) => {
-          const formData = new FormData();
-          formData.append('file', image.file);
-          const result = await MemoryService.uploadMedia(formData);
-          return result.url;
-        })
-      );
-
-      // Create the memory with the current session ID
+      // First create the memory
       const memoryData = {
         category: Category.CHILDHOOD,
         description: response,
@@ -295,16 +294,30 @@ const MemoryCapture = () => {
         },
         people: [],
         emotions: [],
-        image_urls: imageUrls,
+        image_urls: [],
         audio_url: null
       };
 
-      await MemoryService.createMemory(profileId, sessionId, memoryData);
+      // Create memory first
+      const createdMemory = await MemoryService.createMemory(profileId, sessionId, memoryData);
+
+      // Then upload images if any
+      if (images.length > 0) {
+        const formData = new FormData();
+        images.forEach(image => {
+          formData.append('files', image.file);
+        });
+
+        await MemoryService.uploadMedia(formData, createdMemory.id);
+      }
 
       // Clear form
       setResponse('');
       setImages([]);
       setTranscript('');
+
+      // Refresh memories list
+      await fetchMemories();
 
       // Get next question
       const nextQuestion = await InterviewService.getNextQuestion(profileId, sessionId);
@@ -396,8 +409,63 @@ return (
                 </Box>
               )}
 
-              {/* Submit Button */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {/* Image Preview Grid */}
+              {images.length > 0 && (
+                <ImageList sx={{ mt: 2 }} cols={4} rowHeight={164}>
+                  {images.map((image, index) => (
+                    <ImageListItem key={index}>
+                      <img
+                        src={image.src}
+                        alt={`Preview ${index + 1}`}
+                        loading="lazy"
+                        style={{ height: '100%', objectFit: 'cover' }}
+                      />
+                      <IconButton
+                        sx={{
+                          position: 'absolute',
+                          right: 4,
+                          top: 4,
+                          bgcolor: 'rgba(0, 0, 0, 0.5)',
+                          '&:hover': {
+                            bgcolor: 'rgba(0, 0, 0, 0.7)'
+                          }
+                        }}
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <DeleteIcon sx={{ color: 'white' }} />
+                      </IconButton>
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              )}
+
+              {/* Control Buttons */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<PhotoLibraryIcon />}
+                    onClick={() => setIsUploadDialogOpen(true)}
+                  >
+                    {t('interview.add_images')}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<CameraIcon />}
+                    onClick={startCamera}
+                    disabled={mediaMode !== null}
+                  >
+                    {t('interview.use_camera')}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<MicIcon />}
+                    onClick={startRecording}
+                    disabled={mediaMode !== null}
+                  >
+                    {t('interview.start_recording')}
+                  </Button>
+                </Box>
                 <Button
                   variant="contained"
                   onClick={handleSubmit}
@@ -411,6 +479,39 @@ return (
           </CardContent>
         </Card>
       </Box>
+
+      {/* Upload Dialog */}
+      <Dialog 
+        open={isUploadDialogOpen} 
+        onClose={() => setIsUploadDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('interview.upload_images')}</DialogTitle>
+        <DialogContent>
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+              ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+              ${isUploading ? 'opacity-50' : ''}
+            `}
+          >
+            <input {...getInputProps()} />
+            {isUploading ? (
+              <div className="flex justify-center">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : isDragActive ? (
+              <p>{t('interview.drop_files_here')}</p>
+            ) : (
+              <div>
+                <PhotoLibraryIcon sx={{ fontSize: 40, color: 'text.secondary', mb: 1 }} />
+                <Typography>{t('interview.drag_or_click')}</Typography>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Container>
   );
 };

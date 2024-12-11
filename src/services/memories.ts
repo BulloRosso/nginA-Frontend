@@ -114,10 +114,10 @@ class MemoryService {
   /**
    * Upload media files (images or audio) for a memory
    */
-  static async uploadMedia(formData: FormData): Promise<{ url: string }> {
+  static async uploadMedia(formData: FormData, memoryId: string): Promise<string[]> {
     try {
-      const response = await api.post<{ url: string }>(
-        '/api/v1/memories/media',
+      const response = await api.post<{ urls: string[] }>(
+        `/api/v1/memories/${memoryId}/media`,
         formData,
         {
           headers: {
@@ -125,7 +125,8 @@ class MemoryService {
           },
         }
       );
-      return response.data;
+
+      return response.data.urls;
     } catch (error) {
       console.error('Failed to upload media:', error);
       throw new Error('Failed to upload media');

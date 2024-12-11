@@ -22,8 +22,12 @@ const resources = {
       },
       interview: {
         loading_question: "Loading question...",
+        add_images: "Add image(s)",
+        use_camera: "Use camera",
+        drag_or_click: "Drag or click to select image(s)",
         share_memory: "Share your memory...",
         transcribing: "Transcribing",
+        upload_images: "Upload image(s)",
         capture: "Capture Photo",
         close_camera: "Close Camera",
         stop_recording: "Stop Recording",
@@ -53,6 +57,10 @@ const resources = {
       interview: {
         loading_question: "Lade Frage...",
         share_memory: "Teilen Sie Ihre Erinnerung...",
+        drag_or_click: "Ziehen oder Klicken",
+        add_images: "Bild(er) hinzufügen", 
+        use_camera: "Kamera verwenden",
+        upload_images: "Bild(er) hochladen",
         transcribing: "Transkribiere",
         capture: "Foto aufnehmen",
         close_camera: "Kamera schließen",
