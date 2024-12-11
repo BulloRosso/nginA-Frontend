@@ -371,10 +371,20 @@ const MemoryCapture = () => {
   };
 
 return (
-    <Container  maxWidth="xl" 
+    <Container 
+        maxWidth="{false}" // This removes max-width constraint
+        disableGutters
         sx={{ 
-          height: 'calc(100vh - 32px)', // Full viewport height minus margin
-          py: 2 // Instead of my: 4, use padding to maintain height calc
+          paddingLeft: '12px',
+          paddingRight: '12px',
+          paddingBottom: 0,
+          marginBottom:0,
+          height: 'calc(100vh - 42px)', // Full viewport height minus margin
+          py: 2,
+          mb: 0, // Added: explicitly set margin bottom to 0
+            '& .MuiContainer-root': { // Added: override MUI's default margin
+              marginBottom: 0
+            }
         }}
       >
         <Grid 

@@ -58,8 +58,8 @@ const resources = {
         loading_question: "Lade Frage...",
         share_memory: "Teilen Sie Ihre Erinnerung...",
         drag_or_click: "Ziehen oder Klicken",
-        add_images: "Bild(er) hinzufügen", 
-        use_camera: "Kamera verwenden",
+        add_images: "Hochladen", 
+        use_camera: "Kamera",
         upload_images: "Bild(er) hochladen",
         transcribing: "Transkribiere",
         capture: "Foto aufnehmen",
@@ -67,7 +67,7 @@ const resources = {
         stop_recording: "Aufnahme beenden",
         save_memory: "Erinnerung speichern",
         upload_photo: "Foto hochladen",
-        start_recording: "Aufnahme starten",
+        start_recording: "Diktieren",
         initial_question: "Erzählen Sie mir von einem unvergesslichen Moment in Ihrem Leben..."
       }
     }
