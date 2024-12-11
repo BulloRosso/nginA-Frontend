@@ -31,9 +31,10 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
   onClose,
   onSave
 }) => {
+  // Initialize state with default values
   const [category, setCategory] = React.useState<Category>(Category.CHILDHOOD);
   const [description, setDescription] = React.useState('');
-  const [date, setDate] = React.useState<Date | null>(null);
+  const [date, setDate] = React.useState<Date>(new Date());
   const [loading, setLoading] = React.useState(false);
   const [location, setLocation] = React.useState<Location>({
     name: '',
@@ -42,16 +43,17 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
     description: ''
   });
 
+  // Update state when memory changes
   React.useEffect(() => {
     if (memory) {
       setCategory(memory.category);
-      setDescription(memory.description);
+      setDescription(memory.description || '');
       setDate(new Date(memory.timePeriod));
-      setLocation(memory.location || {
-        name: '',
-        city: '',
-        country: '',
-        description: ''
+      setLocation({
+        name: memory.location?.name || '',
+        city: memory.location?.city || '',
+        country: memory.location?.country || '',
+        description: memory.location?.description || ''
       });
     }
   }, [memory]);
@@ -65,7 +67,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
         id: memory.id,
         category,
         description,
-        time_period: date?.toISOString(), // Changed from timePeriod to time_period
+        time_period: date?.toISOString(),
         location: {
           name: location.name || '',
           city: location.city || '',
@@ -81,8 +83,29 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
     }
   };
 
+  const handleClose = () => {
+    // Reset form when closing
+    if (memory) {
+      setCategory(memory.category);
+      setDescription(memory.description || '');
+      setDate(new Date(memory.timePeriod));
+      setLocation({
+        name: memory.location?.name || '',
+        city: memory.location?.city || '',
+        country: memory.location?.country || '',
+        description: memory.location?.description || ''
+      });
+    }
+    onClose();
+  };
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={handleClose}
+      maxWidth="sm" 
+      fullWidth
+    >
       <DialogTitle>Edit Memory</DialogTitle>
       <DialogContent>
         <div className="space-y-4 mt-4">
@@ -114,7 +137,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
             <DatePicker
               label="Date"
               value={date}
-              onChange={(newDate) => setDate(newDate)}
+              onChange={(newDate) => setDate(newDate || new Date())}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </LocalizationProvider>
@@ -162,7 +185,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button 
           onClick={handleSave} 
           variant="contained" 

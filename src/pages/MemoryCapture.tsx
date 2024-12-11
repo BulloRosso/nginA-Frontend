@@ -41,7 +41,10 @@ import { ProfileService } from '../services/profiles';
 const CameraPreview = styled('video')({
   width: '100%',
   maxWidth: '600px',
+  height: 'auto',
   borderRadius: '8px',
+  backgroundColor: 'black', // Makes it easier to see when camera is loading
+  marginBottom: '16px'
 });
 
 const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
@@ -72,7 +75,7 @@ const MemoryCapture = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
-  const [mediaMode, setMediaMode] = useState(null);
+  const [mediaMode, setMediaMode] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
@@ -85,6 +88,7 @@ const MemoryCapture = () => {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -194,19 +198,44 @@ const MemoryCapture = () => {
   // Camera handling
   const startCamera = async () => {
     try {
+      console.log('Starting camera...');
+      setIsCameraOpen(true); // Set this first to open the dialog
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
+      console.log('Got camera stream:', stream);
+
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
-        setMediaMode('camera');
+        setMediaMode('camera'); // Then set the mode
+        console.log('Camera started, mode set to:', 'camera');
       }
     } catch (err) {
+      console.error('Failed to access camera:', err);
       setError('Failed to access camera');
-      console.error(err);
+      setIsCameraOpen(false);
+      setMediaMode(null);
     }
+  };
+
+  const handleCloseCamera = () => {
+    stopCamera();
+  };
+
+  const stopCamera = () => {
+    console.log('Stopping camera...');
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    }
+    setIsCameraOpen(false);
+    setMediaMode(null);
+    console.log('Camera stopped, mode set to:', null);
   };
 
   const capturePhoto = () => {
@@ -216,22 +245,32 @@ const MemoryCapture = () => {
       canvas.height = videoRef.current.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(videoRef.current, 0, 0);
+
       canvas.toBlob((blob) => {
-        const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
-        setImages([...images, { 
-          src: canvas.toDataURL('image/jpeg'), 
-          file 
-        }]);
-      }, 'image/jpeg');
+        if (blob) {
+          const file = new File([blob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const imageUrl = canvas.toDataURL('image/jpeg');
+
+          // Add the new image to the images array
+          setImages(prevImages => [...prevImages, { src: imageUrl, file }]);
+
+          // Close the camera after capturing
+          handleCloseCamera();
+        }
+      }, 'image/jpeg', 0.8);
     }
   };
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      setMediaMode(null);
-    }
-  };
+  
+
+  // Add useEffect to clean up camera on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
 
   // Audio recording handling
   const startRecording = async () => {
@@ -369,30 +408,7 @@ return (
                   {t('interview.transcribing')}: {transcript}
                 </Typography>
               )}
-
-              {/* Camera UI */}
-              {mediaMode === 'camera' && (
-                <Box sx={{ textAlign: 'center' }}>
-                  <CameraPreview ref={videoRef} autoPlay playsInline />
-                  <Box sx={{ mt: 1 }}>
-                    <Button
-                      variant="contained"
-                      onClick={capturePhoto}
-                      startIcon={<CameraIcon />}
-                    >
-                      {t('interview.capture')}
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      onClick={stopCamera}
-                      sx={{ ml: 1 }}
-                    >
-                      {t('interview.close_camera')}
-                    </Button>
-                  </Box>
-                </Box>
-              )}
-
+              
               {/* Audio UI */}
               {mediaMode === 'audio' && (
                 <Box sx={{ textAlign: 'center' }}>
@@ -453,7 +469,7 @@ return (
                     variant="outlined"
                     startIcon={<CameraIcon />}
                     onClick={startCamera}
-                    disabled={mediaMode !== null}
+                    disabled={mediaMode === 'audio'} // Only disable if audio recording is active
                   >
                     {t('interview.use_camera')}
                   </Button>
@@ -480,6 +496,55 @@ return (
         </Card>
       </Box>
 
+      {/* Camera Dialog */}
+      <Dialog
+        open={isCameraOpen}
+        onClose={handleCloseCamera}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>{t('interview.take_photo')}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+            py: 2,
+          }}>
+            <CameraPreview 
+              ref={videoRef} 
+              autoPlay 
+              playsInline 
+              muted
+            />
+            <Box sx={{ 
+              mt: 2,
+              display: 'flex',
+              gap: 2,
+              width: '100%',
+              justifyContent: 'center',
+            }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={capturePhoto}
+                startIcon={<CameraIcon />}
+              >
+                {t('interview.capture')}
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleCloseCamera}
+              >
+                {t('interview.close_camera')}
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+      </Dialog>
+      
       {/* Upload Dialog */}
       <Dialog 
         open={isUploadDialogOpen} 
