@@ -1,5 +1,5 @@
 // src/components/memories/VerticalTimeline.tsx
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { 
   VerticalTimeline, 
   VerticalTimelineElement 
@@ -27,6 +27,7 @@ import {
 import MemoryService from '../../services/memories';
 import { useDropzone } from 'react-dropzone';
 import EditMemoryDialog from './EditMemoryDialog';
+import ImageLightbox from './ImageLightbox';
 
 interface TimelineProps {
   memories: Memory[];
@@ -73,6 +74,8 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
   const [isUploadDialogOpen, setIsUploadDialogOpen] = React.useState(false);
   const [selectedMemoryForUpload, setSelectedMemoryForUpload] = React.useState<string | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
+  const [selectedImage, setSelectedImage] = useState<number>(-1);
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!selectedMemoryForUpload) return;
@@ -109,6 +112,42 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
     } catch (err) {
       setError('Failed to update memory');
       console.error(err);
+    }
+  };
+
+  const handleImageClick = (memory: Memory, index: number) => {
+    setSelectedMemory(memory);
+    setSelectedImage(index);
+  };
+
+  const handleDeleteImage = async (imageUrl: string) => {
+    if (!selectedMemory) return;
+
+    try {
+      // Get filename from URL
+      const filename = imageUrl.split('/').pop()?.split('?')[0];
+      if (!filename) throw new Error('Invalid image URL');
+
+      // Delete from storage
+      await MemoryService.deleteImage(selectedMemory.id, filename);
+
+      // Update memory's image URLs
+      const updatedUrls = selectedMemory.image_urls.filter(url => url !== imageUrl);
+      await MemoryService.updateMemory(selectedMemory.id, {
+        image_urls: updatedUrls
+      });
+
+      // Close lightbox
+      setSelectedMemory(null);
+      setSelectedImage(-1);
+
+      // Refresh memories list
+      if (onMemoryDeleted) {
+        onMemoryDeleted();
+      }
+    } catch (error) {
+      console.error('Failed to delete image:', error);
+      setError('Failed to delete image');
     }
   };
   
@@ -177,12 +216,17 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
             {memory.image_urls && memory.image_urls.length > 0 && (
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {memory.image_urls.map((url, imgIndex) => (
-                  <img
+                  <div 
                     key={imgIndex}
-                    src={url}
-                    alt={`Memory ${imgIndex + 1}`}
-                    className="w-full h-24 object-cover rounded-lg"
-                  />
+                    className="relative group cursor-pointer"
+                    onClick={() => handleImageClick(memory, imgIndex)}
+                  >
+                    <img
+                      src={url}
+                      alt={`Memory ${imgIndex + 1}`}
+                      className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -229,6 +273,22 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
         );
       })}
     </VerticalTimeline>
+      
+      {/* Lightbox */}
+      {selectedMemory && selectedImage >= 0 && (
+        <ImageLightbox
+          open={true}
+          onClose={() => {
+            setSelectedMemory(null);
+            setSelectedImage(-1);
+          }}
+          images={selectedMemory.image_urls}
+          currentIndex={selectedImage}
+          onNavigate={setSelectedImage}
+          onDelete={handleDeleteImage}
+        />
+      )}
+      
       {/* Edit Dialog */}
       <EditMemoryDialog
         open={!!editingMemory}

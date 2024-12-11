@@ -47,6 +47,19 @@ class MemoryService {
     }
   }
 
+  static async deleteImage(memoryId: UUID, filename: string): Promise<void> {
+    try {
+      // Delete file from Supabase storage
+      const response = await api.delete(`/api/v1/memories/${memoryId}/media/${filename}`);
+      if (!response.data.success) {
+        throw new Error('Failed to delete image');
+      }
+    } catch (error) {
+      console.error('Failed to delete image:', error);
+      throw new Error('Failed to delete image');
+    }
+  }
+  
   /**
    * Create a new memory
    */
