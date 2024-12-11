@@ -71,7 +71,7 @@ const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
 }));
 
 const MemoryCapture = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
@@ -147,7 +147,6 @@ const MemoryCapture = () => {
     fetchProfileAndMemories();
   }, []); 
   
-  // Start interview session on component mount
   useEffect(() => {
     const initInterview = async () => {
       try {
@@ -157,8 +156,8 @@ const MemoryCapture = () => {
           throw new Error('No profile ID found');
         }
 
-        // Start new interview session
-        const result = await InterviewService.startInterview(profileId);
+        // Pass the current language
+        const result = await InterviewService.startInterview(profileId, i18n.language);
         setSessionId(result.session_id);
         setQuestion(result.initial_question);
       } catch (err) {
@@ -170,7 +169,7 @@ const MemoryCapture = () => {
     };
 
     initInterview();
-  }, []);
+  }, [i18n.language]); // Add language as dependency
 
   const fetchMemories = useCallback(async () => {
     try {
@@ -360,7 +359,11 @@ const MemoryCapture = () => {
       await fetchMemories();
 
       // Get next question
-      const nextQuestion = await InterviewService.getNextQuestion(profileId, sessionId);
+      const nextQuestion = await InterviewService.getNextQuestion(
+        profileId, 
+        sessionId, 
+        i18n.language
+      );
       setQuestion(nextQuestion.text);
     } catch (err) {
       setError('Failed to save memory: ' + err.message);

@@ -56,6 +56,7 @@ const resources = {
       },
       interview: {
         loading_question: "Lade Frage...",
+        take_photo: "Einen Schnappschuss aufnehmen",
         share_memory: "Teilen Sie Ihre Erinnerung...",
         drag_or_click: "Ziehen oder Klicken",
         add_images: "Hochladen", 
