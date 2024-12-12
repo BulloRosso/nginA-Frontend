@@ -34,7 +34,14 @@ const resources = {
         save_memory: "Save Memory",
         upload_photo: "Upload Photo",
         start_recording: "Speak",
-        initial_question: "Tell me about a memorable moment from your life..."
+        initial_question: "Tell me about a memorable moment from your life...",
+        "tab_interview": "Our Interview",
+        "tab_sessions": "Recent Sessions",
+        "tab_tips": "Tips",
+        "previous_sessions": "Previous Interview Sessions",
+        "no_previous_sessions": "No previous sessions found.",
+        "tips_title": "Tips for Better Memories",
+        "tips_content": "Share specific details and emotions to make your memories more vivid."
       }
     }
   },
@@ -69,7 +76,14 @@ const resources = {
         save_memory: "Erinnerung speichern",
         upload_photo: "Foto hochladen",
         start_recording: "Diktieren",
-        initial_question: "Erzählen Sie mir von einem unvergesslichen Moment in Ihrem Leben..."
+        initial_question: "Erzählen Sie mir von einem unvergesslichen Moment in Ihrem Leben...",
+        "tab_interview": "Unser Interview",
+        "tab_sessions": "Letzte Sessions",
+        "tab_tips": "Tipps",
+        "previous_sessions": "Vorherige Interviewsitzungen",
+        "no_previous_sessions": "Keine vorherigen Sitzungen gefunden.",
+        "tips_title": "Tipps für bessere Erinnerungen",
+        "tips_content": "Teilen Sie spezifische Details und Emotionen, um Ihre Erinnerungen lebendiger zu gestalten."
       }
     }
   }

@@ -17,7 +17,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid
+  Grid,
+  Tabs, 
+  Tab
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -38,6 +40,43 @@ import { Memory } from '../types/memory';
 import { createDefaultMemories } from '../utils/memoryDefaults';
 import { Profile } from '../types/profile';
 import { ProfileService } from '../services/profiles';
+
+const QuestionTypography = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Pangolin", regular',
+  fontSize: '1.3rem',
+  lineHeight: 1.4,
+  paddingLeft: '10px',
+  paddingRight: '0px',
+  marginBottom: theme.spacing(0),
+  color: theme.palette.text.primary
+}));
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+const TabPanel = (props: TabPanelProps) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`memory-tabpanel-${index}`}
+      aria-labelledby={`memory-tab-${index}`}
+      {...other}
+      style={{ height: '100%' }}
+    >
+      {value === index && (
+        <Box sx={{ height: '100%' }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+};
 
 const CameraPreview = styled('video')({
   width: '100%',
@@ -63,11 +102,39 @@ const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
     right: 0,
     bottom: 0,
     background: isRecording
-      ? 'linear-gradient(90deg, #f44336 50%, transparent 50%)'
+      ? 'linear-gradient(90deg, gold 50%, transparent 50%)'
       : 'none',
     backgroundSize: '200% 100%',
     animation: isRecording ? 'wave 1s linear infinite' : 'none',
   },
+}));
+
+const AnimatedMicIcon = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  left: '0px',  // Pull out of the flow
+  width: '40px',
+  height: '40px',
+  minWidth: '40px',  // Enforce circle shape
+  minHeight: '40px', // Enforce circle shape
+  borderRadius: '50%',
+  backgroundColor: 'gold', //theme.palette.primary.main,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  alignSelf: 'flex-start',  // Top align
+  marginTop: '4px',  // Fine-tune top alignment
+  animation: 'pulse 4s infinite',
+  '@keyframes pulse': {
+    '0%': {
+      boxShadow: '0 0 0 0 rgba(255, 165, 0, 0.4)', // Orange version
+    },
+    '70%': {
+      boxShadow: '0 0 0 10px rgba(255, 165, 0, 0)', // Orange version
+    },
+    '100%': {
+      boxShadow: '0 0 0 0 rgba(255, 165, 0, 0)', // Orange version
+    }
+  }
 }));
 
 const MemoryCapture = () => {
@@ -90,6 +157,7 @@ const MemoryCapture = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -308,6 +376,10 @@ const MemoryCapture = () => {
     }
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+  
   // Memory submission
   const handleSubmit = async () => {
     try {
@@ -384,14 +456,40 @@ return (
           }}
         >
           {/* Memory Input Area */}
-          <Grid item xs={12} md={6} xl={4} xxl={5} sx={{ height: '100%' }}>
+          <Grid item xs={12} md={5} xl={4} xxl={5} sx={{ height: '100%' }}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  '& .MuiTab-root': {
+                    fontSize: '0.9rem',
+                    minWidth: 'unset',
+                    px: 3,
+                  }
+                }}
+              >
+                <Tab label={t('interview.tab_interview')} />
+                <Tab label={t('interview.tab_sessions')} />
+                <Tab label={t('interview.tab_tips')} />
+              </Tabs>
+              
               <CardContent sx={{ 
                 flex: 1, 
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column'
               }}>
+              <TabPanel value={activeTab} index={0}
+                sx={{ 
+                  height: '100%', 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+                >
                 <Stack spacing={3} sx={{ flex: 1 }}>
                   {error && (
                     <Alert severity="error" onClose={() => setError(null)}>
@@ -400,9 +498,25 @@ return (
                   )}
     
                   {/* AI Question */}
-                  <Typography variant="h6" gutterBottom>
-                    {question || t('interview.loading_question')}
-                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start'  // Change to flex-start for top alignment
+                  }}>
+                    <AnimatedMicIcon>
+                      <MicIcon sx={{ 
+                        color: 'black', 
+                        fontSize: '20px',
+                        // Center the icon within the circle
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
+                      }} />
+                    </AnimatedMicIcon>
+                    <QuestionTypography variant="h6" gutterBottom>
+                      {question || t('interview.loading_question')}
+                    </QuestionTypography>
+                  </Box>
     
                   {/* Text Input */}
                   <TextField
@@ -515,12 +629,37 @@ return (
                     </Box>
                   </Box>
                 </Stack>
+              </TabPanel>
+
+              <TabPanel value={activeTab} index={1}>
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {t('interview.previous_sessions')}
+                  </Typography>
+                  {/* Add your sessions content here */}
+                  <Typography variant="body1">
+                    {t('interview.no_previous_sessions')}
+                  </Typography>
+                </Box>
+              </TabPanel>
+
+              <TabPanel value={activeTab} index={2}>
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {t('interview.tips_title')}
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    {t('interview.tips_content')}
+                  </Typography>
+                  {/* Add more tips content */}
+                </Box>
+              </TabPanel>
               </CardContent>
             </Card>
             </Grid>
           
             {/* Timeline Area */}
-            <Grid item xs={12} md={6} xl={8} xxl={7} sx={{ height: '100%' }}>
+            <Grid item xs={12} md={7} xl={8} xxl={7} sx={{ height: '100%' }}>
                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <CardContent sx={{ 
                     flex: 1, 

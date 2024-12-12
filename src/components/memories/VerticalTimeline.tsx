@@ -281,7 +281,12 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                                 src={url}
                                 alt={`Memory ${imgIndex + 1}`}
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
-                                style={{borderRadius: '50%'}}
+                                style={{borderRadius: '50%',
+                                        aspectRatio: '1/1', 
+                                          width: '100%', 
+                                          height: '100%', 
+                                          objectFit: 'cover'
+                                       }}
                                 />
                             </div>
                           ))}
