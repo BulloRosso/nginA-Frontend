@@ -289,7 +289,7 @@ const App = () => {
         <BrowserRouter>
           <Box sx={{ flexGrow: 1 }}>
             <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
-              <Toolbar>
+              <Toolbar variant="dense">
                 <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
                   nOblivion
                 </Typography>
@@ -882,13 +882,18 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                                 src={url}
                                 alt={`Memory ${imgIndex + 1}`}
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
-                                style={{borderRadius: '50%'}}
+                                style={{borderRadius: '50%',
+                                        aspectRatio: '1/1', 
+                                          width: '100%', 
+                                          height: '100%', 
+                                          objectFit: 'cover'
+                                       }}
                                 />
                             </div>
                           ))}
                         </div>
                       )}
-                      <p className="text-gray-600">
+                      <p className="text-gray-600" style={{ fontFamily:'Pangolin'}}>
                         {memory.description}
                       </p>
                       {memory.location?.name && (
@@ -1215,7 +1220,9 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Grid
+  Grid,
+  Tabs, 
+  Tab
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -1236,6 +1243,43 @@ import { Memory } from '../types/memory';
 import { createDefaultMemories } from '../utils/memoryDefaults';
 import { Profile } from '../types/profile';
 import { ProfileService } from '../services/profiles';
+
+const QuestionTypography = styled(Typography)(({ theme }) => ({
+  fontFamily: '"Pangolin", regular',
+  fontSize: '1.3rem',
+  lineHeight: 1.4,
+  paddingLeft: '10px',
+  paddingRight: '0px',
+  marginBottom: theme.spacing(0),
+  color: theme.palette.text.primary
+}));
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+const TabPanel = (props: TabPanelProps) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`memory-tabpanel-${index}`}
+      aria-labelledby={`memory-tab-${index}`}
+      {...other}
+      style={{ height: '100%' }}
+    >
+      {value === index && (
+        <Box sx={{ height: '100%' }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+};
 
 const CameraPreview = styled('video')({
   width: '100%',
@@ -1261,17 +1305,44 @@ const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
     right: 0,
     bottom: 0,
     background: isRecording
-      ? 'linear-gradient(90deg, #f44336 50%, transparent 50%)'
+      ? 'linear-gradient(90deg, gold 50%, transparent 50%)'
       : 'none',
     backgroundSize: '200% 100%',
     animation: isRecording ? 'wave 1s linear infinite' : 'none',
   },
 }));
 
+const AnimatedMicIcon = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  left: '0px',  // Pull out of the flow
+  width: '40px',
+  height: '40px',
+  minWidth: '40px',  // Enforce circle shape
+  minHeight: '40px', // Enforce circle shape
+  borderRadius: '50%',
+  backgroundColor: 'gold', //theme.palette.primary.main,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  alignSelf: 'flex-start',  // Top align
+  marginTop: '4px',  // Fine-tune top alignment
+  animation: 'pulse 4s infinite',
+  '@keyframes pulse': {
+    '0%': {
+      boxShadow: '0 0 0 0 rgba(255, 165, 0, 0.4)', // Orange version
+    },
+    '70%': {
+      boxShadow: '0 0 0 10px rgba(255, 165, 0, 0)', // Orange version
+    },
+    '100%': {
+      boxShadow: '0 0 0 0 rgba(255, 165, 0, 0)', // Orange version
+    }
+  }
+}));
+
 const MemoryCapture = () => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [mediaMode, setMediaMode] = useState<string | null>(null);
@@ -1288,6 +1359,8 @@ const MemoryCapture = () => {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -1354,20 +1427,19 @@ const MemoryCapture = () => {
           throw new Error('No profile ID found');
         }
 
-        // Pass the current language
         const result = await InterviewService.startInterview(profileId, i18n.language);
         setSessionId(result.session_id);
         setQuestion(result.initial_question);
       } catch (err) {
+        console.error('Failed to start interview:', err);
         setError('Failed to start interview session');
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
     initInterview();
-  }, [i18n.language]); // Add language as dependency
+  }, [i18n.language]);
 
   const fetchMemories = useCallback(async () => {
     try {
@@ -1507,6 +1579,10 @@ const MemoryCapture = () => {
     }
   };
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+  
   // Memory submission
   const handleSubmit = async () => {
     try {
@@ -1518,54 +1594,41 @@ const MemoryCapture = () => {
         throw new Error('Missing profile ID or session ID');
       }
 
-      // First create the memory
-      const memoryData = {
-        category: Category.CHILDHOOD,
-        description: response,
-        time_period: new Date().toISOString(),
-        location: {
-          name: "Unknown",
-          city: null,
-          country: null,
-          description: null
-        },
-        people: [],
-        emotions: [],
-        image_urls: [],
-        audio_url: null
-      };
+      // Submit response to get classification and sentiment
+      const interviewResponse = await InterviewService.submitResponse(
+        profileId,
+        sessionId,
+        {
+          text: response,
+          language: i18n.language
+        }
+      );
 
-      // Create memory first
-      const createdMemory = await MemoryService.createMemory(profileId, sessionId, memoryData);
-
-      // Then upload images if any
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach(image => {
-          formData.append('files', image.file);
-        });
-
-        await MemoryService.uploadMedia(formData, createdMemory.id);
-      }
-
-      // Clear form
+      // Clear input regardless of memory classification
       setResponse('');
       setImages([]);
       setTranscript('');
+      setQuestion(interviewResponse.follow_up);
 
-      // Refresh memories list
-      await fetchMemories();
+      // Only refresh memories if the input was classified as a memory
+      if (interviewResponse.is_memory) {
+        // Wait for the memories to be fetched to ensure timeline is up to date
+        await fetchMemories();
 
-      // Get next question
-      const nextQuestion = await InterviewService.getNextQuestion(
-        profileId, 
-        sessionId, 
-        i18n.language
-      );
-      setQuestion(nextQuestion.text);
+        // Optional: Scroll to the new memory in the timeline
+        // You could pass the memory_id to the timeline component
+        if (interviewResponse.memory_id) {
+          // Add this to your types if not already present
+          const timelineElement = document.querySelector(
+            `[data-memory-id="${interviewResponse.memory_id}"]`
+          );
+          timelineElement?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
     } catch (err) {
-      setError('Failed to save memory: ' + err.message);
-      console.error(err);
+      console.error('Error submitting response:', err);
+      setError('Failed to save response: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -1596,14 +1659,40 @@ return (
           }}
         >
           {/* Memory Input Area */}
-          <Grid item xs={12} md={6} xl={4} xxl={5} sx={{ height: '100%' }}>
+          <Grid item xs={12} md={5} xl={4} xxl={5} sx={{ height: '100%' }}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Tabs
+                value={activeTab}
+                onChange={handleTabChange}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  '& .MuiTab-root': {
+                    fontSize: '0.9rem',
+                    minWidth: 'unset',
+                    px: 3,
+                  }
+                }}
+              >
+                <Tab label={t('interview.tab_interview')} />
+                <Tab label={t('interview.tab_sessions')} />
+                <Tab label={t('interview.tab_tips')} />
+              </Tabs>
+              
               <CardContent sx={{ 
                 flex: 1, 
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column'
               }}>
+              <TabPanel value={activeTab} index={0}
+                sx={{ 
+                  height: '100%', 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+                >
                 <Stack spacing={3} sx={{ flex: 1 }}>
                   {error && (
                     <Alert severity="error" onClose={() => setError(null)}>
@@ -1612,9 +1701,25 @@ return (
                   )}
     
                   {/* AI Question */}
-                  <Typography variant="h6" gutterBottom>
-                    {question || t('interview.loading_question')}
-                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start'  // Change to flex-start for top alignment
+                  }}>
+                    <AnimatedMicIcon>
+                      <MicIcon sx={{ 
+                        color: 'black', 
+                        fontSize: '20px',
+                        // Center the icon within the circle
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)'
+                      }} />
+                    </AnimatedMicIcon>
+                    <QuestionTypography variant="h6" gutterBottom>
+                      {question || t('interview.loading_question')}
+                    </QuestionTypography>
+                  </Box>
     
                   {/* Text Input */}
                   <TextField
@@ -1727,12 +1832,37 @@ return (
                     </Box>
                   </Box>
                 </Stack>
+              </TabPanel>
+
+              <TabPanel value={activeTab} index={1}>
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {t('interview.previous_sessions')}
+                  </Typography>
+                  {/* Add your sessions content here */}
+                  <Typography variant="body1">
+                    {t('interview.no_previous_sessions')}
+                  </Typography>
+                </Box>
+              </TabPanel>
+
+              <TabPanel value={activeTab} index={2}>
+                <Box sx={{ p: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {t('interview.tips_title')}
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    {t('interview.tips_content')}
+                  </Typography>
+                  {/* Add more tips content */}
+                </Box>
+              </TabPanel>
               </CardContent>
             </Card>
             </Grid>
           
             {/* Timeline Area */}
-            <Grid item xs={12} md={6} xl={8} xxl={7} sx={{ height: '100%' }}>
+            <Grid item xs={12} md={7} xl={8} xxl={7} sx={{ height: '100%' }}>
                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <CardContent sx={{ 
                     flex: 1, 
@@ -2481,6 +2611,20 @@ export default api;
 // src/services/interviews.ts
 import api from './api';
 import { Interview, InterviewResponse } from '../types';
+import { UUID } from '../types/common';
+
+interface InterviewResponse {
+  text: string;
+  language: string;
+  audio_url?: string;
+  emotions_detected?: Array<{
+    type: string;
+    intensity: number;
+    description?: string;
+  }>;
+}
+
+
 
 export const InterviewService = {
   startInterview: async (profileId: string, language: string) => {
@@ -2492,11 +2636,33 @@ export const InterviewService = {
     return response.data;
   },
 
-  submitResponse: async (profileId: string, sessionId: string, response: InterviewResponse) => {
-    const result = await api.post(`/api/v1/interviews/${profileId}/response`, {
-      session_id: sessionId,
-      ...response
-    });
+  submitResponse: async (
+    profileId: string, 
+    sessionId: string, 
+    response: { text: string; language: string }
+  ): Promise<{
+    sentiment: {
+      joy: number;
+      sadness: number;
+      nostalgia: number;
+      intensity: number;
+    };
+    follow_up: string;
+    is_memory: boolean;
+    memory_id?: string;
+  }> => {
+    const result = await api.post(
+      `/interviews/${profileId}/response`,
+      {
+        text: response.text,
+        language: response.language,
+        audio_url: null,
+        emotions_detected: []
+      },
+      {
+        params: { session_id: sessionId }  // Add as query parameter
+      }
+    );
     return result.data;
   },
 
@@ -2849,6 +3015,7 @@ from pydantic import BaseModel, UUID4
 from datetime import datetime
 from typing import List, Optional, Dict
 from enum import Enum
+from uuid import UUID, uuid4
 
 class Category(str, Enum):
     CHILDHOOD = "childhood"
@@ -2916,8 +3083,9 @@ class Memory(MemoryCreate):
 class InterviewResponse(BaseModel):
     text: str
     language: str
-    audio_url: Optional[str]
-    emotions_detected: Optional[List[Emotion]]
+    audio_url: Optional[str] = None
+    emotions_detected: Optional[List[Emotion]] = None
+    session_id: Optional[UUID] = None  
 
 class InterviewQuestion(BaseModel):
     text: str
@@ -3016,12 +3184,13 @@ async def check_achievements(profile_id: UUID):
 ### api/v1/interviews.py
 ```
 # api/v1/interviews.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 from uuid import UUID
 from services.sentiment import EmpatheticInterviewer
 from models.memory import InterviewResponse, InterviewQuestion
 import logging
+from uuid import UUID, uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -3036,15 +3205,23 @@ async def start_interview(profile_id: UUID, language: str = "en"):
 async def process_response(
     profile_id: UUID,
     response: InterviewResponse,
-    session_id: UUID
+    session_id: UUID = Query(...)  # Now it comes after the required arguments
 ):
-    interviewer = EmpatheticInterviewer()
-    return await interviewer.process_interview_response(
-        profile_id,
-        session_id,
-        response.text,
-        response.language
-    )
+    """Process a response from the interview."""
+    try:
+        interviewer = EmpatheticInterviewer()
+        return await interviewer.process_interview_response(
+            profile_id=profile_id,
+            session_id=session_id,
+            response_text=response.text,
+            language=response.language
+        )
+    except Exception as e:
+        logger.error(f"Error processing response: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process response: {str(e)}"
+        )
 
 @router.get("/{profile_id}/question")
 async def get_next_question(
@@ -3488,7 +3665,7 @@ from PIL import Image
 import uuid
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MemoryService:
@@ -3800,6 +3977,7 @@ import os
 from typing import Dict, Any
 from supabase import create_client, Client
 import logging
+from services.knowledgemanagement import KnowledgeManagement, MemoryClassification
 
 logger = logging.getLogger(__name__)
 
@@ -3810,6 +3988,7 @@ class EmpatheticInterviewer:
             supabase_url=os.getenv("SUPABASE_URL"),
             supabase_key=os.getenv("SUPABASE_KEY")
         )
+        self.knowledge_manager = KnowledgeManagement()
 
     async def start_new_session(self, profile_id: UUID, language: str = "en") -> Dict[str, Any]:
         """Start a new interview session for a profile."""
@@ -3881,22 +4060,53 @@ class EmpatheticInterviewer:
         Process a response from the interviewee and generate the next question.
         """
         try:
-            # Analyze sentiment
-            sentiment = await self._analyze_sentiment(response_text)
+            # First, analyze if the response is a memory and classify it
+            classification = await KnowledgeManagement.analyze_response(
+                response_text, 
+                self.openai_client,
+                language
+            )
 
-            # Generate follow-up question based on the response
-            next_question = await self._generate_follow_up_question(response_text, language)
+            logger.info("------- Analyzed response -------")
+            logger.info(f"is_memory={classification.is_memory} "
+                      f"rewritten_text='{classification.rewritten_text}' "
+                      f"category='{classification.category}' "
+                      f"location='{classification.location}' "
+                      f"timestamp='{classification.timestamp}'")
+
+            # If it's a memory, store it
+            if classification.is_memory:
+                await self.knowledge_manager.store_memory(
+                    profile_id,
+                    session_id,
+                    classification
+                )
+
+            # Analyze sentiment
+            sentiment = await self._analyze_sentiment(
+                classification.rewritten_text if classification.is_memory else response_text
+            )
+
+            # Generate follow-up question based on the processed response
+            next_question = await self.generate_next_question(
+                profile_id, 
+                session_id,
+                language
+            )
 
             return {
                 "sentiment": sentiment,
-                "follow_up": next_question
+                "follow_up": next_question,
+                "is_memory": classification.is_memory
             }
 
         except Exception as e:
             print(f"Error processing interview response: {str(e)}")
             return {
                 "sentiment": {"joy": 0.5, "nostalgia": 0.5},
-                "follow_up": "Can you tell me more about that?"
+                "follow_up": "Can you tell me more about that?",
+                "is_memory": False,
+                "memory_id": memory.id if memory else None
             }
 
     async def _analyze_sentiment(self, text: str) -> Dict[str, float]:
@@ -3958,7 +4168,7 @@ class EmpatheticInterviewer:
 
             # Generate follow-up question using OpenAI
             response = self.openai_client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "system",
@@ -4163,6 +4373,143 @@ class ProfileService:
         except Exception as e:
             raise Exception(f"Failed to delete profile: {str(e)}")
 ```
+
+### services/knowledgemanagement.py
+```
+# services/knowledgemanagement.py
+from typing import Optional
+from pydantic import BaseModel
+from datetime import datetime
+import logging
+from uuid import UUID
+from models.memory import (
+    Category, 
+    Memory, 
+    Location, 
+    MemoryCreate, 
+    Person,
+    Emotion
+)
+from services.memory import MemoryService
+
+logger = logging.getLogger(__name__)
+
+class MemoryClassification(BaseModel):
+    """Model for classified memory information"""
+    is_memory: bool
+    rewritten_text: str
+    category: Optional[str]
+    location: Optional[str]
+    timestamp: str  # ISO format date string
+
+class KnowledgeManagement:
+    """Class for managing knowledge management"""
+    def __init__(self):
+        self.memory_service = MemoryService()
+
+    @staticmethod
+    async def analyze_response(response_text: str, client, language: str = "en") -> MemoryClassification:
+        """Analyze user response to classify and enhance memory content"""
+        try:
+            # Update the prompt to handle unknown dates and locations better
+            prompt = f"""Analyze the following text and classify it as a memory or not. 
+            If it is a memory, rewrite it in complete sentences using a friendly and optimistic tone, 
+            in first person view. Also extract the category, location, and timestamp.
+            If the exact date is unknown, please estimate the month and year based on context clues
+            or use the current date if no time information is available.
+
+            IMPORTANT: Keep the response in the original language ({language}).
+
+            Text: {response_text}
+
+            Return result as JSON with the following format:
+            {{
+                "is_memory": true/false,
+                "rewritten_text": "rewritten memory in {language}",
+                "category": "one of: childhood, career, travel, relationships, hobbies, pets",
+                "location": "where it happened or 'Unknown' if not mentioned",
+                "timestamp": "YYYY-MM-DD (if unknown, use current date)"
+            }}
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4-1106-preview",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": f"You are a memory analysis assistant that responds in {language}. Keep the rewritten text in the original language."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0.3
+            )
+
+            result = response.choices[0].message.content
+            classification = MemoryClassification.parse_raw(result)
+
+            # Set default current date if timestamp is invalid
+            if classification.timestamp in ["unbekannt", "unknown", ""]:
+                classification.timestamp = datetime.now().strftime("%Y-%m-%d")
+
+            logger.info(f"Memory classification complete: {classification}")
+            return classification
+
+        except Exception as e:
+            logger.error(f"Error analyzing response: {str(e)}")
+            raise
+
+    async def store_memory(self, profile_id: UUID, session_id: UUID, classification: MemoryClassification) -> Optional[Memory]:
+        """
+        Store classified memory in both Supabase and Neo4j (future implementation)
+        """
+        try:
+            if not classification.is_memory:
+                logger.debug("Text classified as non-memory, skipping storage")
+                return None
+
+            # Parse timestamp or use current date if invalid
+            try:
+                timestamp = datetime.fromisoformat(classification.timestamp)
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid timestamp '{classification.timestamp}', using current date")
+                timestamp = datetime.now()
+
+            # Prepare memory data
+            memory_data = {
+                "category": classification.category or Category.CHILDHOOD.value,
+                "description": classification.rewritten_text,
+                "time_period": datetime.fromisoformat(classification.timestamp),
+                "location": {
+                    "name": classification.location if classification.location != "unbekannt" else "Unknown",
+                    "city": None,
+                    "country": None,
+                    "description": None
+                } if classification.location else None,
+                "people": [],
+                "emotions": [],
+                "image_urls": [],
+                "audio_url": None
+            }
+
+            # Store in Supabase
+            stored_memory = await MemoryService.create_memory(
+                MemoryCreate(**memory_data),
+                profile_id,
+                session_id
+            )
+
+            # TODO: Store in Neo4j knowledge graph
+            # This will be implemented later to create nodes and relationships
+            # in the graph database based on the memory content
+
+            logger.info(f"Memory stored successfully")
+            return stored_memory
+
+        except Exception as e:
+            logger.error(f"Error storing memory: {str(e)}")
+            raise
+```
 --------------
 
 This is the configuration of FASTAPI:
@@ -4178,30 +4525,6 @@ from supabase import create_client
 from dotenv import load_dotenv
 import logging
 import os
-import logging
-
-
-logger = logging.getLogger()  # Root logger
-logger.setLevel(logging.INFO)  # Set the logging level
-
-# Create a file handler
-file_handler = logging.FileHandler("agent.log")
-file_handler.setLevel(logging.INFO)  # Set level for this handler
-file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(file_formatter)
-
-# Create a stream handler
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)  # Set level for this handler
-console_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-console_handler.setFormatter(console_formatter)
-
-# Add handlers to the logger
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-logger.info("This is an INFO log.")
-logger.debug("This is a DEBUG log.")
 
 app = FastAPI(title="Noblivion API")
 
@@ -4213,22 +4536,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# logging.basicConfig(level=logging.DEBUG)
-# logger = logging.getLogger(__name__)
-"""
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    try:
-        logger.debug(f"Request path: {request.url.path}")
-        logger.debug(f"Request method: {request.method}")
-        response = await call_next(request)
-        logger.debug(f"Response status: {response.status_code}")
-        return response
-    except Exception as e:
-        # Log the error message and stack trace
-        logger.error(f"An error occurred while processing the request: {e}", exc_info=True)
-        raise  # Re-raise the exception to let FastAPI handle it properly
-"""
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
 
 # Initialize Supabase client
 supabase = create_client(

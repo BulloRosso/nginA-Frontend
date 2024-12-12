@@ -16,25 +16,13 @@ const api: AxiosInstance = axios.create({
 });
 
 // Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    // You can add auth tokens here if needed
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Make sure URL starts with /api/v1
-    if (config.url && !config.url.startsWith('/api/v1')) {
-      config.url = `/api/v1${config.url}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
 // Response interceptor
 api.interceptors.response.use(
@@ -46,6 +34,7 @@ api.interceptors.response.use(
         case 401:
           // Handle unauthorized
           localStorage.removeItem('token');
+          window.location.href = '/login';
           break;
         case 403:
           // Handle forbidden

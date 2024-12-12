@@ -4,12 +4,12 @@ import { Profile } from '../types/profile';
 
 export const ProfileService = {
   getAllProfiles: async (): Promise<Profile[]> => {
-    const response = await api.get('/profiles');  // No need to add /api/v1 here
+    const response = await api.get('/api/v1/profiles');  // No need to add /api/v1 here
     return response.data;
   },
 
   createProfile: async (profileData: FormData): Promise<Profile> => {
-    const response = await api.post('/profiles', profileData, {
+    const response = await api.post('/api/v1/profiles', profileData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -18,12 +18,12 @@ export const ProfileService = {
   },
 
   getProfile: async (profileId: string): Promise<Profile> => {
-    const response = await api.get(`/profiles/${profileId}`);
+    const response = await api.get(`/api/v1/profiles/${profileId}`);
     return response.data;
   },
 
   updateProfile: async (profileId: string, profileData: FormData): Promise<Profile> => {
-    const response = await api.put(`/profiles/${profileId}`, profileData, {
+    const response = await api.put(`/api/v1/profiles/${profileId}`, profileData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

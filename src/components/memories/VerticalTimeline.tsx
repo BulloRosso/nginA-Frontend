@@ -292,7 +292,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                           ))}
                         </div>
                       )}
-                      <p className="text-gray-600">
+                      <p className="text-gray-600" style={{ fontFamily:'Pangolin'}}>
                         {memory.description}
                       </p>
                       {memory.location?.name && (
