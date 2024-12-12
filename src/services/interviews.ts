@@ -1,6 +1,20 @@
 // src/services/interviews.ts
 import api from './api';
 import { Interview, InterviewResponse } from '../types';
+import { UUID } from '../types/common';
+
+interface InterviewResponse {
+  text: string;
+  language: string;
+  audio_url?: string;
+  emotions_detected?: Array<{
+    type: string;
+    intensity: number;
+    description?: string;
+  }>;
+}
+
+
 
 export const InterviewService = {
   startInterview: async (profileId: string, language: string) => {
@@ -12,11 +26,33 @@ export const InterviewService = {
     return response.data;
   },
 
-  submitResponse: async (profileId: string, sessionId: string, response: InterviewResponse) => {
-    const result = await api.post(`/api/v1/interviews/${profileId}/response`, {
-      session_id: sessionId,
-      ...response
-    });
+  submitResponse: async (
+    profileId: string, 
+    sessionId: string, 
+    response: { text: string; language: string }
+  ): Promise<{
+    sentiment: {
+      joy: number;
+      sadness: number;
+      nostalgia: number;
+      intensity: number;
+    };
+    follow_up: string;
+    is_memory: boolean;
+    memory_id?: string;
+  }> => {
+    const result = await api.post(
+      `/interviews/${profileId}/response`,
+      {
+        text: response.text,
+        language: response.language,
+        audio_url: null,
+        emotions_detected: []
+      },
+      {
+        params: { session_id: sessionId }  // Add as query parameter
+      }
+    );
     return result.data;
   },
 

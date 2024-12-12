@@ -73,7 +73,6 @@ const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
 const MemoryCapture = () => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [mediaMode, setMediaMode] = useState<string | null>(null);
@@ -90,6 +89,7 @@ const MemoryCapture = () => {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -156,20 +156,19 @@ const MemoryCapture = () => {
           throw new Error('No profile ID found');
         }
 
-        // Pass the current language
         const result = await InterviewService.startInterview(profileId, i18n.language);
         setSessionId(result.session_id);
         setQuestion(result.initial_question);
       } catch (err) {
+        console.error('Failed to start interview:', err);
         setError('Failed to start interview session');
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
     initInterview();
-  }, [i18n.language]); // Add language as dependency
+  }, [i18n.language]);
 
   const fetchMemories = useCallback(async () => {
     try {
@@ -320,54 +319,41 @@ const MemoryCapture = () => {
         throw new Error('Missing profile ID or session ID');
       }
 
-      // First create the memory
-      const memoryData = {
-        category: Category.CHILDHOOD,
-        description: response,
-        time_period: new Date().toISOString(),
-        location: {
-          name: "Unknown",
-          city: null,
-          country: null,
-          description: null
-        },
-        people: [],
-        emotions: [],
-        image_urls: [],
-        audio_url: null
-      };
+      // Submit response to get classification and sentiment
+      const interviewResponse = await InterviewService.submitResponse(
+        profileId,
+        sessionId,
+        {
+          text: response,
+          language: i18n.language
+        }
+      );
 
-      // Create memory first
-      const createdMemory = await MemoryService.createMemory(profileId, sessionId, memoryData);
-
-      // Then upload images if any
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach(image => {
-          formData.append('files', image.file);
-        });
-
-        await MemoryService.uploadMedia(formData, createdMemory.id);
-      }
-
-      // Clear form
+      // Clear input regardless of memory classification
       setResponse('');
       setImages([]);
       setTranscript('');
+      setQuestion(interviewResponse.follow_up);
 
-      // Refresh memories list
-      await fetchMemories();
+      // Only refresh memories if the input was classified as a memory
+      if (interviewResponse.is_memory) {
+        // Wait for the memories to be fetched to ensure timeline is up to date
+        await fetchMemories();
 
-      // Get next question
-      const nextQuestion = await InterviewService.getNextQuestion(
-        profileId, 
-        sessionId, 
-        i18n.language
-      );
-      setQuestion(nextQuestion.text);
+        // Optional: Scroll to the new memory in the timeline
+        // You could pass the memory_id to the timeline component
+        if (interviewResponse.memory_id) {
+          // Add this to your types if not already present
+          const timelineElement = document.querySelector(
+            `[data-memory-id="${interviewResponse.memory_id}"]`
+          );
+          timelineElement?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
     } catch (err) {
-      setError('Failed to save memory: ' + err.message);
-      console.error(err);
+      console.error('Error submitting response:', err);
+      setError('Failed to save response: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }

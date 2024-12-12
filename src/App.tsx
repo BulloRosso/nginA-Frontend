@@ -27,7 +27,7 @@ const App = () => {
         <BrowserRouter>
           <Box sx={{ flexGrow: 1 }}>
             <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
-              <Toolbar>
+              <Toolbar variant="dense">
                 <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
                   nOblivion
                 </Typography>
