@@ -28,7 +28,7 @@ export const LanguageSwitch = () => {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleClick}>
+      <IconButton sx={{ color: 'white'}} onClick={handleClick}>
         <LanguageIcon />
       </IconButton>
       <Menu

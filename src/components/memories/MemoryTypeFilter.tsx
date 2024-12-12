@@ -35,10 +35,10 @@ const FilterButton: React.FC<FilterButtonProps> = ({
           onClick={onClick}
           disabled={isDisabled}
           sx={{
-            backgroundColor: isActive ? 'primary.main' : 'transparent',
+            backgroundColor: isActive ? 'gold' : 'transparent',
             color: isActive ? 'white' : isDisabled ? 'action.disabled' : 'action.active',
             '&:hover': {
-              backgroundColor: isActive ? 'primary.dark' : 'action.hover'
+              backgroundColor: isActive ? 'darkgoldenrod' : 'action.hover'
             },
             transition: 'all 0.2s'
           }}

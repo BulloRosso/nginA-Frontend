@@ -42,23 +42,23 @@ interface TimelineProps {
 const categoryConfig = {
   childhood: {
     icon: SchoolIcon,
-    color: '#FF9800',
-    background: '#FFF3E0'
+    color: '#fc9c2b',
+    background: '#ffebd3'
   },
   career: {
     icon: WorkIcon,
-    color: '#2196F3',
-    background: '#E3F2FD'
+    color: '#1eb3b7',
+    background: '#c6edee'
   },
   travel: {
     icon: TravelIcon,
-    color: '#4CAF50',
-    background: '#E8F5E9'
+    color: '#879b15',
+    background: '#e0e7b5'
   },
   relationships: {
     icon: RelationshipsIcon,
-    color: '#E91E63',
-    background: '#FCE4EC'
+    color: '#ee391c',
+    background: '#f9e1de'
   },
   hobbies: {
     icon: HobbiesIcon,
@@ -67,7 +67,7 @@ const categoryConfig = {
   },
   pets: {
     icon: PetsIcon,
-    color: '#795548',
+    color: '#cccccc',
     background: '#EFEBE9'
   }
 };
@@ -244,6 +244,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                   const config = categoryConfig[category] || categoryConfig.childhood;
                   const IconComponent = config.icon;
                   const isEven = index % 2 === 0;
+                  const hasImages = memory.image_urls && memory.image_urls.length > 0;
           
                   return (
                     
@@ -261,23 +262,15 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                       contentStyle={{
                         background: config.background,
                         borderRadius: '8px',
-                        paddingTop: '4px',
+                        paddingTop: (hasImages) ? '40px' : '8px',
                         boxShadow: '0 3px 6px rgba(0,0,0,0.1)',
                         position: 'relative' // Added for absolute positioning of delete button
                       }}
                       contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
                     >
-                      
-                      <p className="text-gray-600">
-                        {memory.description}
-                      </p>
-                      {memory.location?.name && (
-                        <p className="text-sm text-gray-500 mt-2">
-                          <LocationIcon /> {memory.location.name}
-                        </p>
-                      )}
                       {memory.image_urls && memory.image_urls.length > 0 && (
-                        <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div style={{ position: 'absolute', top: '-60px' }} 
+                          className="mt-3 grid grid-cols-3 gap-2">
                           {memory.image_urls.map((url, imgIndex) => (
                             <div 
                               key={imgIndex}
@@ -288,11 +281,21 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                                 src={url}
                                 alt={`Memory ${imgIndex + 1}`}
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
-                              />
+                                style={{borderRadius: '50%'}}
+                                />
                             </div>
                           ))}
                         </div>
                       )}
+                      <p className="text-gray-600">
+                        {memory.description}
+                      </p>
+                      {memory.location?.name && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          <LocationIcon /> {memory.location.name}
+                        </p>
+                      )}
+                      
           
                       <div className="absolute bottom-2 right-2 flex space-x-2">
                         <IconButton
