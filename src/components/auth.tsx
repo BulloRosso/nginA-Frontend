@@ -56,9 +56,15 @@ export const Login = ({ onSuccess }) => {
         formData.password
       );
 
-      login(response.user);
-      onSuccess?.();
-      navigate('/');
+      console.log('Login response:', response); // Debug log
+      login({
+        id: response.user.id,
+        email: response.user.email,
+        first_name: response.user.first_name,
+        last_name: response.user.last_name,
+        is_validated: response.user.is_validated || false // Ensure this is set
+      });
+      navigate('/profile-selection');
     } catch (error: any) {
       console.error('Login error:', error);
       setError(error.message);

@@ -13,6 +13,7 @@ import i18n from './i18n';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Login, Register, ForgotPassword } from './components/auth';
 import { AuthProvider } from './contexts/auth';
+import { VerificationCheck, VerifiedRoute } from './components/verification';
 
 const theme = createTheme({
   palette: {
@@ -38,6 +39,9 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <I18nextProvider i18n={i18n}>
           <BrowserRouter>
+
+            <VerificationCheck />
+            
             <Box sx={{ flexGrow: 1 }}>
               <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
                 <Toolbar variant="dense">
@@ -49,17 +53,23 @@ const App = () => {
               </AppBar>
       
               <Routes>
+                {/* Public routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-                
+
+                {/* Protected and verified routes */}
                 <Route path="/" element={<Navigate to="/profile-selection" />} />
                 <Route path="/profile-selection" element={
-                  <ProtectedRoute>
+                  <VerifiedRoute>
                     <ProfileSelection />
-                  </ProtectedRoute>
+                  </VerifiedRoute>
                 } />
-                <Route path="/profile" element={<ProfileSetup />} />
+                <Route path="/profile" element={
+                  <VerifiedRoute>
+                    <ProfileSetup />
+                  </VerifiedRoute>
+                } />
                 <Route path="/interview" element={<MemoryCapture />} />
                 
                 <Route path="/timeline" element={
