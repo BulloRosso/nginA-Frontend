@@ -446,12 +446,14 @@ from .interviews import router as interviews_router
 from .memories import router as memories_router
 from .achievements import router as achievements_router
 from .profiles import router as profiles_router
+from .auth  import router as auth_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(interviews_router)
 router.include_router(memories_router)
 router.include_router(achievements_router)
 router.include_router(profiles_router)
+router.include_router(auth_router)
 ```
 
 ### api/v1/achievements.py
@@ -867,6 +869,201 @@ async def get_profile(profile_id: UUID):
         logger.error(f"Error fetching profile: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
+```
+
+### api/v1/auth.py
+```
+# api/v1/auth.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from datetime import datetime, timedelta
+from config.jwt import create_access_token
+from supabase import create_client
+import os
+import bcrypt
+from services.email import EmailService
+import random
+import string
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+supabase = create_client(
+    supabase_url=os.getenv("SUPABASE_URL"),
+    supabase_key=os.getenv("SUPABASE_KEY")
+)
+def generate_verification_code():
+    return ''.join(random.choices(string.digits, k=8))
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class SignupRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+
+class VerificationRequest(BaseModel):
+    code: str
+    user_id: str
+
+# api/v1/auth.py
+@router.post("/signup")
+async def signup(request: SignupRequest):
+    try:
+        # Check if user exists
+        result = supabase.table("users").select("*").eq("email", request.email).execute()
+        if result.data:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        # Generate verification code
+        verification_code = generate_verification_code()
+
+        # Create user with verification code in profile
+        user_data = {
+            "first_name": request.first_name,
+            "last_name": request.last_name,
+            "email": request.email,
+            "password": bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            "profile": {
+                "signup_secret": verification_code,
+                "is_validated_by_email": False
+            }
+        }
+
+        result = supabase.table("users").insert(user_data).execute()
+        user = result.data[0]
+
+        # Send verification email (synchronously)
+        email_service = EmailService()
+        email_service.send_verification_email(request.email, verification_code)  # Removed await
+
+        # Create access token
+        access_token = create_access_token(data={"sub": user["id"], "email": user["email"]})
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+                "is_validated": False
+            }
+        }
+    except Exception as e:
+        print(f"Signup error: {str(e)}")  # Add debug logging
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/verify-email")
+async def verify_email(verification_data: VerificationRequest):
+    try:
+        # Get user
+        result = supabase.table("users").select("*").eq(
+            "id", verification_data.user_id
+        ).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = result.data[0]
+        profile = user.get("profile", {})
+
+        # Check verification code
+        if profile.get("signup_secret") != verification_data.code:
+            return {"verified": False}
+
+        # Update user profile
+        profile["is_validated_by_email"] = True
+        supabase.table("users").update(
+            {"profile": profile}
+        ).eq("id", verification_data.user_id).execute()
+
+        return {"verified": True}
+    except Exception as e:
+        print(f"Verification error: {str(e)}")  # Add debug logging
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/resend-verification")
+async def resend_verification(user_id: str):
+    try:
+        # Get user
+        result = supabase.table("users").select("*").eq("id", user_id).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = result.data[0]
+
+        # Generate new verification code
+        verification_code = generate_verification_code()
+
+        # Update user profile
+        profile = user.get("profile", {})
+        profile["signup_secret"] = verification_code
+        supabase.table("users").update({"profile": profile}).eq("id", user_id).execute()
+
+        # Send new verification email
+        email_service = EmailService()
+        await email_service.send_verification_email(user["email"], verification_code)
+
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/login")
+async def login(login_data: LoginRequest):  # Use Pydantic model for validation
+    try:
+        print(f"Login attempt for email: {login_data.email}")  # Debug logging
+
+        # Get user from Supabase
+        result = supabase.table("users").select("*").eq("email", login_data.email).execute()
+
+        if not result.data:
+            raise HTTPException(
+                status_code=401, 
+                detail="Invalid email or password"
+            )
+
+        user = result.data[0]
+
+        # Verify password
+        is_valid = bcrypt.checkpw(
+            login_data.password.encode('utf-8'),
+            user["password"].encode('utf-8')
+        )
+
+        if not is_valid:
+            raise HTTPException(
+                status_code=401, 
+                detail="Invalid email or password"
+            )
+
+        # Create access token
+        access_token = create_access_token(
+            data={"sub": user["id"], "email": user["email"]}
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"]
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {str(e)}")  # Debug logging
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 ```
 ----------------------
 When you change existing endpoints give a clear notice.
@@ -1804,6 +2001,264 @@ class KnowledgeManagement:
             logger.error(f"Error storing memory: {str(e)}")
             raise
 ```
+
+### services/email.py
+```
+# services/email.py
+import os
+from mailersend import emails
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class EmailService:
+    def __init__(self):
+        self.api_key = os.getenv('MAILERSEND_API_KEY')
+        self.sender_domain = os.getenv('MAILERSEND_SENDER_EMAIL')
+        self.mailer = emails.NewEmail(self.api_key)
+
+    def send_verification_email(self, to_email: str, verification_code: str):
+        try:
+            # Read template
+            template_path = Path("templates/account-verification-en.html")
+            with open(template_path, "r") as f:
+                html_content = f.read()
+
+            # Replace placeholder
+            html_content = html_content.replace("{verification_code}", verification_code)
+
+            # Prepare empty mail body
+            mail_body = {}
+
+            # Set sender
+            mail_from = {
+                "name": "Noblivion",
+                "email": self.sender_domain
+            }
+            self.mailer.set_mail_from(mail_from, mail_body)
+
+            # Set recipient
+            recipients = [
+                {
+                    "name": to_email,
+                    "email": to_email
+                }
+            ]
+            self.mailer.set_mail_to(recipients, mail_body)
+
+            # Set subject
+            self.mailer.set_subject("Verify your Noblivion account", mail_body)
+
+            # Set content
+            self.mailer.set_html_content(html_content, mail_body)
+            self.mailer.set_plaintext_content(
+                f"Your verification code is: {verification_code}", 
+                mail_body
+            )
+
+            # Send email synchronously
+            return self.mailer.send(mail_body)
+
+        except Exception as e:
+            print(f"Failed to send verification email: {str(e)}")
+            raise
+```
+
+### services/profile.py
+```
+from datetime import date, datetime
+from typing import List, Optional
+from pydantic import BaseModel, Field, UUID4
+from supabase import create_client, Client
+import os
+import logging
+from models.profile import Profile, ProfileCreate
+
+logger = logging.getLogger(__name__)
+
+# Service Class
+class ProfileService:
+    table_name = "profiles"
+
+    def __init__(self):
+        self.supabase = create_client(
+            supabase_url=os.getenv("SUPABASE_URL"),
+            supabase_key=os.getenv("SUPABASE_KEY")
+        )
+        self.table_name = "profiles"
+
+    @classmethod
+    async def get_all_profiles(cls) -> List[Profile]:
+        """Get all profiles"""
+        try:
+            service = cls()
+            result = service.supabase.table(service.table_name).select("*").order(
+                'updated_at', desc=True
+            ).execute()
+
+            profiles = []
+            for profile_data in result.data:
+                try:
+                    # Convert date strings
+                    if isinstance(profile_data['date_of_birth'], str):
+                        profile_data['date_of_birth'] = datetime.fromisoformat(
+                            profile_data['date_of_birth']
+                        ).date()
+
+                    if isinstance(profile_data['created_at'], str):
+                        profile_data['created_at'] = datetime.fromisoformat(
+                            profile_data['created_at']
+                        )
+
+                    if isinstance(profile_data['updated_at'], str):
+                        profile_data['updated_at'] = datetime.fromisoformat(
+                            profile_data['updated_at']
+                        )
+
+                    profiles.append(Profile(**profile_data))
+                except Exception as e:
+                    logger.error(f"Error converting profile data: {str(e)}")
+                    logger.error(f"Problematic profile data: {profile_data}")
+                    continue
+
+            return profiles
+
+        except Exception as e:
+            logger.error(f"Error fetching all profiles: {str(e)}")
+            raise
+
+    @staticmethod
+    async def create_profile(profile_data: ProfileCreate) -> Profile:
+        """
+        Creates a new profile in the Supabase table.
+        """
+        try:
+            # Convert profile data to dict
+            data = {
+                "first_name": profile_data.first_name,
+                "last_name": profile_data.last_name,
+                "date_of_birth": profile_data.date_of_birth.isoformat(),
+                "place_of_birth": profile_data.place_of_birth,
+                "gender": profile_data.gender,
+                "children": profile_data.children,
+                "spoken_languages": profile_data.spoken_languages,
+                "profile_image_url": profile_data.profile_image_url
+            }
+
+            # Insert data into Supabase
+            response = supabase.table(ProfileService.table_name).insert(data).execute()
+
+            if hasattr(response, 'error') and response.error:
+                raise Exception(f"Supabase error: {response.error}")
+
+            result_data = response.data[0] if response.data else None
+            if not result_data:
+                raise Exception("No data returned from Supabase")
+
+            return Profile(**result_data)
+        except Exception as e:
+            raise Exception(f"Failed to create profile: {str(e)}")
+
+    async def get_profile(self, profile_id: UUID4) -> Optional[Profile]:
+        """Retrieves a profile by ID"""
+        try:
+            logger.debug(f"Fetching profile with ID: {profile_id}")
+
+            # Fetch the profile from Supabase
+            result = self.supabase.table(self.table_name)\
+                .select("*")\
+                .eq("id", str(profile_id))\
+                .execute()
+
+            if not result.data:
+                return None
+
+            profile_data = result.data[0]
+
+            # Convert date strings to proper date objects
+            if isinstance(profile_data['date_of_birth'], str):
+                profile_data['date_of_birth'] = datetime.fromisoformat(
+                    profile_data['date_of_birth']
+                ).date()
+
+            if isinstance(profile_data['created_at'], str):
+                profile_data['created_at'] = datetime.fromisoformat(
+                    profile_data['created_at']
+                )
+
+            if isinstance(profile_data['updated_at'], str):
+                profile_data['updated_at'] = datetime.fromisoformat(
+                    profile_data['updated_at']
+                )
+
+            return Profile(**profile_data)
+
+        except Exception as e:
+            logger.error(f"Error in get_profile: {str(e)}")
+            logger.error(f"Profile ID: {profile_id}")
+            logger.error(f"Profile data: {profile_data if 'profile_data' in locals() else 'No data fetched'}")
+            raise
+
+
+    @staticmethod
+    async def update_profile(profile_id: UUID4, profile_data: ProfileCreate) -> Profile:
+        """
+        Updates an existing profile by ID.
+        """
+        try:
+            # Update data in Supabase
+            response = supabase.table(ProfileService.table_name).update(profile_data.dict()).eq("id", str(profile_id)).execute()
+
+            # Check for errors
+            if response.get("error"):
+                raise Exception(f"Supabase error: {response['error']['message']}")
+
+            if response["data"]:
+                profile = Profile(**response["data"][0])
+                return profile
+            raise Exception("Profile not found")
+        except Exception as e:
+            raise Exception(f"Failed to update profile: {str(e)}")
+
+    @staticmethod
+    async def delete_profile(profile_id: UUID4) -> bool:
+        """
+        Deletes a profile by ID.
+        """
+        try:
+            # Delete the profile from Supabase
+            response = supabase.table(ProfileService.table_name).delete().eq("id", str(profile_id)).execute()
+
+            # Check for errors
+            if response.get("error"):
+                raise Exception(f"Supabase error: {response['error']['message']}")
+
+            # Return True if deletion was successful
+            return response["data"] is not None
+        except Exception as e:
+            raise Exception(f"Failed to delete profile: {str(e)}")
+```
+
+### dependencies/auth.py
+```
+# dependencies/auth.py
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from config.jwt import decode_token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = decode_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return payload
+```
 --------------
 
 This is the configuration of FASTAPI:
@@ -1870,6 +2325,32 @@ This is the current schema in Supabase:
 create extension if not exists "uuid-ossp";
 create extension if not exists "pgcrypto";
 
+CREATE TABLE public.users (
+    instance_id uuid, 
+    id uuid NOT NULL DEFAULT uuid_generate_v4(), 
+    id uuid NOT NULL, 
+    first_name text NOT NULL, 
+    aud character varying(255), 
+    last_name text NOT NULL, 
+    email text NOT NULL, role character varying(255), 
+    email character varying(255), 
+    password text NOT NULL, 
+    encrypted_password character varying(255), 
+    created_at timestamp with time zone DEFAULT now(), 
+    updated_at timestamp with time zone DEFAULT now(), 
+    email_confirmed_at timestamp with time zone, 
+    invited_at timestamp with time zone, 
+    profile jsonb DEFAULT '{"is_validated_by_email": false}'::jsonb, 
+    confirmation_token character varying(255), 
+    confirmation_sent_at timestamp with time zone, 
+    recovery_token character varying(255), 
+    recovery_sent_at timestamp with time zone, 
+    email_change_token_new character varying(255), 
+    email_change character varying(255), 
+    email_change_sent_at timestamp with time zone, 
+    last_sign_in_at timestamp with time zone, 
+    raw_app_meta_data jsonb, 
+    raw_user_meta_data jsonb, is_super_admin boolean, created_at timestamp with time zone, updated_at timestamp with time zone, phone text DEFAULT NULL::character varying, phone_confirmed_at timestamp with time zone, phone_change text DEFAULT ''::character varying, phone_change_token character varying(255) DEFAULT ''::character varying, phone_change_sent_at timestamp with time zone, confirmed_at timestamp with time zone, email_change_token_current character varying(255) DEFAULT ''::character varying, email_change_confirm_status smallint DEFAULT 0, banned_until timestamp with time zone, reauthentication_token character varying(255) DEFAULT ''::character varying, reauthentication_sent_at timestamp with time zone, is_sso_user boolean NOT NULL DEFAULT false, deleted_at timestamp with time zone, is_anonymous boolean NOT NULL DEFAULT false);
 -- Profiles table
 create table profiles (
     id uuid primary key default uuid_generate_v4(),

@@ -61,14 +61,18 @@ const App = () => {
                 {/* Protected and verified routes */}
                 <Route path="/" element={<Navigate to="/profile-selection" />} />
                 <Route path="/profile-selection" element={
-                  <VerifiedRoute>
+                  <>
+                     {/* VerifiedRoute */}
                     <ProfileSelection />
-                  </VerifiedRoute>
+                     {/* /VerifiedRoute */}
+                  </>
                 } />
                 <Route path="/profile" element={
-                  <VerifiedRoute>
+                    <>
+                    {/* VerifiedRoute */}
                     <ProfileSetup />
-                  </VerifiedRoute>
+                    {/* /VerifiedRoute */}
+                  </>
                 } />
                 <Route path="/interview" element={<MemoryCapture />} />
                 

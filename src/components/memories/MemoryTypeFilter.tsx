@@ -1,24 +1,18 @@
 // src/components/memories/MemoryTypeFilter.tsx
-import React from 'react';
-import { IconButton, Typography, Box, Tooltip } from '@mui/material';
+import React, { useState, useEffect, useMemo } from 'react';
+import { IconButton, Typography, Box, Tooltip, Popover, Slider } from '@mui/material';
 import {
   School as SchoolIcon,
   Work as WorkIcon,
   FlightTakeoff as TravelIcon,
   Favorite as RelationshipsIcon,
   SportsEsports as HobbiesIcon,
-  Pets as PetsIcon
+  Pets as PetsIcon,
+  CalendarMonth as CalendarIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { Category } from '../../types/memory';
-
-interface FilterButtonProps {
-  icon: React.ReactElement;
-  count: number;
-  isActive: boolean;
-  isDisabled: boolean;
-  onClick: () => void;
-  label: string;
-}
+import { useTranslation } from 'react-i18next';
 
 const FilterButton: React.FC<FilterButtonProps> = ({
   icon,
@@ -59,57 +53,196 @@ const FilterButton: React.FC<FilterButtonProps> = ({
   </Box>
 );
 
-export const categoryConfig = {
-  [Category.CHILDHOOD]: {
-    icon: <SchoolIcon />,
-    label: 'Childhood'
-  },
-  [Category.CAREER]: {
-    icon: <WorkIcon />,
-    label: 'Career'
-  },
-  [Category.TRAVEL]: {
-    icon: <TravelIcon />,
-    label: 'Travel'
-  },
-  [Category.RELATIONSHIPS]: {
-    icon: <RelationshipsIcon />,
-    label: 'Relationships'
-  },
-  [Category.HOBBIES]: {
-    icon: <HobbiesIcon />,
-    label: 'Hobbies'
-  },
-  [Category.PETS]: {
-    icon: <PetsIcon />,
-    label: 'Pets'
-  }
-};
-
-interface MemoryTypeFilterProps {
-  memoryCounts: Record<Category, number>;
-  activeFilters: Set<Category>;
-  onToggleFilter: (category: Category) => void;
-}
-
 const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
   memoryCounts,
   activeFilters,
-  onToggleFilter
+  onToggleFilter,
+  memories,
+  onYearRangeChange
 }) => {
+  const { t, i18n } = useTranslation();
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [yearRange, setYearRange] = useState<[number, number]>([0, 0]);
+  const [initialYearRange, setInitialYearRange] = useState<[number, number]>([0, 0]);
+  const [forceUpdate, setForceUpdate] = useState(0);
+
+  const categoryConfig = useMemo(() => ({
+      [Category.CHILDHOOD]: {
+        icon: <SchoolIcon />,
+        label: t('categories.childhood')
+      },
+      [Category.CAREER]: {
+        icon: <WorkIcon />,
+        label: t('categories.career')
+      },
+      [Category.TRAVEL]: {
+        icon: <TravelIcon />,
+        label: t('categories.travel')
+      },
+      [Category.RELATIONSHIPS]: {
+        icon: <RelationshipsIcon />,
+        label: t('categories.relationships')
+      },
+      [Category.HOBBIES]: {
+        icon: <HobbiesIcon />,
+        label: t('categories.hobbies')
+      },
+      [Category.PETS]: {
+        icon: <PetsIcon />,
+        label: t('categories.pets')
+      }
+  }), [t, forceUpdate]); // Recreate when language changes
+  
+  
+  // Calculate the year range from memories
+  const { minYear, maxYear, hasMultipleYears } = useMemo(() => {
+    const years = memories.map(m => new Date(m.time_period).getFullYear());
+    const min = Math.min(...years);
+    const max = Math.max(...years);
+    return {
+      minYear: min,
+      maxYear: max,
+      hasMultipleYears: min !== max && !isNaN(min) && !isNaN(max)
+    };
+  }, [memories]);
+
+  // Initialize the year ranges when memories change
+  useEffect(() => {
+    if (hasMultipleYears) {
+      setYearRange([minYear, maxYear]);
+      setInitialYearRange([minYear, maxYear]);
+    }
+  }, [minYear, maxYear, hasMultipleYears]);
+
+  // Check if current range is different from initial range
+  const isCustomRange = yearRange[0] !== initialYearRange[0] || yearRange[1] !== initialYearRange[1];
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleYearRangeChange = (
+    _event: Event,
+    newValue: number | number[]
+  ) => {
+    const range = newValue as [number, number];
+    setYearRange(range);
+    if (onYearRangeChange) {
+      onYearRangeChange(range);
+    }
+  };
+
+  // Calculate filtered memories based on year range
+  const yearFilteredMemories = useMemo(() => {
+    return memories.filter(memory => {
+      const year = new Date(memory.time_period).getFullYear();
+      return year >= yearRange[0] && year <= yearRange[1];
+    });
+  }, [memories, yearRange]);
+
+  // Calculate memory counts based on year-filtered memories
+  const filteredMemoryCounts = useMemo(() => {
+    const counts = Object.values(Category).reduce((acc, category) => {
+      acc[category] = 0;
+      return acc;
+    }, {} as Record<Category, number>);
+
+    yearFilteredMemories.forEach(memory => {
+      counts[memory.category]++;
+    });
+
+    return counts;
+  }, [yearFilteredMemories]);
+
+  const open = Boolean(anchorEl);
+
   return (
     <Box>
       {Object.entries(categoryConfig).map(([category, config]) => (
         <FilterButton
           key={category}
           icon={config.icon}
-          count={memoryCounts[category as Category]}
+          count={filteredMemoryCounts[category as Category]}
           isActive={activeFilters.has(category as Category)}
-          isDisabled={memoryCounts[category as Category] === 0}
+          isDisabled={filteredMemoryCounts[category as Category] === 0}
           onClick={() => onToggleFilter(category as Category)}
           label={config.label}
         />
       ))}
+
+      {hasMultipleYears && (
+        <>
+          <Box className="flex flex-col items-center mb-4">
+            <Tooltip title={t('memoryfilter.year_filter')} placement="left">
+              <span>
+                <IconButton 
+                  onClick={handleClick}
+                  sx={{
+                    backgroundColor: isCustomRange ? 'gold' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: isCustomRange ? 'darkgoldenrod' : 'action.hover'
+                    }
+                  }}
+                >
+                  <CalendarIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+
+          <Popover
+            open={open}
+            anchorEl={anchorEl}
+            onClose={handleClose}
+            anchorOrigin={{
+              vertical: 'center',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'center',
+              horizontal: 'right',
+            }}
+          >
+            <Box sx={{ p: 2, width: 400 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 5,
+                mt: 0,
+              }}>
+                <Typography>
+                  {t('memoryfilter.year_range')}
+                </Typography>
+                <IconButton 
+                  size="small" 
+                  onClick={handleClose}
+                  sx={{ ml: 1 }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+              <div style={{marginLeft:'20px', marginRight:'20px'}}>
+              <Slider
+                value={yearRange}
+                onChange={handleYearRangeChange}
+                valueLabelDisplay="on"
+                min={minYear}
+                max={maxYear}
+                marks={[
+                  { value: minYear, label: minYear.toString() },
+                  { value: maxYear, label: maxYear.toString() }
+                ]}
+              />
+              </div>
+            </Box>
+          </Popover>
+        </>
+      )}
     </Box>
   );
 };

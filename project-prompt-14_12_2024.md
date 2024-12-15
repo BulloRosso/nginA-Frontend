@@ -273,6 +273,9 @@ import { Box, AppBar, Toolbar, Typography } from '@mui/material';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Login, Register, ForgotPassword } from './components/auth';
+import { AuthProvider } from './contexts/auth';
+import { VerificationCheck, VerifiedRoute } from './components/verification';
 
 const theme = createTheme({
   palette: {
@@ -282,41 +285,75 @@ const theme = createTheme({
   },
 });
 
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = localStorage.getItem('token'); // Or your auth check
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+};
+
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <I18nextProvider i18n={i18n}>
-        <BrowserRouter>
-          <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
-              <Toolbar variant="dense">
-                <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
-                  nOblivion
-                </Typography>
-                <LanguageSwitch />
-              </Toolbar>
-            </AppBar>
-    
-            <Routes>
-              <Route path="/" element={<ProfileSelection />} />
-              <Route path="/profile" element={<ProfileSetup />} />
-              <Route path="/interview" element={<MemoryCapture />} />
-              <Route path="/timeline" element={
-                <MemoryTimeline 
-                  memories={[]}
-                  onMemorySelect={(memory) => console.log('Selected memory:', memory)}
-                />
-              } />
-            </Routes>
-          </Box>
-        </BrowserRouter>
-      </I18nextProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <I18nextProvider i18n={i18n}>
+          <BrowserRouter>
+
+            <VerificationCheck />
+            
+            <Box sx={{ flexGrow: 1 }}>
+              <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
+                <Toolbar variant="dense">
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
+                    nOblivion
+                  </Typography>
+                  <LanguageSwitch />
+                </Toolbar>
+              </AppBar>
+      
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                {/* Protected and verified routes */}
+                <Route path="/" element={<Navigate to="/profile-selection" />} />
+                <Route path="/profile-selection" element={
+                  <VerifiedRoute>
+                    <ProfileSelection />
+                  </VerifiedRoute>
+                } />
+                <Route path="/profile" element={
+                  <VerifiedRoute>
+                    <ProfileSetup />
+                  </VerifiedRoute>
+                } />
+                <Route path="/interview" element={<MemoryCapture />} />
+                
+                <Route path="/timeline" element={
+                  <MemoryTimeline 
+                    memories={[]}
+                    onMemorySelect={(memory) => console.log('Selected memory:', memory)}
+                  />
+                } />
+              </Routes>
+            </Box>
+          </BrowserRouter>
+        </I18nextProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 };
 
 export default App;
 ```
+
+### scr/index.tsx
+[Content for scr/index.tsx not found]
 -------------------
 
 These are the libraries used by the app. Always prefer using an existing library/package to solve a problem rather than adding a new one:
@@ -2524,6 +2561,810 @@ const ProfileSetup = () => {
 
 export default ProfileSetup
 ```
+
+### src/components/memories/MemoryTypeFilter.tsx
+```
+// src/components/memories/MemoryTypeFilter.tsx
+import React from 'react';
+import { IconButton, Typography, Box, Tooltip } from '@mui/material';
+import {
+  School as SchoolIcon,
+  Work as WorkIcon,
+  FlightTakeoff as TravelIcon,
+  Favorite as RelationshipsIcon,
+  SportsEsports as HobbiesIcon,
+  Pets as PetsIcon
+} from '@mui/icons-material';
+import { Category } from '../../types/memory';
+
+interface FilterButtonProps {
+  icon: React.ReactElement;
+  count: number;
+  isActive: boolean;
+  isDisabled: boolean;
+  onClick: () => void;
+  label: string;
+}
+
+const FilterButton: React.FC<FilterButtonProps> = ({
+  icon,
+  count,
+  isActive,
+  isDisabled,
+  onClick,
+  label
+}) => (
+  <Box className="flex flex-col items-center mb-4">
+    <Tooltip title={label} placement="left">
+      <span>
+        <IconButton
+          onClick={onClick}
+          disabled={isDisabled}
+          sx={{
+            backgroundColor: isActive ? 'gold' : 'transparent',
+            color: isActive ? 'white' : isDisabled ? 'action.disabled' : 'action.active',
+            '&:hover': {
+              backgroundColor: isActive ? 'darkgoldenrod' : 'action.hover'
+            },
+            transition: 'all 0.2s'
+          }}
+        >
+          {icon}
+        </IconButton>
+      </span>
+    </Tooltip>
+    {!isDisabled && (
+      <Typography
+        variant="caption"
+        color={isActive ? 'text.secondary' : 'text.primary'}
+        sx={{ mt: 0.5 }}
+      >
+        ({count})
+      </Typography>
+    )}
+  </Box>
+);
+
+export const categoryConfig = {
+  [Category.CHILDHOOD]: {
+    icon: <SchoolIcon />,
+    label: 'Childhood'
+  },
+  [Category.CAREER]: {
+    icon: <WorkIcon />,
+    label: 'Career'
+  },
+  [Category.TRAVEL]: {
+    icon: <TravelIcon />,
+    label: 'Travel'
+  },
+  [Category.RELATIONSHIPS]: {
+    icon: <RelationshipsIcon />,
+    label: 'Relationships'
+  },
+  [Category.HOBBIES]: {
+    icon: <HobbiesIcon />,
+    label: 'Hobbies'
+  },
+  [Category.PETS]: {
+    icon: <PetsIcon />,
+    label: 'Pets'
+  }
+};
+
+interface MemoryTypeFilterProps {
+  memoryCounts: Record<Category, number>;
+  activeFilters: Set<Category>;
+  onToggleFilter: (category: Category) => void;
+}
+
+const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
+  memoryCounts,
+  activeFilters,
+  onToggleFilter
+}) => {
+  return (
+    <Box>
+      {Object.entries(categoryConfig).map(([category, config]) => (
+        <FilterButton
+          key={category}
+          icon={config.icon}
+          count={memoryCounts[category as Category]}
+          isActive={activeFilters.has(category as Category)}
+          isDisabled={memoryCounts[category as Category] === 0}
+          onClick={() => onToggleFilter(category as Category)}
+          label={config.label}
+        />
+      ))}
+    </Box>
+  );
+};
+
+export default MemoryTypeFilter;
+```
+
+### src/components/auth.tsx
+```
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Container,
+  Paper,
+  Link,
+  Alert,
+  CircularProgress,
+  Divider,
+  IconButton,
+  InputAdornment,
+  Grid
+} from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+  Google as GoogleIcon,
+  GitHub as GitHubIcon
+} from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { AuthService, SignupData } from '../services/auth';
+import { useAuth } from '../contexts/auth';
+
+// Login Component
+export const Login = ({ onSuccess }) => {
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('Attempting login with:', formData.email); // Debug logging
+
+      const response = await AuthService.login(
+        formData.email,
+        formData.password
+      );
+
+      console.log('Login response:', response); // Debug log
+      login({
+        id: response.user.id,
+        email: response.user.email,
+        first_name: response.user.first_name,
+        last_name: response.user.last_name,
+        is_validated: response.user.is_validated || false // Ensure this is set
+      });
+      navigate('/profile-selection');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography variant="h5" component="h1" gutterBottom align="center">
+          Welcome Back
+        </Typography>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            margin="normal"
+            required
+            autoComplete="email"
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            value={formData.password}
+            onChange={handleChange}
+            margin="normal"
+            required
+            autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            sx={{ mt: 3 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Sign In'}
+          </Button>
+
+          <Box sx={{ mt: 2, textAlign: 'right' }}>
+            <Link href="/forgot-password" variant="body2">
+              Forgot password?
+            </Link>
+          </Box>
+
+          <Divider sx={{ my: 3 }}>OR</Divider>
+
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<GoogleIcon />}
+                onClick={() => {/* Implement Google login */}}
+              >
+                Google
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<GitHubIcon />}
+                onClick={() => {/* Implement GitHub login */}}
+              >
+                GitHub
+              </Button>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2">
+              Don't have an account?{' '}
+              <Link href="/register" variant="body2">
+                Sign Up
+              </Link>
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
+
+// Register Component
+export const Register = ({ onSuccess }) => {
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await AuthService.signup({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password
+      });
+
+      // Update auth context
+      login(response.user);
+
+      onSuccess?.();
+      navigate('/profile-selection');
+    } catch (error: any) {
+      setError(error.response?.data?.detail || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography variant="h5" component="h1" gutterBottom align="center">
+          Create Account
+        </Typography>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+          </Grid>
+
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            margin="normal"
+            required
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            type={showPassword ? 'text' : 'password'}
+            value={formData.password}
+            onChange={handleChange}
+            margin="normal"
+            required
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="Confirm Password"
+            name="confirmPassword"
+            type={showPassword ? 'text' : 'password'}
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            margin="normal"
+            required
+          />
+
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            sx={{ mt: 3 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Create Account'}
+          </Button>
+
+          <Divider sx={{ my: 3 }}>OR</Divider>
+
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<GoogleIcon />}
+                onClick={() => {/* Implement Google signup */}}
+              >
+                Google
+              </Button>
+            </Grid>
+            <Grid item xs={6}>
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<GitHubIcon />}
+                onClick={() => {/* Implement GitHub signup */}}
+              >
+                GitHub
+              </Button>
+            </Grid>
+          </Grid>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2">
+              Already have an account?{' '}
+              <Link href="/login" variant="body2">
+                Sign In
+              </Link>
+            </Typography>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
+
+// ForgotPassword Component
+export const ForgotPassword = ({ onSuccess }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [email, setEmail] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSuccess(true);
+      onSuccess?.();
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography variant="h5" component="h1" gutterBottom align="center">
+          Reset Password
+        </Typography>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            Password reset instructions have been sent to your email
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            margin="normal"
+            required
+          />
+
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            sx={{ mt: 3 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Send Reset Instructions'}
+          </Button>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Link href="/login" variant="body2">
+              Back to Sign In
+            </Link>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
+```
+
+### src/components/verification.tsx
+```
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  Container,
+  Alert,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/auth';
+import { Navigate, useLocation } from 'react-router-dom';
+import api  from '../services/api'
+
+// In your verification components file
+interface VerificationDialogProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export const VerificationCheck: React.FC = () => {
+  const { user } = useAuth();
+  const [showVerification, setShowVerification] = useState(false);
+
+  useEffect(() => {
+    // Only show verification dialog if user exists and is not validated
+    if (user && user.is_validated === false) {
+      setShowVerification(true);
+    } else {
+      setShowVerification(false);  // Explicitly hide when validated
+    }
+  }, [user, user?.is_validated]);  // Add is_validated to dependencies
+
+  return (
+    <VerificationDialog 
+      open={showVerification}
+      onClose={() => setShowVerification(false)}
+    />
+  );
+};
+
+export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!user?.is_validated) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Email Verification Required
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Please verify your email address to access this page.
+          </Typography>
+          <VerificationCheck />
+        </Paper>
+      </Container>
+    );
+  }
+
+  return <>{children}</>;
+};
+
+export const VerificationDialog: React.FC<VerificationDialogProps> = ({ open, onClose }) => {
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+  const [verificationCode, setVerificationCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showResendConfirm, setShowResendConfirm] = useState(false);
+
+  const handleResend = async () => {
+    if (!user?.id) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await verificationApi.resendVerification(user.id);
+      if (result.success) {
+        setShowResendConfirm(true);
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          setShowResendConfirm(false);
+        }, 5000);
+      } else {
+        setError('Failed to resend verification code.');
+      }
+    } catch (error: any) {
+      console.error('Resend error:', error);
+      setError(error.response?.data?.detail || 'Failed to resend verification code.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  const handleVerification = async () => {
+    if (!user?.id || !verificationCode) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await verificationApi.verifyEmail(verificationCode, user.id);
+
+      if (result.verified) {
+        // First update user state
+        login({
+          ...user,
+          is_validated: true
+        });
+
+        // Close the dialog immediately
+        onClose();
+
+        // Navigate after a short delay
+        setTimeout(() => {
+          navigate('/profile-selection');
+        }, 100);
+      } else {
+        setError('Invalid verification code. Please try again.');
+      }
+    } catch (error: any) {
+      console.error('Verification error:', error);
+      setError(error.response?.data?.detail || 'Failed to verify code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update your verification code input to handle Enter key
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && verificationCode.length === 8) {
+      handleVerification();
+    }
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={loading ? undefined : onClose}
+      maxWidth="sm"
+      fullWidth
+    >
+      <DialogTitle>
+        Verify Your Email
+      </DialogTitle>
+
+      <DialogContent>
+        <Box sx={{ p: 2 }}>
+          <Typography variant="body1" gutterBottom>
+            Please enter the 8-digit verification code sent to {user?.email}.
+          </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {showResendConfirm && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              A new verification code has been sent to your email.
+            </Alert>
+          )}
+
+          <TextField
+            fullWidth
+            label="Verification Code"
+            value={verificationCode}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              if (value.length <= 8) {
+                setVerificationCode(value);
+              }
+            }}
+            onKeyPress={handleKeyPress}
+            placeholder="Enter 8-digit code"
+            sx={{ mb: 2 }}
+            inputProps={{
+              maxLength: 8,
+              pattern: '[0-9]*'
+            }}
+            error={!!error}
+          />
+
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
+            <Button
+              variant="outlined"
+              onClick={handleResend}
+              disabled={loading}
+            >
+              Resend Code
+            </Button>
+
+            <Button
+              variant="contained"
+              onClick={handleVerification}
+              disabled={loading || verificationCode.length !== 8}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Verify'}
+            </Button>
+          </Box>
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Also update the verificationApi object to properly log responses:
+const verificationApi = {
+  async verifyEmail(code: string, userId: string): Promise<{ verified: boolean }> {
+    try {
+      const response = await api.post('/api/v1/auth/verify-email', {
+        code: code,  // Changed to match backend's expected format
+        user_id: userId
+      });
+      console.log('Verification response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Verification API error:', error);
+      throw error;
+    }
+  },
+
+  async resendVerification(userId: string): Promise<{ success: boolean }> {
+    try {
+      const response = await api.post('/api/v1/auth/resend-verification', {
+        user_id: userId
+      });
+      console.log('Resend response:', response.data); // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Resend API error:', error); // Debug log
+      throw error;
+    }
+  }
+};
+```
 ---------------------
 
 ### Services
@@ -2550,25 +3391,13 @@ const api: AxiosInstance = axios.create({
 });
 
 // Request interceptor
-api.interceptors.request.use(
-  (config) => {
-    // You can add auth tokens here if needed
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Make sure URL starts with /api/v1
-    if (config.url && !config.url.startsWith('/api/v1')) {
-      config.url = `/api/v1${config.url}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
 // Response interceptor
 api.interceptors.response.use(
@@ -2580,6 +3409,7 @@ api.interceptors.response.use(
         case 401:
           // Handle unauthorized
           localStorage.removeItem('token');
+          window.location.href = '/login';
           break;
         case 403:
           // Handle forbidden
@@ -2947,12 +3777,12 @@ import { Profile } from '../types/profile';
 
 export const ProfileService = {
   getAllProfiles: async (): Promise<Profile[]> => {
-    const response = await api.get('/profiles');  // No need to add /api/v1 here
+    const response = await api.get('/api/v1/profiles');  // No need to add /api/v1 here
     return response.data;
   },
 
   createProfile: async (profileData: FormData): Promise<Profile> => {
-    const response = await api.post('/profiles', profileData, {
+    const response = await api.post('/api/v1/profiles', profileData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -2961,12 +3791,12 @@ export const ProfileService = {
   },
 
   getProfile: async (profileId: string): Promise<Profile> => {
-    const response = await api.get(`/profiles/${profileId}`);
+    const response = await api.get(`/api/v1/profiles/${profileId}`);
     return response.data;
   },
 
   updateProfile: async (profileId: string, profileData: FormData): Promise<Profile> => {
-    const response = await api.put(`/profiles/${profileId}`, profileData, {
+    const response = await api.put(`/api/v1/profiles/${profileId}`, profileData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -2980,6 +3810,76 @@ export const ProfileService = {
 };
 
 export default ProfileService;
+```
+
+### src/services/auth.ts
+```
+// src/services/auth.ts
+import api from './api';
+
+export interface SignupData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  };
+}
+
+export const AuthService = {
+  async signup(data: SignupData): Promise<AuthResponse> {
+    const response = await api.post('/api/v1/auth/signup', {
+      first_name: data.firstName,
+      last_name: data.lastName,
+      email: data.email,
+      password: data.password
+    });
+
+    // Store the token
+    if (response.data.access_token) {
+      localStorage.setItem('token', response.data.access_token);
+    }
+
+    return response.data;
+  },
+
+  async login(email: string, password: string): Promise<AuthResponse> {
+    try {
+      console.log('Sending login request with:', { email }); // Debug logging
+
+      const response = await api.post('/api/v1/auth/login', {
+        email: email,
+        password: password
+      });
+
+      if (response.data.access_token) {
+        localStorage.setItem('token', response.data.access_token);
+      }
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Login error:', error.response?.data);
+      throw new Error(error.response?.data?.detail || 'Login failed');
+    }
+  },
+
+  async resetPassword(email: string): Promise<void> {
+    await api.post('/api/v1/auth/reset-password', { email });
+  },
+
+  logout() {
+    localStorage.removeItem('token');
+  }
+};
 ```
 --------------
 
@@ -3152,12 +4052,14 @@ from .interviews import router as interviews_router
 from .memories import router as memories_router
 from .achievements import router as achievements_router
 from .profiles import router as profiles_router
+from .auth  import router as auth_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(interviews_router)
 router.include_router(memories_router)
 router.include_router(achievements_router)
 router.include_router(profiles_router)
+router.include_router(auth_router)
 ```
 
 ### api/v1/achievements.py
@@ -3573,6 +4475,201 @@ async def get_profile(profile_id: UUID):
         logger.error(f"Error fetching profile: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
+```
+
+### api/v1/auth.py
+```
+# api/v1/auth.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from datetime import datetime, timedelta
+from config.jwt import create_access_token
+from supabase import create_client
+import os
+import bcrypt
+from services.email import EmailService
+import random
+import string
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+supabase = create_client(
+    supabase_url=os.getenv("SUPABASE_URL"),
+    supabase_key=os.getenv("SUPABASE_KEY")
+)
+def generate_verification_code():
+    return ''.join(random.choices(string.digits, k=8))
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class SignupRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+
+class VerificationRequest(BaseModel):
+    code: str
+    user_id: str
+
+# api/v1/auth.py
+@router.post("/signup")
+async def signup(request: SignupRequest):
+    try:
+        # Check if user exists
+        result = supabase.table("users").select("*").eq("email", request.email).execute()
+        if result.data:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        # Generate verification code
+        verification_code = generate_verification_code()
+
+        # Create user with verification code in profile
+        user_data = {
+            "first_name": request.first_name,
+            "last_name": request.last_name,
+            "email": request.email,
+            "password": bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
+            "profile": {
+                "signup_secret": verification_code,
+                "is_validated_by_email": False
+            }
+        }
+
+        result = supabase.table("users").insert(user_data).execute()
+        user = result.data[0]
+
+        # Send verification email (synchronously)
+        email_service = EmailService()
+        email_service.send_verification_email(request.email, verification_code)  # Removed await
+
+        # Create access token
+        access_token = create_access_token(data={"sub": user["id"], "email": user["email"]})
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+                "is_validated": False
+            }
+        }
+    except Exception as e:
+        print(f"Signup error: {str(e)}")  # Add debug logging
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/verify-email")
+async def verify_email(verification_data: VerificationRequest):
+    try:
+        # Get user
+        result = supabase.table("users").select("*").eq(
+            "id", verification_data.user_id
+        ).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = result.data[0]
+        profile = user.get("profile", {})
+
+        # Check verification code
+        if profile.get("signup_secret") != verification_data.code:
+            return {"verified": False}
+
+        # Update user profile
+        profile["is_validated_by_email"] = True
+        supabase.table("users").update(
+            {"profile": profile}
+        ).eq("id", verification_data.user_id).execute()
+
+        return {"verified": True}
+    except Exception as e:
+        print(f"Verification error: {str(e)}")  # Add debug logging
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/resend-verification")
+async def resend_verification(user_id: str):
+    try:
+        # Get user
+        result = supabase.table("users").select("*").eq("id", user_id).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = result.data[0]
+
+        # Generate new verification code
+        verification_code = generate_verification_code()
+
+        # Update user profile
+        profile = user.get("profile", {})
+        profile["signup_secret"] = verification_code
+        supabase.table("users").update({"profile": profile}).eq("id", user_id).execute()
+
+        # Send new verification email
+        email_service = EmailService()
+        await email_service.send_verification_email(user["email"], verification_code)
+
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/login")
+async def login(login_data: LoginRequest):  # Use Pydantic model for validation
+    try:
+        print(f"Login attempt for email: {login_data.email}")  # Debug logging
+
+        # Get user from Supabase
+        result = supabase.table("users").select("*").eq("email", login_data.email).execute()
+
+        if not result.data:
+            raise HTTPException(
+                status_code=401, 
+                detail="Invalid email or password"
+            )
+
+        user = result.data[0]
+
+        # Verify password
+        is_valid = bcrypt.checkpw(
+            login_data.password.encode('utf-8'),
+            user["password"].encode('utf-8')
+        )
+
+        if not is_valid:
+            raise HTTPException(
+                status_code=401, 
+                detail="Invalid email or password"
+            )
+
+        # Create access token
+        access_token = create_access_token(
+            data={"sub": user["id"], "email": user["email"]}
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user["id"],
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"]
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {str(e)}")  # Debug logging
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 ```
 ----------------------
 When you change existing endpoints give a clear notice.
@@ -4510,6 +5607,264 @@ class KnowledgeManagement:
             logger.error(f"Error storing memory: {str(e)}")
             raise
 ```
+
+### services/email.py
+```
+# services/email.py
+import os
+from mailersend import emails
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class EmailService:
+    def __init__(self):
+        self.api_key = os.getenv('MAILERSEND_API_KEY')
+        self.sender_domain = os.getenv('MAILERSEND_SENDER_EMAIL')
+        self.mailer = emails.NewEmail(self.api_key)
+
+    def send_verification_email(self, to_email: str, verification_code: str):
+        try:
+            # Read template
+            template_path = Path("templates/account-verification-en.html")
+            with open(template_path, "r") as f:
+                html_content = f.read()
+
+            # Replace placeholder
+            html_content = html_content.replace("{verification_code}", verification_code)
+
+            # Prepare empty mail body
+            mail_body = {}
+
+            # Set sender
+            mail_from = {
+                "name": "Noblivion",
+                "email": self.sender_domain
+            }
+            self.mailer.set_mail_from(mail_from, mail_body)
+
+            # Set recipient
+            recipients = [
+                {
+                    "name": to_email,
+                    "email": to_email
+                }
+            ]
+            self.mailer.set_mail_to(recipients, mail_body)
+
+            # Set subject
+            self.mailer.set_subject("Verify your Noblivion account", mail_body)
+
+            # Set content
+            self.mailer.set_html_content(html_content, mail_body)
+            self.mailer.set_plaintext_content(
+                f"Your verification code is: {verification_code}", 
+                mail_body
+            )
+
+            # Send email synchronously
+            return self.mailer.send(mail_body)
+
+        except Exception as e:
+            print(f"Failed to send verification email: {str(e)}")
+            raise
+```
+
+### services/profile.py
+```
+from datetime import date, datetime
+from typing import List, Optional
+from pydantic import BaseModel, Field, UUID4
+from supabase import create_client, Client
+import os
+import logging
+from models.profile import Profile, ProfileCreate
+
+logger = logging.getLogger(__name__)
+
+# Service Class
+class ProfileService:
+    table_name = "profiles"
+
+    def __init__(self):
+        self.supabase = create_client(
+            supabase_url=os.getenv("SUPABASE_URL"),
+            supabase_key=os.getenv("SUPABASE_KEY")
+        )
+        self.table_name = "profiles"
+
+    @classmethod
+    async def get_all_profiles(cls) -> List[Profile]:
+        """Get all profiles"""
+        try:
+            service = cls()
+            result = service.supabase.table(service.table_name).select("*").order(
+                'updated_at', desc=True
+            ).execute()
+
+            profiles = []
+            for profile_data in result.data:
+                try:
+                    # Convert date strings
+                    if isinstance(profile_data['date_of_birth'], str):
+                        profile_data['date_of_birth'] = datetime.fromisoformat(
+                            profile_data['date_of_birth']
+                        ).date()
+
+                    if isinstance(profile_data['created_at'], str):
+                        profile_data['created_at'] = datetime.fromisoformat(
+                            profile_data['created_at']
+                        )
+
+                    if isinstance(profile_data['updated_at'], str):
+                        profile_data['updated_at'] = datetime.fromisoformat(
+                            profile_data['updated_at']
+                        )
+
+                    profiles.append(Profile(**profile_data))
+                except Exception as e:
+                    logger.error(f"Error converting profile data: {str(e)}")
+                    logger.error(f"Problematic profile data: {profile_data}")
+                    continue
+
+            return profiles
+
+        except Exception as e:
+            logger.error(f"Error fetching all profiles: {str(e)}")
+            raise
+
+    @staticmethod
+    async def create_profile(profile_data: ProfileCreate) -> Profile:
+        """
+        Creates a new profile in the Supabase table.
+        """
+        try:
+            # Convert profile data to dict
+            data = {
+                "first_name": profile_data.first_name,
+                "last_name": profile_data.last_name,
+                "date_of_birth": profile_data.date_of_birth.isoformat(),
+                "place_of_birth": profile_data.place_of_birth,
+                "gender": profile_data.gender,
+                "children": profile_data.children,
+                "spoken_languages": profile_data.spoken_languages,
+                "profile_image_url": profile_data.profile_image_url
+            }
+
+            # Insert data into Supabase
+            response = supabase.table(ProfileService.table_name).insert(data).execute()
+
+            if hasattr(response, 'error') and response.error:
+                raise Exception(f"Supabase error: {response.error}")
+
+            result_data = response.data[0] if response.data else None
+            if not result_data:
+                raise Exception("No data returned from Supabase")
+
+            return Profile(**result_data)
+        except Exception as e:
+            raise Exception(f"Failed to create profile: {str(e)}")
+
+    async def get_profile(self, profile_id: UUID4) -> Optional[Profile]:
+        """Retrieves a profile by ID"""
+        try:
+            logger.debug(f"Fetching profile with ID: {profile_id}")
+
+            # Fetch the profile from Supabase
+            result = self.supabase.table(self.table_name)\
+                .select("*")\
+                .eq("id", str(profile_id))\
+                .execute()
+
+            if not result.data:
+                return None
+
+            profile_data = result.data[0]
+
+            # Convert date strings to proper date objects
+            if isinstance(profile_data['date_of_birth'], str):
+                profile_data['date_of_birth'] = datetime.fromisoformat(
+                    profile_data['date_of_birth']
+                ).date()
+
+            if isinstance(profile_data['created_at'], str):
+                profile_data['created_at'] = datetime.fromisoformat(
+                    profile_data['created_at']
+                )
+
+            if isinstance(profile_data['updated_at'], str):
+                profile_data['updated_at'] = datetime.fromisoformat(
+                    profile_data['updated_at']
+                )
+
+            return Profile(**profile_data)
+
+        except Exception as e:
+            logger.error(f"Error in get_profile: {str(e)}")
+            logger.error(f"Profile ID: {profile_id}")
+            logger.error(f"Profile data: {profile_data if 'profile_data' in locals() else 'No data fetched'}")
+            raise
+
+
+    @staticmethod
+    async def update_profile(profile_id: UUID4, profile_data: ProfileCreate) -> Profile:
+        """
+        Updates an existing profile by ID.
+        """
+        try:
+            # Update data in Supabase
+            response = supabase.table(ProfileService.table_name).update(profile_data.dict()).eq("id", str(profile_id)).execute()
+
+            # Check for errors
+            if response.get("error"):
+                raise Exception(f"Supabase error: {response['error']['message']}")
+
+            if response["data"]:
+                profile = Profile(**response["data"][0])
+                return profile
+            raise Exception("Profile not found")
+        except Exception as e:
+            raise Exception(f"Failed to update profile: {str(e)}")
+
+    @staticmethod
+    async def delete_profile(profile_id: UUID4) -> bool:
+        """
+        Deletes a profile by ID.
+        """
+        try:
+            # Delete the profile from Supabase
+            response = supabase.table(ProfileService.table_name).delete().eq("id", str(profile_id)).execute()
+
+            # Check for errors
+            if response.get("error"):
+                raise Exception(f"Supabase error: {response['error']['message']}")
+
+            # Return True if deletion was successful
+            return response["data"] is not None
+        except Exception as e:
+            raise Exception(f"Failed to delete profile: {str(e)}")
+```
+
+### dependencies/auth.py
+```
+# dependencies/auth.py
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from config.jwt import decode_token
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    payload = decode_token(token)
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return payload
+```
 --------------
 
 This is the configuration of FASTAPI:
@@ -4576,6 +5931,32 @@ This is the current schema in Supabase:
 create extension if not exists "uuid-ossp";
 create extension if not exists "pgcrypto";
 
+CREATE TABLE public.users (
+    instance_id uuid, 
+    id uuid NOT NULL DEFAULT uuid_generate_v4(), 
+    id uuid NOT NULL, 
+    first_name text NOT NULL, 
+    aud character varying(255), 
+    last_name text NOT NULL, 
+    email text NOT NULL, role character varying(255), 
+    email character varying(255), 
+    password text NOT NULL, 
+    encrypted_password character varying(255), 
+    created_at timestamp with time zone DEFAULT now(), 
+    updated_at timestamp with time zone DEFAULT now(), 
+    email_confirmed_at timestamp with time zone, 
+    invited_at timestamp with time zone, 
+    profile jsonb DEFAULT '{"is_validated_by_email": false}'::jsonb, 
+    confirmation_token character varying(255), 
+    confirmation_sent_at timestamp with time zone, 
+    recovery_token character varying(255), 
+    recovery_sent_at timestamp with time zone, 
+    email_change_token_new character varying(255), 
+    email_change character varying(255), 
+    email_change_sent_at timestamp with time zone, 
+    last_sign_in_at timestamp with time zone, 
+    raw_app_meta_data jsonb, 
+    raw_user_meta_data jsonb, is_super_admin boolean, created_at timestamp with time zone, updated_at timestamp with time zone, phone text DEFAULT NULL::character varying, phone_confirmed_at timestamp with time zone, phone_change text DEFAULT ''::character varying, phone_change_token character varying(255) DEFAULT ''::character varying, phone_change_sent_at timestamp with time zone, confirmed_at timestamp with time zone, email_change_token_current character varying(255) DEFAULT ''::character varying, email_change_confirm_status smallint DEFAULT 0, banned_until timestamp with time zone, reauthentication_token character varying(255) DEFAULT ''::character varying, reauthentication_sent_at timestamp with time zone, is_sso_user boolean NOT NULL DEFAULT false, deleted_at timestamp with time zone, is_anonymous boolean NOT NULL DEFAULT false);
 -- Profiles table
 create table profiles (
     id uuid primary key default uuid_generate_v4(),

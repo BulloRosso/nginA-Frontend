@@ -3,7 +3,8 @@
       "/src/types/api.ts",
       "/src/types/common.ts",
       "/src/types/memory.ts",
-      "/src/types/profile.ts"
+      "/src/types/profile.ts",
+      "/src/i18n/index.ts"
    ],
    "frontend_packages": [
       "/package.json"
@@ -15,15 +16,20 @@
       "/src/pages/InterviewPage.tsx",
       "/src/pages/MemoryCapture.tsx",
       "/src/pages/ProfileSelection.tsx",
-      "/src/pages/ProfileSetup.tsx"
+      "/src/pages/ProfileSetup.tsx",
+      "/src/components/memories/MemoryTypeFilter.tsx",
+      "/src/components/auth.tsx",
+      "/src/components/verification.tsx" 
    ],
    "frontend_services": [
       "/src/services/api.ts",
       "/src/services/interviews.ts",
       "/src/services/memories.ts",
-      "/src/services/profiles.ts"
+      "/src/services/profiles.ts",
+      "/src/services/auth.ts"
    ],
    "frontend_entrypoint": [
-    "/src/App.tsx"
+    "/src/App.tsx",
+    "/scr/index.tsx" 
    ]
 }

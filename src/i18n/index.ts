@@ -6,6 +6,18 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
+      categories: {
+        childhood: "Childhood",
+        career: "Career",
+        travel: "Travel",
+        relationships: "Relationships",
+        hobbies: "Hobbies",
+        pets: "Pets",
+      },
+      memoryfilter: {
+        year_range: "Year Range",
+        year_filter: "Filter by year"
+      },
       common: {
         error: "Error",
         loading: "Loading...",
@@ -46,7 +58,20 @@ const resources = {
     }
   },
   de: {
+   
     translation: {
+      categories: {
+        childhood: "Kindheit",
+        career: "Beruf",
+        travel: "Reise",
+        relationships: "Familie",
+        hobbies: "Hobbys",
+        pets: "Haustiere",
+      },
+      memoryfilter: {
+        year_range: "Jahre einschränken",
+        year_filter: "Nach Zeit filtern"
+      },
       common: {
         error: "Fehler",
         loading: "Lädt...",

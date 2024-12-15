@@ -33,6 +33,7 @@ import EditMemoryDialog from './EditMemoryDialog';
 import ImageLightbox from './ImageLightbox';
 import MemoryTypeFilter from './MemoryTypeFilter';
 import { Category } from '../../types/memory';
+import { useTranslation } from 'react-i18next';
 
 interface TimelineProps {
   memories: Memory[];
@@ -82,6 +83,16 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
   const [selectedImage, setSelectedImage] = useState<number>(-1);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<Category>>(new Set());
+  const [yearRange, setYearRange] = useState<[number, number] | null>(null);
+  const { t, i18n } = useTranslation();
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString(i18n.language, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
   
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!selectedMemoryForUpload) return;
@@ -103,11 +114,42 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
     }
   }, [selectedMemoryForUpload, onMemoryDeleted]);
 
+  // Updated filtering logic to include both category and year range filters
+  const filteredMemories = useMemo(() => {
+    if (activeFilters.size === 0 && !yearRange) return memories;
+
+    return memories.filter(memory => {
+      // Category filter
+      const passesCategory = activeFilters.size === 0 || activeFilters.has(memory.category);
+
+      // Year range filter
+      let passesYearRange = true;
+      if (yearRange) {
+        const memoryYear = new Date(memory.time_period).getFullYear();
+        passesYearRange = memoryYear >= yearRange[0] && memoryYear <= yearRange[1];
+      }
+
+      return passesCategory && passesYearRange;
+    });
+  }, [memories, activeFilters, yearRange]);
+  
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/jpeg': [], 'image/png': [] },
     onDrop
   });
 
+  const handleToggleFilter = (category: Category) => {
+    setActiveFilters(prev => {
+      const newFilters = new Set(prev);
+      if (newFilters.has(category)) {
+        newFilters.delete(category);
+      } else {
+        newFilters.add(category);
+      }
+      return newFilters;
+    });
+  };
+  
   // Calculate memory counts by category
   const memoryCounts = useMemo(() => {
     const counts = Object.values(Category).reduce((acc, category) => {
@@ -121,24 +163,6 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
 
     return counts;
   }, [memories]);
-
-  // Filter memories based on active filters
-  const filteredMemories = useMemo(() => {
-    if (activeFilters.size === 0) return memories;
-    return memories.filter(memory => activeFilters.has(memory.category));
-  }, [memories, activeFilters]);
-
-  const handleToggleFilter = (category: Category) => {
-    setActiveFilters(prev => {
-      const newFilters = new Set(prev);
-      if (newFilters.has(category)) {
-        newFilters.delete(category);
-      } else {
-        newFilters.add(category);
-      }
-      return newFilters;
-    });
-  };
   
   const handleEditSave = async (updatedMemory: Partial<Memory>) => {
     try {
@@ -252,11 +276,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                       key={memory.id}
                       className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
                       position={isEven ? 'right' : 'left'}
-                      date={new Date(memory.time_period).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      date={formatDate(memory.time_period)}
                       iconStyle={{ background: config.color, color: '#fff' }}
                       icon={<IconComponent />}
                       contentStyle={{
@@ -353,6 +373,8 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
         memoryCounts={memoryCounts}
         activeFilters={activeFilters}
         onToggleFilter={handleToggleFilter}
+        memories={memories}
+        onYearRangeChange={setYearRange}
       />
   
   </Grid>
