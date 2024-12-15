@@ -17,6 +17,8 @@ import {
   Edit as EditIcon,
   Image as ImageIcon,
   LocationOn as LocationIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from '@mui/icons-material';
 import {
   IconButton,
@@ -25,7 +27,8 @@ import {
   Dialog,
   DialogContent,
   Grid,
-  Box
+  Box,
+  Collapse
 } from '@mui/material';
 import MemoryService from '../../services/memories';
 import { useDropzone } from 'react-dropzone';
@@ -72,6 +75,42 @@ const categoryConfig = {
     background: '#EFEBE9'
   }
 };
+const MemoryDescription: React.FC<{ description: string }> = ({ description }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div style={{ position: 'relative', marginTop: '10px' }}>
+      <Collapse in={isExpanded} collapsedSize={54}>
+        <p 
+          className="text-gray-600" 
+          style={{ 
+            fontFamily: 'Pangolin',
+            marginTop: 0,
+            marginBottom: isExpanded ? 24 : 0 // Add space for button when expanded
+          }}
+        >
+          {description}
+        </p>
+      </Collapse>
+
+      <IconButton
+        onClick={() => setIsExpanded(!isExpanded)}
+        sx={{
+          position: 'absolute',
+          right: '-14px',
+          bottom: 0,
+          padding: '4px',
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          },
+        }}
+      >
+        {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </IconButton>
+    </div>
+  );
+};
 
 const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) => {
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
@@ -85,7 +124,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
   const [activeFilters, setActiveFilters] = useState<Set<Category>>(new Set());
   const [yearRange, setYearRange] = useState<[number, number] | null>(null);
   const { t, i18n } = useTranslation();
-
+  
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString(i18n.language, {
       year: 'numeric',
@@ -289,7 +328,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                       contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
                     >
                       {memory.image_urls && memory.image_urls.length > 0 && (
-                        <div style={{ position: 'absolute', top: '-60px' }} 
+                        <div style={{ position: 'absolute', top: '-45px' }} 
                           className="mt-3 grid grid-cols-3 gap-2">
                           {memory.image_urls.map((url, imgIndex) => (
                             <div 
@@ -303,7 +342,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
                                 style={{borderRadius: '50%',
                                         aspectRatio: '1/1', 
-                                          width: '100%', 
+                                          width: '80px', 
                                           height: '100%', 
                                           objectFit: 'cover'
                                        }}
@@ -312,9 +351,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                           ))}
                         </div>
                       )}
-                      <p className="text-gray-600" style={{ fontFamily:'Pangolin'}}>
-                        {memory.description}
-                      </p>
+                      <MemoryDescription description={memory.description} />
                       {memory.location?.name && (
                         <p className="text-sm text-gray-500 mt-2">
                           <LocationIcon /> {memory.location.name}
