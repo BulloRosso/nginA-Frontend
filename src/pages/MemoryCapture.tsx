@@ -660,7 +660,7 @@ return (
           
             {/* Timeline Area */}
             <Grid item xs={12} md={7} xl={8} xxl={7} sx={{ height: '100%' }}>
-               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+               <Card sx={{ height: '100%', display: 'flex', paddingBottom: '0 important', margin: 0, flexDirection: 'column' }}>
                   <CardContent sx={{ 
                     flex: 1, 
                     overflowY: 'auto',

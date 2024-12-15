@@ -37,6 +37,7 @@ import ImageLightbox from './ImageLightbox';
 import MemoryTypeFilter from './MemoryTypeFilter';
 import { Category } from '../../types/memory';
 import { useTranslation } from 'react-i18next';
+import './VerticalTimeline.css';
 
 interface TimelineProps {
   memories: Memory[];
@@ -275,7 +276,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
 
 
   return (
-        <Grid container spacing={1} sx={{ height: '100%' }}> {/* Changed from 700px to 100% */}
+        <Grid container spacing={0} sx={{ height: '100%' }}> {/* Changed from 700px to 100% */}
           <Grid 
             item 
             xs={12} 
@@ -300,7 +301,8 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
               },
             }}
           >
-          <Box sx={{ height: '100%', pr: 2 }}>
+          <Box sx={{ height: '100%' }}>
+            <div className="vertical-timeline-wrapper">
               <VerticalTimeline lineColor="#DDD">
                 {filteredMemories.map((memory, index) => {
                   const category = memory.category.toLowerCase();
@@ -328,7 +330,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                       contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
                     >
                       {memory.image_urls && memory.image_urls.length > 0 && (
-                        <div style={{ position: 'absolute', top: '-45px' }} 
+                        <div style={{ position: 'absolute', top: '-35px' }} 
                           className="mt-3 grid grid-cols-3 gap-2">
                           {memory.image_urls.map((url, imgIndex) => (
                             <div 
@@ -342,7 +344,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
                                 style={{borderRadius: '50%',
                                         aspectRatio: '1/1', 
-                                          width: '80px', 
+                                          width: '70px', 
                                           height: '100%', 
                                           objectFit: 'cover'
                                        }}
@@ -400,7 +402,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                     </VerticalTimelineElement>
                   );
                 })}
-              </VerticalTimeline>
+              </VerticalTimeline></div>
           </Box>
   </Grid>
 
