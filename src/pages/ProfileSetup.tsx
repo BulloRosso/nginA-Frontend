@@ -21,7 +21,9 @@ import {
   Stepper,
   Step,
   StepLabel,
-  CircularProgress
+  CircularProgress,
+  Grid,
+  Divider
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -400,62 +402,101 @@ const PersonProfile = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            {t('profile.title')}
-          </Typography>
-
-          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-
-          {submitError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {submitError}
-            </Alert>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {activeStep === 0 ? renderBasicInfo() : renderCharacterization()}
-
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-              <Button
-                onClick={handleBack}
-                disabled={activeStep === 0}
-                startIcon={<ArrowBackIcon />}
-              >
-                {t('common.back')}
-              </Button>
-
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={isSubmitting}
-                  endIcon={isSubmitting ? <CircularProgress size={24} /> : <NavigateNextIcon />}
+          <Container maxWidth="xl" sx={{ py: 4 }}>
+            <Grid container spacing={4}>
+              {/* Left Column */}
+              <Grid item xs={12} md={4} >
+                <Paper elevation={3} sx={{ p: 4, backgroundColor: '#f2f0e8' }}>
+                <Box 
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column'
+                  }}
                 >
-                  {t('profile.continue_to_interview')}
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  endIcon={<NavigateNextIcon />}
-                >
-                  {t('common.next')}
-                </Button>
-              )}
-            </Box>
-          </form>
-        </Paper>
-      </Container>
-    </LocalizationProvider>
-  );
-};
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      pb: 2,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                      mb: 2 
+                    }}
+                  >
+                    {t('profile.helpcaption')}
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary"
+                    sx={{ flex: 1 }}
+                  >
+                    {t('profile.help')}
+                    <br/><br/>
+                    {t('profile.help2')}
+                  </Typography>
+                </Box>
+                </Paper>
+              </Grid>
+
+              {/* Main Content Column */}
+              <Grid item xs={12} md={8}>
+                <Paper elevation={3} sx={{ p: 4 }}>
+                  <Typography variant="h5" gutterBottom>
+                    {t('profile.title')}
+                  </Typography>
+
+                  <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+                    {steps.map((label) => (
+                      <Step key={label}>
+                        <StepLabel>{label}</StepLabel>
+                      </Step>
+                    ))}
+                  </Stepper>
+
+                  {submitError && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      {submitError}
+                    </Alert>
+                  )}
+
+                  <form onSubmit={handleSubmit}>
+                    {activeStep === 0 ? renderBasicInfo() : renderCharacterization()}
+
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+                      <Button
+                        onClick={handleBack}
+                        disabled={activeStep === 0}
+                        startIcon={<ArrowBackIcon />}
+                      >
+                        {t('common.back')}
+                      </Button>
+
+                      {activeStep === steps.length - 1 ? (
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          disabled={isSubmitting}
+                          endIcon={isSubmitting ? <CircularProgress size={24} /> : <NavigateNextIcon />}
+                        >
+                          {t('profile.continue_to_interview')}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          onClick={handleNext}
+                          endIcon={<NavigateNextIcon />}
+                        >
+                          {t('common.next')}
+                        </Button>
+                      )}
+                    </Box>
+                  </form>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Container>
+        </LocalizationProvider>
+      );
+    };
 
 export default PersonProfile;

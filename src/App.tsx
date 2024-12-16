@@ -53,8 +53,9 @@ const App = () => {
                   <Box sx={{ flexGrow: 1 }}>
                     <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
                       <Toolbar variant="dense">
-                        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
-                          nOblivion
+                        <img src="/public/conch-logo.png" alt="Conch Logo" width="30" height="30" />
+                        <Typography variant="h6" component="div" sx={{ marginLeft: '8px',fontWeight: 'bold', flexGrow: 1 }}>
+                          <span style={{ color: 'red' }}>nO</span>blivion
                         </Typography>
                         <LanguageSwitch />
                       </Toolbar>

@@ -58,7 +58,12 @@ const resources = {
         next: "Next"
       },
       profile: {
-        title: "Person Profile",
+        title: "Describe the person to be interviewed",
+        helpcation: "Our first step",
+        help: `Before we begin the interview process, we need to understand more about you
+          and your background. This information helps us create a more personalized
+          and meaningful experience tailored specifically to your journey.`,
+        help2: `If you are the person to be interviewed, please provide information about YOUR life - otherwise just describe the person you want to gift a nOblivion interview to.`,
         steps: {
           basic_info: "Basic Information",
           characterization: "Characterization"
@@ -182,7 +187,10 @@ const resources = {
         next: "Weiter"
       },
       profile: {
-        title: "Personenprofil",
+        title: "Beschreibe die Person, mit der das Interview geführt wird",
+        helpcaption:"Unser erster Schritt",
+        help:`Bevor wir mit dem Interviewprozess beginnen, möchten wir mehr über Sie und Ihren Hintergrund erfahren. Diese Informationen helfen uns, eine individuellere und bedeutungsvollere Erfahrung zu schaffen, die speziell auf Ihr Umfeld abgestimmt ist.`,
+        help2:`Wenn Sie die Person sind, die interviewt werden soll, geben Sie bitte Informationen über IHR Leben an – andernfalls beschreiben Sie einfach die Person, der Sie ein nOblivion-Interview schenken möchten.`,
         steps: {
           basic_info: "Grundinformationen",
           characterization: "Charakterisierung"
