@@ -149,20 +149,27 @@ export default function LandingPage() {
               gap: 4
             }}
           >
-            <Box sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h5" mb={2}>{t('landing.features.create_profile.title')}</Typography>
+            <Box sx={{ justifyItems: 'center', textAlign: 'center', p: 3 }}>
+             
+              <img src="/public/noblivion-icon-1.png" style={{ width: '160px'}}></img>
+               <br></br>
+              <Typography variant="h5" mb={2}>1. {t('landing.features.create_profile.title')}</Typography>
               <Typography color="text.secondary">
                 {t('landing.features.create_profile.description')}
               </Typography>
             </Box>
-            <Box sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h5" mb={2}>{t('landing.features.share_memories.title')}</Typography>
+            <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
+              <img src="/public/noblivion-icon-2.png" style={{ width: '160px'}}></img>
+              <br></br>
+              <Typography variant="h5" mb={2}>2. {t('landing.features.share_memories.title')}</Typography>
               <Typography color="text.secondary">
                 {t('landing.features.share_memories.description')}
               </Typography>
             </Box>
-            <Box sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h5" mb={2}>{t('landing.features.preserve_legacy.title')}</Typography>
+            <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
+              <img src="/public/noblivion-icon-3.png" style={{ width: '160px'}}></img>
+              <br></br>
+              <Typography variant="h5" mb={2}>3. {t('landing.features.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">
                 {t('landing.features.preserve_legacy.description')}
               </Typography>

@@ -33,7 +33,7 @@ const resources = {
           }
         },
         cta: {
-          title: "Start Preserving Your Memories Today",
+          title: "Gift yourself or a beloved one and start Preserving Your Memories Today",
           button: "Try it now"
         }
       },
@@ -56,31 +56,6 @@ const resources = {
         cancel: "Cancel",
         back: "Back",
         next: "Next"
-      },
-      landing: {
-        title: "nOblivion",
-        subtitle: "Your precious memories persisted",
-        description: "Preserve your life stories through meaningful conversations with our AI interviewer. Share memories, add photos, and create a lasting legacy for generations to come.",
-        try_now: "Try it now",
-        how_it_works: "How it works",
-        features: {
-          create_profile: {
-            title: "Create Profile",
-            description: "Start by creating a profile with basic information about yourself or your loved one"
-          },
-          share_memories: {
-            title: "Share Memories",
-            description: "Engage in natural conversations with our AI interviewer to capture life stories"
-          },
-          preserve_legacy: {
-            title: "Preserve Legacy",
-            description: "Add photos, organize memories, and create a beautiful timeline of life events"
-          }
-        },
-        cta: {
-          title: "Start Preserving Your Memories Today",
-          button: "Try it now"
-        }
       },
       profile: {
         title: "Person Profile",
@@ -182,7 +157,7 @@ const resources = {
           }
         },
         cta: {
-          title: "Beginnen Sie heute, Ihre Erinnerungen zu bewahren",
+          title: "Schenken Sie sich oder einer geliebten Person die Chance, Ihre Erinnerungen zu bewahren",
           button: "Jetzt ausprobieren"
         }
       },
