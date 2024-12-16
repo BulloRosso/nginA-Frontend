@@ -128,9 +128,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
   
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString(i18n.language, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      year: 'numeric'
     });
   };
   
