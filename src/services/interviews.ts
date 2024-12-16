@@ -42,7 +42,7 @@ export const InterviewService = {
     memory_id?: string;
   }> => {
     const result = await api.post(
-      `/interviews/${profileId}/response`,
+      `/api/v1/interviews/${profileId}/response`,
       {
         text: response.text,
         language: response.language,
