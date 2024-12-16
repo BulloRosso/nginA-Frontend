@@ -78,7 +78,7 @@ interface ValidationErrors {
 }
 
 const PersonProfile = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const [profile, setProfile] = useState<ProfileData>({
     firstName: '',
@@ -202,6 +202,10 @@ const PersonProfile = () => {
         formData.append('profile_image', profile.profileImage);
       }
 
+      // Add the current UI language to the form data
+      const currentLanguage = i18n.language || 'en';
+      formData.append('language', currentLanguage);
+
       const profileData = {
         first_name: profile.firstName,
         last_name: profile.lastName,
@@ -251,6 +255,7 @@ const PersonProfile = () => {
           <ProfileImage
             src={profile.imageUrl}
             variant="rounded"
+            sx={{ borderColor: '#777', backgroundColor: '#dfd9c6' }}
           >
             {!profile.imageUrl && <PhotoCameraIcon sx={{ width: 40, height: 40 }} />}
           </ProfileImage>
