@@ -156,21 +156,26 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
 
   // Updated filtering logic to include both category and year range filters
   const filteredMemories = useMemo(() => {
-    if (activeFilters.size === 0 && !yearRange) return memories;
+    if (activeFilters.size === 0 && !yearRange) 
+      return [...memories].sort((a, b) => new Date(b.time_period).getTime() - new Date(a.time_period).getTime());
 
-    return memories.filter(memory => {
-      // Category filter
-      const passesCategory = activeFilters.size === 0 || activeFilters.has(memory.category);
 
-      // Year range filter
-      let passesYearRange = true;
-      if (yearRange) {
-        const memoryYear = new Date(memory.time_period).getFullYear();
-        passesYearRange = memoryYear >= yearRange[0] && memoryYear <= yearRange[1];
-      }
+      return memories
+      .filter(memory => {
+          // Category filter
+          const passesCategory = activeFilters.size === 0 || activeFilters.has(memory.category);
 
-      return passesCategory && passesYearRange;
-    });
+          // Year range filter
+          let passesYearRange = true;
+          if (yearRange) {
+              const memoryYear = new Date(memory.time_period).getFullYear();
+              passesYearRange = memoryYear >= yearRange[0] && memoryYear <= yearRange[1];
+          }
+
+          return passesCategory && passesYearRange;
+      })
+      .sort((a, b) => new Date(b.time_period).getTime() - new Date(a.time_period).getTime());
+    
   }, [memories, activeFilters, yearRange]);
   
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
