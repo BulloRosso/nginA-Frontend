@@ -14,6 +14,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Login, Register, ForgotPassword } from './components/auth';
 import { AuthProvider } from './contexts/auth';
 import { VerificationCheck, VerifiedRoute } from './components/verification';
+import LandingPage from './pages/LandingPage';  
+import IntroductionVideo from './pages/IntroductionVideo';
 
 const theme = createTheme({
   palette: {
@@ -42,48 +44,68 @@ const App = () => {
 
             <VerificationCheck />
             
-            <Box sx={{ flexGrow: 1 }}>
-              <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
-                <Toolbar variant="dense">
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
-                    nOblivion
-                  </Typography>
-                  <LanguageSwitch />
-                </Toolbar>
-              </AppBar>
-      
-              <Routes>
-                {/* Public routes */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Only show AppBar on non-landing pages */}
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route
+                path="*"
+                element={
+                  <Box sx={{ flexGrow: 1 }}>
+                    <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
+                      <Toolbar variant="dense">
+                        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
+                          nOblivion
+                        </Typography>
+                        <LanguageSwitch />
+                      </Toolbar>
+                    </AppBar>
 
-                {/* Protected and verified routes */}
-                <Route path="/" element={<Navigate to="/profile-selection" />} />
-                <Route path="/profile-selection" element={
-                  <>
-                     {/* VerifiedRoute */}
-                    <ProfileSelection />
-                     {/* /VerifiedRoute */}
-                  </>
-                } />
-                <Route path="/profile" element={
-                    <>
-                    {/* VerifiedRoute */}
-                    <ProfileSetup />
-                    {/* /VerifiedRoute */}
-                  </>
-                } />
-                <Route path="/interview" element={<MemoryCapture />} />
-                
-                <Route path="/timeline" element={
-                  <MemoryTimeline 
-                    memories={[]}
-                    onMemorySelect={(memory) => console.log('Selected memory:', memory)}
-                  />
-                } />
-              </Routes>
-            </Box>
+                    <Routes>
+                      {/* Public routes */}
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                      {/* Protected and verified routes */}
+                      <Route path="/profile-selection" element={
+                        <ProtectedRoute>
+                          <VerifiedRoute>
+                            <ProfileSelection />
+                          </VerifiedRoute>
+                        </ProtectedRoute>
+                      } />
+
+                      <Route path="/profile" element={
+                            <ProfileSetup />
+                      } />
+
+                      {/* New route for introduction video */}
+                      <Route path="/introduction" element={
+                            <IntroductionVideo />
+                      } />
+
+                      <Route path="/interview" element={
+                        
+                            <MemoryCapture />
+                        
+                      } />
+
+                      <Route path="/timeline" element={
+                        <ProtectedRoute>
+                          <VerifiedRoute>
+                            <MemoryTimeline 
+                              memories={[]}
+                              onMemorySelect={(memory) => console.log('Selected memory:', memory)}
+                            />
+                          </VerifiedRoute>
+                        </ProtectedRoute>
+                      } />
+                    </Routes>
+                  </Box>
+                }
+              />
+            </Routes>
+            
           </BrowserRouter>
         </I18nextProvider>
       </ThemeProvider>

@@ -1,5 +1,5 @@
-// src/pages/ProfileSetup.tsx
-import React, { useState, useEffect } from 'react';
+// src/pages/PersonProfile.tsx
+import React, { useState } from 'react';
 import { 
   Container, 
   Paper, 
@@ -18,10 +18,10 @@ import {
   IconButton,
   Stack,
   InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Stepper,
+  Step,
+  StepLabel,
+  CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -30,10 +30,12 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
   PhotoCamera as PhotoCameraIcon,
-  NavigateNext as NextIcon,
+  NavigateNext as NavigateNextIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 const Input = styled('input')({
   display: 'none',
@@ -50,8 +52,33 @@ const ProfileImage = styled(Avatar)(({ theme }) => ({
   },
 }));
 
-const ProfileSetup = () => {
-  const [profile, setProfile] = useState({
+interface ProfileData {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date | null;
+  placeOfBirth: string;
+  gender: string;
+  children: string[];
+  spokenLanguages: string[];
+  profileImage: File | null;
+  imageUrl: string | null;
+  backstory: string;
+}
+
+interface ValidationErrors {
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: string;
+  placeOfBirth?: string;
+  gender?: string;
+  profileImage?: string;
+  backstory?: string;
+}
+
+const PersonProfile = () => {
+  const { t } = useTranslation();
+  const [activeStep, setActiveStep] = useState(0);
+  const [profile, setProfile] = useState<ProfileData>({
     firstName: '',
     lastName: '',
     dateOfBirth: null,
@@ -61,55 +88,65 @@ const ProfileSetup = () => {
     spokenLanguages: [],
     profileImage: null,
     imageUrl: null,
+    backstory: ''
   });
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<ValidationErrors>({});
   const [newChild, setNewChild] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Load existing profile if available
-  const loadProfile = async () => {
-    try {
-      const profileId = localStorage.getItem('profileId');
-      if (!profileId) return;
+  const steps = [
+    t('profile.steps.basic_info'),
+    t('profile.steps.characterization')
+  ];
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/profiles/${profileId}`);
-      if (!response.ok) throw new Error('Profile not found');
+  const validateStep = (step: number): boolean => {
+    const newErrors: ValidationErrors = {};
 
-      const data = await response.json();
-      setProfile(prev => ({
-        ...prev,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        dateOfBirth: data.date_of_birth ? new Date(data.date_of_birth) : null,
-        placeOfBirth: data.place_of_birth,
-        gender: data.gender,
-        children: data.children || [],
-        spokenLanguages: data.spoken_languages || [],
-        imageUrl: data.profile_image_url
-      }));
-    } catch (error) {
-      console.error('Failed to load profile:', error);
+    if (step === 0) {
+      if (!profile.firstName) newErrors.firstName = t('profile.errors.required_first_name');
+      if (!profile.lastName) newErrors.lastName = t('profile.errors.required_last_name');
+      if (!profile.dateOfBirth) newErrors.dateOfBirth = t('profile.errors.required_dob');
+      if (!profile.placeOfBirth) newErrors.placeOfBirth = t('profile.errors.required_pob');
+      if (!profile.gender) newErrors.gender = t('profile.errors.required_gender');
+      if (!profile.profileImage) newErrors.profileImage = t('profile.errors.required_image');
+    } else if (step === 1) {
+      if (!profile.backstory || profile.backstory.split('.').length < 3) {
+        newErrors.backstory = t('profile.errors.required_backstory');
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setActiveStep((prevStep) => prevStep + 1);
     }
   };
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
       if (file.type.startsWith('image/')) {
         setProfile(prev => ({
           ...prev,
           profileImage: file,
           imageUrl: URL.createObjectURL(file),
         }));
-        setErrors(prev => ({ ...prev, profileImage: null }));
+        setErrors(prev => ({ ...prev, profileImage: undefined }));
       } else {
         setErrors(prev => ({
           ...prev,
-          profileImage: 'Please upload an image file',
+          profileImage: t('profile.errors.invalid_image'),
         }));
       }
     }
@@ -125,7 +162,7 @@ const ProfileSetup = () => {
     }
   };
 
-  const handleRemoveChild = (index) => {
+  const handleRemoveChild = (index: number) => {
     setProfile(prev => ({
       ...prev,
       children: prev.children.filter((_, i) => i !== index),
@@ -142,33 +179,21 @@ const ProfileSetup = () => {
     }
   };
 
-  const handleRemoveLanguage = (index) => {
+  const handleRemoveLanguage = (index: number) => {
     setProfile(prev => ({
       ...prev,
       spokenLanguages: prev.spokenLanguages.filter((_, i) => i !== index),
     }));
   };
 
-  const validateProfile = () => {
-    const newErrors = {};
-    if (!profile.firstName) newErrors.firstName = 'First name is required';
-    if (!profile.lastName) newErrors.lastName = 'Last name is required';
-    if (!profile.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
-    if (!profile.placeOfBirth) newErrors.placeOfBirth = 'Place of birth is required';
-    if (!profile.gender) newErrors.gender = 'Gender is required';
-    if (!profile.profileImage) newErrors.profileImage = 'Profile image is required';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setSubmitError(null);
 
-    if (!validateProfile()) return;
+    if (!validateStep(activeStep)) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
+
     try {
       const formData = new FormData();
       if (profile.profileImage) {
@@ -182,38 +207,212 @@ const ProfileSetup = () => {
         place_of_birth: profile.placeOfBirth,
         gender: profile.gender,
         children: profile.children,
-        spoken_languages: profile.spokenLanguages
+        spoken_languages: profile.spokenLanguages,
+        metadata: {
+          backstory: profile.backstory
+        }
       };
 
       formData.append('profile', JSON.stringify(profileData));
 
-      const response = await fetch('https://e5ede652-5081-48eb-9e93-64c13c6bbf50-00-2cmwk7hnytqn6.worf.replit.dev/api/v1/profiles', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/profiles`, {
         method: 'POST',
         body: formData
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.detail || 'Failed to save profile');
+        throw new Error(error.detail || t('profile.errors.save_failed'));
       }
 
       const data = await response.json();
       localStorage.setItem('profileId', data.id);
-      navigate('/interview');
+      navigate('/introduction');
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Failed to save profile');
+      setSubmitError(error instanceof Error ? error.message : t('profile.errors.save_failed'));
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const renderBasicInfo = () => (
+    <>
+      <Box sx={{ mb: 4 }}>
+        <input
+          accept="image/*"
+          id="profile-image-upload"
+          type="file"
+          onChange={handleImageChange}
+          className={Input}
+        />
+        <label htmlFor="profile-image-upload">
+          <ProfileImage
+            src={profile.imageUrl}
+            variant="rounded"
+          >
+            {!profile.imageUrl && <PhotoCameraIcon sx={{ width: 40, height: 40 }} />}
+          </ProfileImage>
+        </label>
+        {errors.profileImage && (
+          <Typography color="error" variant="caption" display="block" textAlign="center">
+            {errors.profileImage}
+          </Typography>
+        )}
+      </Box>
+
+      <Stack spacing={3}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            fullWidth
+            label={t('profile.fields.first_name')}
+            value={profile.firstName}
+            onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
+            error={!!errors.firstName}
+            helperText={errors.firstName}
+          />
+          <TextField
+            fullWidth
+            label={t('profile.fields.last_name')}
+            value={profile.lastName}
+            onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
+            error={!!errors.lastName}
+            helperText={errors.lastName}
+          />
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <DatePicker
+            label={t('profile.fields.dob')}
+            value={profile.dateOfBirth}
+            onChange={(date) => setProfile(prev => ({ ...prev, dateOfBirth: date }))}
+            slotProps={{
+              textField: {
+                fullWidth: true,
+                error: !!errors.dateOfBirth,
+                helperText: errors.dateOfBirth
+              }
+            }}
+          />
+          <TextField
+            fullWidth
+            label={t('profile.fields.pob')}
+            value={profile.placeOfBirth}
+            onChange={(e) => setProfile(prev => ({ ...prev, placeOfBirth: e.target.value }))}
+            error={!!errors.placeOfBirth}
+            helperText={errors.placeOfBirth}
+          />
+        </Box>
+
+        <FormControl error={!!errors.gender}>
+          <FormLabel>{t('profile.fields.gender')}</FormLabel>
+          <RadioGroup
+            row
+            value={profile.gender}
+            onChange={(e) => setProfile(prev => ({ ...prev, gender: e.target.value }))}
+          >
+            <FormControlLabel value="female" control={<Radio />} label={t('profile.gender.female')} />
+            <FormControlLabel value="male" control={<Radio />} label={t('profile.gender.male')} />
+            <FormControlLabel value="other" control={<Radio />} label={t('profile.gender.other')} />
+          </RadioGroup>
+          {errors.gender && (
+            <Typography color="error" variant="caption">
+              {errors.gender}
+            </Typography>
+          )}
+        </FormControl>
+
+        <Box>
+          <TextField
+            fullWidth
+            label={t('profile.fields.add_child')}
+            value={newChild}
+            onChange={(e) => setNewChild(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={handleAddChild} edge="end">
+                    <AddIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {profile.children.map((child, index) => (
+              <Chip
+                key={index}
+                label={child}
+                onDelete={() => handleRemoveChild(index)}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        <Box>
+          <TextField
+            fullWidth
+            label={t('profile.fields.add_language')}
+            value={newLanguage}
+            onChange={(e) => setNewLanguage(e.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={handleAddLanguage} edge="end">
+                    <AddIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {profile.spokenLanguages.map((language, index) => (
+              <Chip
+                key={index}
+                label={language}
+                onDelete={() => handleRemoveLanguage(index)}
+              />
+            ))}
+          </Box>
+        </Box>
+      </Stack>
+    </>
+  );
+
+  const renderCharacterization = () => (
+    <Box sx={{ mt: 3 }}>
+      <Typography variant="body1" gutterBottom color="text.secondary" sx={{ mb: 3 }}>
+        {t('profile.backstory.description')}
+      </Typography>
+
+      <TextField
+        fullWidth
+        multiline
+        rows={8}
+        label={t('profile.backstory.label')}
+        value={profile.backstory}
+        onChange={(e) => setProfile(prev => ({ ...prev, backstory: e.target.value }))}
+        placeholder={t('profile.backstory.placeholder')}
+        error={!!errors.backstory}
+        helperText={errors.backstory}
+      />
+    </Box>
+  );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h4" gutterBottom>
-            Person Profile
+            {t('profile.title')}
           </Typography>
+
+          <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
           {submitError && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -222,155 +421,36 @@ const ProfileSetup = () => {
           )}
 
           <form onSubmit={handleSubmit}>
-            <Box sx={{ mb: 4 }}>
-              <input
-                accept="image/*"
-                id="profile-image-upload"
-                type="file"
-                onChange={handleImageChange}
-                className={Input}
-              />
-              <label htmlFor="profile-image-upload">
-                <ProfileImage
-                  src={profile.imageUrl}
-                  variant="rounded"
+            {activeStep === 0 ? renderBasicInfo() : renderCharacterization()}
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+              <Button
+                onClick={handleBack}
+                disabled={activeStep === 0}
+                startIcon={<ArrowBackIcon />}
+              >
+                {t('common.back')}
+              </Button>
+
+              {activeStep === steps.length - 1 ? (
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={isSubmitting}
+                  endIcon={isSubmitting ? <CircularProgress size={24} /> : <NavigateNextIcon />}
                 >
-                  {!profile.imageUrl && <PhotoCameraIcon sx={{ width: 40, height: 40 }} />}
-                </ProfileImage>
-              </label>
-              {errors.profileImage && (
-                <Typography color="error" variant="caption" display="block" textAlign="center">
-                  {errors.profileImage}
-                </Typography>
+                  {t('profile.continue_to_interview')}
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  onClick={handleNext}
+                  endIcon={<NavigateNextIcon />}
+                >
+                  {t('common.next')}
+                </Button>
               )}
             </Box>
-
-            <Stack spacing={3}>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  value={profile.firstName}
-                  onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                  error={!!errors.firstName}
-                  helperText={errors.firstName}
-                />
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  value={profile.lastName}
-                  onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
-                  error={!!errors.lastName}
-                  helperText={errors.lastName}
-                />
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <DatePicker
-                  label="Date of Birth"
-                  value={profile.dateOfBirth}
-                  onChange={(date) => setProfile(prev => ({ ...prev, dateOfBirth: date }))}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      fullWidth
-                      error={!!errors.dateOfBirth}
-                      helperText={errors.dateOfBirth}
-                    />
-                  )}
-                />
-                <TextField
-                  fullWidth
-                  label="Place of Birth"
-                  value={profile.placeOfBirth}
-                  onChange={(e) => setProfile(prev => ({ ...prev, placeOfBirth: e.target.value }))}
-                  error={!!errors.placeOfBirth}
-                  helperText={errors.placeOfBirth}
-                />
-              </Box>
-
-              <FormControl error={!!errors.gender}>
-                <FormLabel>Gender</FormLabel>
-                <RadioGroup
-                  row
-                  value={profile.gender}
-                  onChange={(e) => setProfile(prev => ({ ...prev, gender: e.target.value }))}
-                >
-                  <FormControlLabel value="female" control={<Radio />} label="Female" />
-                  <FormControlLabel value="male" control={<Radio />} label="Male" />
-                  <FormControlLabel value="other" control={<Radio />} label="Other" />
-                </RadioGroup>
-                {errors.gender && (
-                  <Typography color="error" variant="caption">
-                    {errors.gender}
-                  </Typography>
-                )}
-              </FormControl>
-
-              <Box>
-                <TextField
-                  fullWidth
-                  label="Add Child"
-                  value={newChild}
-                  onChange={(e) => setNewChild(e.target.value)}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleAddChild} edge="end">
-                          <AddIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {profile.children.map((child, index) => (
-                    <Chip
-                      key={index}
-                      label={child}
-                      onDelete={() => handleRemoveChild(index)}
-                    />
-                  ))}
-                </Box>
-              </Box>
-
-              <Box>
-                <TextField
-                  fullWidth
-                  label="Add Spoken Language"
-                  value={newLanguage}
-                  onChange={(e) => setNewLanguage(e.target.value)}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={handleAddLanguage} edge="end">
-                          <AddIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {profile.spokenLanguages.map((language, index) => (
-                    <Chip
-                      key={index}
-                      label={language}
-                      onDelete={() => handleRemoveLanguage(index)}
-                    />
-                  ))}
-                </Box>
-              </Box>
-
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={isSubmitting}
-                endIcon={<NextIcon />}
-              >
-                Continue to Interview
-              </Button>
-            </Stack>
           </form>
         </Paper>
       </Container>
@@ -378,4 +458,4 @@ const ProfileSetup = () => {
   );
 };
 
-export default ProfileSetup
+export default PersonProfile;
