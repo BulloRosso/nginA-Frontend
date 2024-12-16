@@ -6,6 +6,37 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
+      landing: {
+        title: "nOblivion",
+        subtitle: "Precious memories persisted",
+        description: "Preserve your family's life stories through meaningful conversations with our AI interviewer.",
+        description_secondary: "Share memories, add photos, and create a lasting legacy for generations to come.",
+        try_now: "Try it now",
+        how_it_works: "How it works",
+        backstory: {
+          quote: "Walking along the shore, we often stumble upon empty seashells – silent echoes of the past.",
+          paragraph1: "Their stories remain a mystery, lost to time, yet they spark our imagination. These shells, once vibrant and alive in a colorful underwater world, now stand as fragile reminders of something greater. They teach us an essential truth: preserving the stories of the past gives us the wisdom to live more fully in the present.",
+          paragraph2: "Let us honor these tales, for in understanding where we come from, we shape a brighter, more meaningful today."
+        },
+        features: {
+          create_profile: {
+            title: "Create Profile",
+            description: "Start by creating a profile with basic information about yourself or your loved one"
+          },
+          share_memories: {
+            title: "Share Memories",
+            description: "Engage in natural conversations with our AI interviewer to capture life stories"
+          },
+          preserve_legacy: {
+            title: "Preserve Legacy",
+            description: "Add photos, organize memories, and create a beautiful timeline of life events which can be printed as book from the PDF file we create for you!"
+          }
+        },
+        cta: {
+          title: "Start Preserving Your Memories Today",
+          button: "Try it now"
+        }
+      },
       categories: {
         childhood: "Childhood",
         career: "Career",
@@ -124,6 +155,37 @@ const resources = {
   },
   de: {
     translation: {
+      landing: {
+        title: "nOblivion",
+        subtitle: "Wertvolle Erinnerungen bewahren",
+        description: "Bewahren Sie die Lebensgeschichten Ihrer Familie durch Gespräche mit unserem KI-Interviewer.",
+        ds: "Teilen Sie Erinnerungen, fügen Sie Fotos hinzu und schaffen Sie ein bleibendes Vermächtnis für kommende Generationen.",
+        try_now: "Jetzt ausprobieren",
+        how_it_works: "So funktioniert's",
+        backstory: {
+          quote: "Am Strand finden wir oft leere Muscheln – stille Echos der Vergangenheit.",
+          paragraph1: "Ihre Geschichten bleiben ein Geheimnis, verloren in der Zeit, und doch regen sie unsere Fantasie an. Diese Muscheln, einst lebendig in einer bunten Unterwasserwelt, stehen nun als zerbrechliche Erinnerungen an etwas Größeres. Sie lehren uns eine wesentliche Wahrheit: Das Bewahren der Geschichten der Vergangenheit gibt uns die Weisheit, intensiver in der Gegenwart zu leben.",
+          paragraph2: "Lasst uns diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
+        },
+        features: {
+          create_profile: {
+            title: "Profil erstellen",
+            description: "Erstellen Sie ein Profil mit grundlegenden Informationen über sich oder Ihre Angehörigen"
+          },
+          share_memories: {
+            title: "Erinnerungen teilen",
+            description: "Führen Sie natürliche Gespräche mit unserem KI-Interviewer, um Lebensgeschichten festzuhalten"
+          },
+          preserve_legacy: {
+            title: "Vermächtnis bewahren",
+            description: "Fügen Sie Fotos hinzu, organisieren Sie Erinnerungen und erstellen Sie eine schöne Zeitleiste von Lebensereignissen, die als Buch aus der von uns erstellten PDF-Datei gedruckt werden kann!"
+          }
+        },
+        cta: {
+          title: "Beginnen Sie heute, Ihre Erinnerungen zu bewahren",
+          button: "Jetzt ausprobieren"
+        }
+      },
       categories: {
         childhood: "Kindheit",
         career: "Beruf",
@@ -143,31 +205,6 @@ const resources = {
         cancel: "Abbrechen",
         back: "Zurück",
         next: "Weiter"
-      },
-      landing: {
-        title: "nOblivion",
-        subtitle: "Ihre wertvollen Erinnerungen bewahrt",
-        description: "Bewahren Sie Ihre Lebensgeschichten durch bedeutungsvolle Gespräche mit unserem KI-Interviewer. Teilen Sie Erinnerungen, fügen Sie Fotos hinzu und schaffen Sie ein bleibendes Vermächtnis für kommende Generationen.",
-        try_now: "Jetzt ausprobieren",
-        how_it_works: "So funktioniert's",
-        features: {
-          create_profile: {
-            title: "Profil erstellen",
-            description: "Erstellen Sie ein Profil mit grundlegenden Informationen über sich oder Ihre Angehörigen"
-          },
-          share_memories: {
-            title: "Erinnerungen teilen",
-            description: "Führen Sie natürliche Gespräche mit unserem KI-Interviewer, um Lebensgeschichten festzuhalten"
-          },
-          preserve_legacy: {
-            title: "Vermächtnis bewahren",
-            description: "Fügen Sie Fotos hinzu, organisieren Sie Erinnerungen und erstellen Sie eine schöne Zeitleiste von Lebensereignissen"
-          }
-        },
-        cta: {
-          title: "Beginnen Sie heute, Ihre Erinnerungen zu bewahren",
-          button: "Jetzt ausprobieren"
-        }
       },
       profile: {
         title: "Personenprofil",
@@ -251,11 +288,13 @@ i18n
     fallbackLng: 'en',
     supportedLngs: ['en', 'de'],
     debug: import.meta.env.DEV,
-
     interpolation: {
       escapeValue: false,
     },
-
+    detection: {
+      order: ['navigator', 'htmlTag', 'path', 'subdomain'],
+      caches: ['localStorage']
+    },
     defaultNS: 'translation'
   });
 

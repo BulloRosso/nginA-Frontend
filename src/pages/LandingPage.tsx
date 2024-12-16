@@ -1,12 +1,12 @@
 // src/components/LandingPage.tsx
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Container, Typography, Box } from '@mui/material';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import { useTranslation } from 'react-i18next';
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleGetStarted = () => {
     navigate('/profile');
@@ -37,9 +37,8 @@ export default function LandingPage() {
               py: 6
             }}
           >
-           
             <img src="/public/conch-logo.png" alt="Conch Logo" width="100" />
-            
+
             <Typography 
               variant="h2" 
               component="h1"
@@ -58,19 +57,19 @@ export default function LandingPage() {
                 color: '#34495e'
               }}
             >
-              Precious <b>memories</b> persisted
+              {t('landing.subtitle')}
             </Typography>
             <Typography 
               variant="h6" 
               sx={{ 
                 mb: 6,
                 color: '#fff',
-                maxWidth: '800px',
                 textShadow: '2px 2px 2px #6B6B6B',
+                maxWidth: '800px',
                 mx: 'auto'
               }}
             >
-              Preserve your family's life stories through meaningful conversations with our AI interviewer. 
+              {t('landing.description')}
             </Typography>
             <Button 
               variant="contained" 
@@ -87,7 +86,7 @@ export default function LandingPage() {
                 borderRadius: 2
               }}
             >
-              Try it now
+              {t('landing.try_now')}
             </Button>
             <Typography 
               variant="h6" 
@@ -100,9 +99,8 @@ export default function LandingPage() {
                 mx: 'auto'
               }}
             >
-              Share memories, add photos, and create a lasting legacy for generations to come.
+              {t('landing.ds')}
             </Typography>
-           
           </Box>
         </Container>
       </Box>
@@ -110,39 +108,36 @@ export default function LandingPage() {
       {/* Backstroy Section */}
       <Box sx={{ py: 8, backgroundColor: '#f8f9fa', textAlign: 'center' }}>
         <Container maxWidth="md">
-         
-            <Typography sx={{ 
-              color: '#1eb3b7',
-              fontSize: '22px',
-              fontWeight: 'bold',
-              fontFamily: 'Averia Libre',
-            }} textAlign="center" mb={8}>
-              Walking along the shore, we often stumble upon empty seashells – silent echoes of the past.
-            </Typography>  
-           <Typography sx={{ 
-             color: '#777',
-             fontSize: '18px',
-          
-             fontFamily: 'Averia Libre',
-           }} textAlign="center" mb={8}>
-            Their stories remain a mystery, lost to time, yet they spark our imagination. These shells, once vibrant and alive in a colorful underwater world, now stand as fragile reminders of something greater. They teach us an essential truth: preserving the stories of the past gives us the wisdom to live more fully in the present.  
-             </Typography>  
-             <Typography sx={{ 
-               color: '#777',
-               fontSize: '18px',
-               
-               fontFamily: 'Averia Libre',
-             }} textAlign="center" mb={8}>
-              Let us honor these tales, for in understanding where we come from, we shape a brighter, more meaningful today.
-               </Typography>  
+          <Typography sx={{ 
+            color: '#1eb3b7',
+            fontSize: '22px',
+            fontWeight: 'bold',
+            fontFamily: 'Averia Libre',
+          }} textAlign="center" mb={8}>
+            {t('landing.backstory.quote')}
+          </Typography>  
+          <Typography sx={{ 
+            color: '#777',
+            fontSize: '18px',
+            fontFamily: 'Averia Libre',
+          }} textAlign="center" mb={8}>
+            {t('landing.backstory.paragraph1')}
+          </Typography>  
+          <Typography sx={{ 
+            color: '#777',
+            fontSize: '18px',
+            fontFamily: 'Averia Libre',
+          }} textAlign="center" mb={8}>
+            {t('landing.backstory.paragraph2')}
+          </Typography>  
         </Container>
       </Box>
-      
+
       {/* Features Section */}
       <Box sx={{ py: 12, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
           <Typography variant="h3" textAlign="center" mb={8}>
-            How it works
+            {t('landing.how_it_works')}
           </Typography>
           <Box 
             sx={{
@@ -155,22 +150,21 @@ export default function LandingPage() {
             }}
           >
             <Box sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h5" mb={2}>Create Profile</Typography>
+              <Typography variant="h5" mb={2}>{t('landing.features.create_profile.title')}</Typography>
               <Typography color="text.secondary">
-                Start by creating a profile with basic information about yourself or your loved one
+                {t('landing.features.create_profile.description')}
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h5" mb={2}>Share Memories</Typography>
+              <Typography variant="h5" mb={2}>{t('landing.features.share_memories.title')}</Typography>
               <Typography color="text.secondary">
-                Engage in natural conversations with our AI interviewer to capture life stories
+                {t('landing.features.share_memories.description')}
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center', p: 3 }}>
-              <Typography variant="h5" mb={2}>Preserve Legacy</Typography>
+              <Typography variant="h5" mb={2}>{t('landing.features.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">
-                Add photos, organize memories, and create a beautiful timeline of life events which can be
-                printed as book from the PDF file we create for you!
+                {t('landing.features.preserve_legacy.description')}
               </Typography>
             </Box>
           </Box>
@@ -188,7 +182,7 @@ export default function LandingPage() {
       >
         <Container maxWidth="md">
           <Typography variant="h4" mb={4}>
-            Start Preserving Your Memories Today
+            {t('landing.cta.title')}
           </Typography>
           <Button 
             variant="contained"
@@ -202,7 +196,7 @@ export default function LandingPage() {
               }
             }}
           >
-            Try it now
+            {t('landing.cta.button')}
           </Button>
         </Container>
       </Box>
