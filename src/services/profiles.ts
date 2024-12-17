@@ -1,6 +1,6 @@
 // src/services/profiles.ts
 import api from './api';
-import { Profile } from '../types/profile';
+import { Profile  } from '../types/profile';
 
 export const ProfileService = {
   getAllProfiles: async (): Promise<Profile[]> => {
@@ -32,7 +32,10 @@ export const ProfileService = {
   },
 
   deleteProfile: async (profileId: string): Promise<void> => {
-    await api.delete(`/profiles/${profileId}`);
+    const response = await api.delete(`/api/v1/profiles/${profileId}`);
+    if (!response.data?.message) {
+      throw new Error('Failed to delete profile');
+    }
   }
 };
 
