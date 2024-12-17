@@ -122,6 +122,14 @@ const resources = {
         "age": "Age",
         "lastInterview": "Last interview"
       },
+      menu: {
+        home: "Home",
+        profiles: "Profile Selection",
+        logout: "Logout"
+      },
+      appbar: {
+        sessionwith: "session with",
+      },
       interview: {
         loading_question: "Loading question...",
         add_images: "Upload",
@@ -161,6 +169,7 @@ const resources = {
           paragraph1: "Ihre Geschichten bleiben ein Geheimnis, verloren in der Zeit, und doch regen sie unsere Fantasie an. Diese Muscheln, einst lebendig in einer bunten Unterwasserwelt, stehen nun als zerbrechliche Erinnerungen an etwas Größeres. Sie lehren uns eine wesentliche Wahrheit: Das Bewahren der Geschichten der Vergangenheit gibt uns die Weisheit, intensiver in der Gegenwart zu leben.",
           paragraph2: "Lasst uns diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
         },
+       
         features: {
           create_profile: {
             title: "Profil erstellen",
@@ -179,6 +188,11 @@ const resources = {
           title: "Schenken Sie sich oder einer geliebten Person die Chance, Ihre Erinnerungen zu bewahren",
           button: "Jetzt ausprobieren"
         }
+      },
+      "menu": {
+        "home": "Home",
+        "profiles": "Profil auswählen",
+        "logout": "Abmelden"
       },
       categories: {
         childhood: "Kindheit",
@@ -200,6 +214,9 @@ const resources = {
         back: "Zurück",
         next: "Weiter",
         delete: "Löschen"
+      },
+      appbar: {
+        sessionwith: "Session mit",
       },
       profile: {
         "delete_success": "Profil erfolgreich gelöscht",

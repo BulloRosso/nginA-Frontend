@@ -1,13 +1,18 @@
 import './App.css';
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import MemoryTimeline from './components/common/MemoryTimeline';
 import ProfileSetup from './pages/ProfileSetup';
 import MemoryCapture from './pages/MemoryCapture';
 import ProfileSelection from './pages/ProfileSelection';
 import { LanguageSwitch } from './components/common/LanguageSwitch';
-import { Box, AppBar, Toolbar, Typography, IconButton, Stack } from '@mui/material';
-import { LogoutRounded } from '@mui/icons-material';
+import { Box, AppBar, Toolbar, Typography, IconButton, Stack, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { 
+  LogoutRounded,
+  Menu as MenuIcon,
+  Home as HomeIcon,
+  People as PeopleIcon
+} from '@mui/icons-material';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -16,6 +21,7 @@ import { AuthProvider, useAuth } from './contexts/auth';
 import { VerificationCheck, VerifiedRoute } from './components/verification';
 import LandingPage from './pages/LandingPage';  
 import IntroductionVideo from './pages/IntroductionVideo';
+import { useTranslation } from 'react-i18next';
 
 const theme = createTheme({
   palette: {
@@ -25,45 +31,97 @@ const theme = createTheme({
   },
 });
 
-const Header = () => {
+const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { logout } = useAuth();
-  const [profileName, setProfileName] = React.useState<string>('');
 
-  React.useEffect(() => {
-    const updateProfileName = () => {
-      const profileId = localStorage.getItem('profileId');
-      const profiles = localStorage.getItem('profiles');
-
-      if (profileId && profiles) {
-        try {
-          const parsedProfiles = JSON.parse(profiles);
-          const selectedProfile = parsedProfiles.find(p => p.id === profileId);
-          if (selectedProfile) {
-            setProfileName(selectedProfile.first_name);
-          }
-        } catch (error) {
-          console.error('Error parsing profiles:', error);
-        }
-      }
-    };
-
-    // Update initially
-    updateProfileName();
-
-    // Listen for storage changes
-    window.addEventListener('storage', updateProfileName);
-
-    return () => {
-      window.removeEventListener('storage', updateProfileName);
-    };
-  }, []);
+  const handleNavigation = (path: string) => {
+    onClose();
+    navigate(path);
+  };
 
   const handleLogout = () => {
+    onClose();
     logout();
     window.location.href = '/login';
   };
 
-  // Check for either token or user in localStorage
+  // Create menu items array conditionally
+  const menuItems = [
+    // Basic navigation items
+    <MenuItem key="home" onClick={() => handleNavigation('/')}>
+      <ListItemIcon>
+        <HomeIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText primary={t('menu.home')} />
+    </MenuItem>,
+
+    <MenuItem key="profiles" onClick={() => handleNavigation('/profile-selection')}>
+      <ListItemIcon>
+        <PeopleIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText primary={t('menu.profiles')} />
+    </MenuItem>
+  ];
+
+  // Add logout items if authenticated
+  if (isAuthenticated) {
+    menuItems.push(
+      <Divider key="divider" />,
+      <MenuItem key="logout" onClick={handleLogout}>
+        <ListItemIcon>
+          <LogoutRounded fontSize="small" />
+        </ListItemIcon>
+        <ListItemText primary={t('menu.logout')} />
+      </MenuItem>
+    );
+  }
+
+  return (
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={onClose}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+    >
+      {menuItems}
+    </Menu>
+  );
+};
+
+const Header = () => {
+  const { logout } = useAuth();
+  const [profileName, setProfileName] = React.useState<string>('');
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { t } = useTranslation();
+
+  React.useEffect(() => {
+    const profileId = localStorage.getItem('profileId');
+    if (profileId) {
+      const profiles = localStorage.getItem('profiles');
+      if (profiles) {
+        const parsedProfiles = JSON.parse(profiles);
+        setProfileName(parsedProfiles.first_name);
+      }
+    }
+  }, []);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const token = localStorage.getItem('token');
   const user = localStorage.getItem('user');
   const isAuthenticated = !!(token || user);
@@ -86,24 +144,31 @@ const Header = () => {
               color: '#fff',
               opacity: 0.9 
             }}>
-              session with {profileName}
+              {t('appbar.sessionwith')} {profileName}
             </span>
           )}
         </Typography>
 
         <Stack direction="row" spacing={1} alignItems="center">
           <LanguageSwitch />
-          {isAuthenticated && (
-            <IconButton 
-              color="inherit"
-              onClick={handleLogout}
-              size="small"
-              sx={{ ml: 1 }}
-            >
-              <LogoutRounded />
-            </IconButton>
-          )}
         </Stack>
+
+        {isAuthenticated && (
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={handleMenuOpen}
+            sx={{ ml: 1, color: 'white' }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        <AppMenu 
+          anchorEl={anchorEl}
+          onClose={handleMenuClose}
+          isAuthenticated={isAuthenticated}
+        />
       </Toolbar>
     </AppBar>
   );
