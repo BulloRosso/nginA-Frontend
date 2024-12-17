@@ -73,7 +73,13 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   }, []);
 
   const handleProfileSelect = (profileId: string) => {
+    // Find the selected profile from the current profiles list
+    const selectedProfile = profiles.find(p => p.id === profileId);
+
+    // Store both the ID and the profiles array
     localStorage.setItem('profileId', profileId);
+    localStorage.setItem('profiles', JSON.stringify(selectedProfile));
+
     if (onSelect) {
       onSelect(profileId);
     }

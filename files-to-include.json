@@ -17,6 +17,8 @@
       "/src/pages/MemoryCapture.tsx",
       "/src/pages/ProfileSelection.tsx",
       "/src/pages/ProfileSetup.tsx",
+      "/src/pages/IntroductionVideo.tsx",
+      "/src/pages/LandingPage.tsx",
       "/src/components/memories/MemoryTypeFilter.tsx",
       "/src/components/auth.tsx",
       "/src/components/verification.tsx" 
@@ -26,7 +28,8 @@
       "/src/services/interviews.ts",
       "/src/services/memories.ts",
       "/src/services/profiles.ts",
-      "/src/services/auth.ts"
+      "/src/services/auth.ts",
+      "/scr/contexts/auth/auth.ts"
    ],
    "frontend_entrypoint": [
     "/src/App.tsx",

@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth';
 import { Navigate, useLocation } from 'react-router-dom';
 import api  from '../services/api'
+import { AuthService } from '../services/auth';
 
 // In your verification components file
 interface VerificationDialogProps {
@@ -29,18 +30,29 @@ export const VerificationCheck: React.FC = () => {
   const [showVerification, setShowVerification] = useState(false);
 
   useEffect(() => {
-    // Only show verification dialog if user exists and is not validated
-    if (user && user.is_validated === false) {
+    // Only show verification dialog if:
+    // 1. User exists
+    // 2. User is not validated
+    // 3. User hasn't dismissed the dialog in this session
+    const hasUserDismissedVerification = sessionStorage.getItem('verification_dismissed');
+
+    if (user && 
+        user.is_validated === false && 
+        !hasUserDismissedVerification) {
       setShowVerification(true);
-    } else {
-      setShowVerification(false);  // Explicitly hide when validated
     }
-  }, [user, user?.is_validated]);  // Add is_validated to dependencies
+  }, [user, user?.is_validated]);
+
+  const handleClose = () => {
+    setShowVerification(false);
+    // Mark verification as dismissed for this session
+    sessionStorage.setItem('verification_dismissed', 'true');
+  };
 
   return (
     <VerificationDialog 
       open={showVerification}
-      onClose={() => setShowVerification(false)}
+      onClose={handleClose}
     />
   );
 };
@@ -48,12 +60,45 @@ export const VerificationCheck: React.FC = () => {
 export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
+  const [isValidated, setIsValidated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkValidation = async () => {
+      if (user?.id) {
+        try {
+          const validationStatus = await AuthService.checkValidationStatus(user.id);
+          setIsValidated(validationStatus);
+        } catch (error) {
+          console.error('Validation check failed:', error);
+          setIsValidated(false);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkValidation();
+  }, [user?.id]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!user?.is_validated) {
+  if (isLoading) {
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!isValidated) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4 }}>
         <Paper elevation={3} sx={{ p: 3 }}>
@@ -63,7 +108,6 @@ export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ childre
           <Typography variant="body1" sx={{ mb: 2 }}>
             Please verify your email address to access this page.
           </Typography>
-          <VerificationCheck />
         </Paper>
       </Container>
     );

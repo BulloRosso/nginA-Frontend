@@ -28,7 +28,6 @@ export const AuthService = {
       password: data.password
     });
 
-    // Store the token
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token);
     }
@@ -38,8 +37,6 @@ export const AuthService = {
 
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
-      console.log('Sending login request with:', { email }); // Debug logging
-
       const response = await api.post('/api/v1/auth/login', {
         email: email,
         password: password
@@ -53,6 +50,16 @@ export const AuthService = {
     } catch (error: any) {
       console.error('Login error:', error.response?.data);
       throw new Error(error.response?.data?.detail || 'Login failed');
+    }
+  },
+
+  async checkValidationStatus(userId: string): Promise<boolean> {
+    try {
+      const response = await api.get(`/api/v1/auth/validation-status/${userId}`);
+      return response.data.is_validated;
+    } catch (error) {
+      console.error('Validation check error:', error);
+      return false;
     }
   },
 
