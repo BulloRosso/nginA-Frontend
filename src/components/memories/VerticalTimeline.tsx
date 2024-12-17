@@ -41,7 +41,9 @@ import './VerticalTimeline.css';
 
 interface TimelineProps {
   memories: Memory[];
-  onMemoryDeleted?: () => void; // Callback to refresh the memories list
+  onMemoryDeleted?: () => void; 
+  onMemorySelect?: (memory: Memory) => void;
+  selectedMemoryId?: string | null;
 }
 
 const categoryConfig = {
@@ -113,7 +115,10 @@ const MemoryDescription: React.FC<{ description: string }> = ({ description }) =
   );
 };
 
-const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) => {
+const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
+                                                  onMemoryDeleted, 
+                                                  onMemorySelect,
+                                                  selectedMemoryId = null  }) => {
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [editingMemory, setEditingMemory] = React.useState<Memory | null>(null);
@@ -277,6 +282,11 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
     }
   };
 
+  const handleIconClick = (e, memoryId: string) => {
+    e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    alert(memoryId)
+  }
 
   return (
         <Grid container spacing={0} sx={{ height: '100%' }}> {/* Changed from 700px to 100% */}
@@ -316,22 +326,47 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
           
                   return (
                     
-                    <VerticalTimelineElement
-                      key={memory.id}
-                      className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
-                      position={isEven ? 'right' : 'left'}
-                      date={formatDate(memory.time_period)}
-                      iconStyle={{ background: config.color, color: '#fff' }}
-                      icon={<IconComponent />}
-                      contentStyle={{
-                        background: config.background,
-                        borderRadius: '8px',
-                        paddingTop: (hasImages) ? '40px' : '8px',
-                        boxShadow: '0 3px 6px rgba(0,0,0,0.1)',
-                        position: 'relative' // Added for absolute positioning of delete button
-                      }}
-                      contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
-                    >
+                      <VerticalTimelineElement
+                        key={memory.id}
+                        className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
+                        position={isEven ? 'right' : 'left'}
+                        date={formatDate(memory.time_period)}
+                        iconStyle={{ 
+                          background: selectedMemoryId === memory.id ? '#fff' : config.color,
+                          color: selectedMemoryId === memory.id ? config.color : '#fff',
+                          cursor: 'pointer',
+                          border: selectedMemoryId === memory.id ? `2px solid ${config.color}` : 'none',
+                          transition: 'all 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.1)',
+                            boxShadow: '0 0 8px rgba(0,0,0,0.2)'
+                          }
+                        }}
+                        icon={
+                          <IconComponent 
+                            onClick={() => onMemorySelect?.(memory)} 
+                            sx={{ 
+                              fontSize: '1.2rem',
+                              transition: 'transform 0.2s ease',
+                              '&:hover': {
+                                transform: 'scale(1.2)'
+                              }
+                            }}
+                          />
+                        }
+                        contentStyle={{
+                          background: selectedMemoryId === memory.id ? '#fff' : config.background,
+                          borderRadius: '8px',
+                          paddingTop: (hasImages) ? '40px' : '8px',
+                          boxShadow: selectedMemoryId === memory.id 
+                            ? '0 0 0 2px #1eb3b7'
+                            : '0 3px 6px rgba(0,0,0,0.1)',
+                          position: 'relative'
+                        }}
+                        contentArrowStyle={{ 
+                          borderRight: `7px solid ${selectedMemoryId === memory.id ? '#1eb3b7' : config.background}` 
+                        }}
+                      >
                       {memory.image_urls && memory.image_urls.length > 0 && (
                         <div style={{ position: 'absolute', top: '-35px' }} 
                           className="mt-3 grid grid-cols-3 gap-2">

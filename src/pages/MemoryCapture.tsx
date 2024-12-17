@@ -28,6 +28,9 @@ import {
   PhotoLibrary as PhotoLibraryIcon,
   Send as SendIcon,
   Delete as DeleteIcon,
+  Close as CloseIcon,
+  TouchApp as TouchAppIcon,
+  PostAdd as AddMemoryIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { InterviewService } from '../services/interviews';
@@ -137,6 +140,89 @@ const AnimatedMicIcon = styled(Box)(({ theme }) => ({
   }
 }));
 
+const SelectedMemoryDisplay = ({ memory, onClose }) => {
+  const { t } = useTranslation();
+
+  if (!memory) {
+    return (
+      <Card sx={{ 
+        mt: 2, 
+        backgroundColor: '#f8f9fa',
+        border: '1px dashed #ccc'
+      }}>
+        <CardContent sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          p: 3
+        }}>
+          <TouchAppIcon 
+            sx={{ 
+              color: '#1eb3b7',
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': {
+                  transform: 'scale(1)',
+                  opacity: 0.7,
+                },
+                '50%': {
+                  transform: 'scale(1.1)',
+                  opacity: 1,
+                },
+                '100%': {
+                  transform: 'scale(1)',
+                  opacity: 0.7,
+                }
+              }
+            }} 
+          />
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ fontStyle: 'italic' }}
+          >
+            {t('memory.selection_hint', 'Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button.')}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card sx={{ mt: 2, position: 'relative', backgroundColor: '#f1efe8' }}>
+      <CardContent>
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <Typography variant="h6" gutterBottom sx={{ color: 'rgb(252, 156, 43)' }}>
+          <AddMemoryIcon /> {t('memory.selected_memory')} 
+        </Typography>
+
+        <Grid container spacing={2}>
+
+          <Grid item xs={12}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'Pangolin'
+              }}
+            >
+              {memory.description}
+            </Typography>
+          </Grid>
+
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+};
+
 const MemoryCapture = () => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -158,6 +244,14 @@ const MemoryCapture = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
+
+  // Add the selection handler
+  const handleMemorySelect = (memory: Memory) => {
+    setSelectedMemory(prevSelected => 
+      prevSelected?.id === memory.id ? null : memory
+    );
+  };
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -655,6 +749,12 @@ return (
                 </Box>
               </TabPanel>
               </CardContent>
+              <Box sx={{ px: 2, pb: 2 }}>
+                <SelectedMemoryDisplay 
+                  memory={selectedMemory} 
+                  onClose={() => setSelectedMemory(null)}
+                />
+              </Box>
             </Card>
             </Grid>
           
@@ -679,10 +779,12 @@ return (
                       },
                     },
                   }}>
-                  <MemoryTimeline 
-                    memories={memories} 
-                    onMemoryDeleted={fetchMemories} 
-                  />
+                    <MemoryTimeline 
+                      memories={memories}
+                      onMemoryDeleted={fetchMemories}
+                      onMemorySelect={handleMemorySelect}
+                      selectedMemoryId={selectedMemory?.id || null}
+                    />
                 </CardContent>
               </Card>
             </Grid>

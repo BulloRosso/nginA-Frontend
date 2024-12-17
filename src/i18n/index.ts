@@ -37,6 +37,10 @@ const resources = {
           button: "Try it now"
         }
       },
+      memory: {
+        selected_memory: "Add details to this memory",
+        selection_hint: "Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button."
+      },
       categories: {
         childhood: "Childhood",
         career: "Career",
@@ -189,7 +193,7 @@ const resources = {
           button: "Jetzt ausprobieren"
         }
       },
-      "menu": {
+      menu: {
         "home": "Home",
         "profiles": "Profil auswählen",
         "logout": "Abmelden"
@@ -201,6 +205,10 @@ const resources = {
         relationships: "Familie",
         hobbies: "Hobbys",
         pets: "Haustiere",
+      },
+      memory: {
+        selected_memory: "Diese Erinnerung vertiefen",
+        selection_hint: "Tipp: Sie können eine Erinnerung vertiefen, indem Sie einfach auf den bunten Button in der Zeitleiste klicken."
       },
       memoryfilter: {
         year_range: "Jahre einschränken",
