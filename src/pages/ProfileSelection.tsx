@@ -38,6 +38,7 @@ import { Profile, calculateAge } from '../types/profile';
 import { formatDistance, format } from 'date-fns';
 import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
+import BuyProduct from '../components/modals/BuyProduct'
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -53,6 +54,8 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [buyModalOpen, setBuyModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -217,7 +220,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                   </Grid>
 
                   {/* Session Info (Middle) */}
-                  <Grid item xs={5}>
+                  <Grid item xs={3}>
                     <Stack direction="row" spacing={3}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <ForumIcon sx={{ mr: 1, color: 'text.secondary' }} />
@@ -237,7 +240,28 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                   </Grid>
 
                   {/* Actions (Right) */}
-                  <Grid item xs={3} sx={{ textAlign: 'right' }}>
+                  <Grid item xs={5} sx={{ textAlign: 'right' }}>
+                    {!profile.subscribed_at && (
+                      <Button
+                        variant="contained"
+                        sx={{ 
+                          bgcolor: 'gold',
+                          color: 'black',
+                          mr: 1,
+                          '&:hover': {
+                            bgcolor: '#ffd700',
+                          }
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent profile selection
+                          setSelectedProfile(profile);
+                          console.log("BUYING")
+                          setBuyModalOpen(true);
+                        }}
+                      >
+                        {t('profile.buy')}
+                      </Button>
+                    )}
                     <Button
                       variant="contained"
                       startIcon={<MagicWandIcon />}
@@ -352,7 +376,11 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           {error}
         </Alert>
       </Snackbar>
-      
+      <BuyProduct
+        open={buyModalOpen}
+        onClose={() => setBuyModalOpen(false)}
+        profileId={selectedProfile?.id || ''}
+        profileName={selectedProfile?.first_name || ''}/>
     </Container>
   );
 };

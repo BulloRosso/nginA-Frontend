@@ -13,6 +13,7 @@ export interface Profile {
   profile_image_url?: string;  // Changed from profileImageUrl to match backend
   created_at: string;
   updated_at: string;
+  subscribed_at: string | null;
 }
 
 // Helper function to calculate age

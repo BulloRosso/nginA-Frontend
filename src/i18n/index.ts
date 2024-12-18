@@ -49,6 +49,23 @@ const resources = {
         hobbies: "Hobbies",
         pets: "Pets",
       },
+      buy: {
+        checkout: "Proceed to Checkout",
+        feature: "Feature",
+        basic: "Free",
+        premium: "Premium",
+        category: { memories: "Memories", storage: "Images/Photos", export: "PDF creation", support: "Retention" } ,
+        basic_memories: "up to 10",
+        premium_memories: "up to 500",
+        basic_exports: "2",
+        premium_exports: "unlimited",
+        basic_storage: "1 per memory",
+        premium_storage: "10 per memory",
+        basic_retention: "3 months",
+        premium_retention: "unlimited",
+        title: "Start saving memories now!",
+        one_time_payment: "One-time payment",
+      },
       memoryfilter: {
         year_range: "Year Range",
         year_filter: "Filter by year"
@@ -62,6 +79,7 @@ const resources = {
         next: "Next"
       },
       profile: {
+        buy: "Buy now!",
         "delete_success": "Profile deleted successfully",
         "delete_error": "Error when trying to delete profile. Try again later.",
         "age": "Age",
@@ -173,7 +191,11 @@ const resources = {
           paragraph1: "Ihre Geschichten bleiben ein Geheimnis, verloren in der Zeit, und doch regen sie unsere Fantasie an. Diese Muscheln, einst lebendig in einer bunten Unterwasserwelt, stehen nun als zerbrechliche Erinnerungen an etwas Größeres. Sie lehren uns eine wesentliche Wahrheit: Das Bewahren der Geschichten der Vergangenheit gibt uns die Weisheit, intensiver in der Gegenwart zu leben.",
           paragraph2: "Lasst uns diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
         },
-       
+        buy: {
+          checkout: "Weiter zur Zahlung",
+          title: "Jetzt kaufen und Erinnerungen bewahren",
+          one_time_payment: "Einmal-Zahlung",
+        },
         features: {
           create_profile: {
             title: "Profil erstellen",
@@ -227,6 +249,7 @@ const resources = {
         sessionwith: "Session mit",
       },
       profile: {
+        "buy": "Jetzt kaufen!",
         "delete_success": "Profil erfolgreich gelöscht",
         "delete_error": "Fehler beim Löschen des Profils. Bitte versuchen Sie es erneut.",
         "age": "Alter",
