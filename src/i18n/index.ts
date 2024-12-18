@@ -38,6 +38,8 @@ const resources = {
         }
       },
       memory: {
+        drop_here: "Drop the files here ...",
+        drag_drop: "Drag 'n' drop some images here, or click to select files",
         selected_memory: "Add details to this memory",
         loading_timeline: "Preparing timeline...",
         selection_hint: "Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button."
@@ -68,6 +70,7 @@ const resources = {
         one_time_payment: "One-time payment",
       },
       memoryfilter: {
+        drop_here: "Bild hier ablegen ...",
         year_range: "Year Range",
         year_filter: "Filter by year"
       },
@@ -230,6 +233,7 @@ const resources = {
         pets: "Haustiere",
       },
       memory: {
+        drag_drop: "Bitte ziehen Sie ein JPG Bild hierher, oder klicken Sie um eine Datei auszuwählen",
         selected_memory: "Diese Erinnerung vertiefen",
         loading_timeline: "Bereite Zeitleiste vor...",
         selection_hint: "Tipp: Sie können eine Erinnerung vertiefen, indem Sie einfach auf den bunten Button in der Zeitleiste klicken."

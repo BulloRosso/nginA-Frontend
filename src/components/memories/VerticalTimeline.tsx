@@ -368,7 +368,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                         }}
                       >
                       {memory.image_urls && memory.image_urls.length > 0 && (
-                        <div style={{ position: 'absolute', top: '-35px' }} 
+                        <div style={{ position: 'absolute', top: '-38px' }} 
                           className="mt-3 grid grid-cols-3 gap-2">
                           {memory.image_urls.map((url, imgIndex) => (
                             <div 
@@ -380,7 +380,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                                 src={url}
                                 alt={`Memory ${imgIndex + 1}`}
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
-                                style={{borderRadius: '50%',
+                                style={{borderRadius: '6px',
                                         aspectRatio: '1/1', 
                                           width: '70px', 
                                           height: '100%', 
@@ -393,7 +393,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                       )}
                       <MemoryDescription description={memory.description} />
                       {memory.location?.name && (
-                        <p className="text-sm text-gray-500 mt-2">
+                        <p className="text-sm text-gray-500 mt-2" style={{ position: 'relative', top: '-10px' }}>
                           <LocationIcon /> {memory.location.name}
                         </p>
                       )}
@@ -499,9 +499,9 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : isDragActive ? (
-            <p>Drop the files here ...</p>
+            <p>{t('memory.drop_here')}</p>
           ) : (
-            <p>Drag 'n' drop some images here, or click to select files</p>
+            <p>{t('memory.drag_drop')}</p>
           )}
         </div>
       </DialogContent>
