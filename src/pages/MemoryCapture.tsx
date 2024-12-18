@@ -245,7 +245,8 @@ const MemoryCapture = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
-
+  const [isLoading, setIsLoading] = useState(true);
+  
   // Add the selection handler
   const handleMemorySelect = (memory: Memory) => {
     setSelectedMemory(prevSelected => 
@@ -334,7 +335,7 @@ const MemoryCapture = () => {
 
   const fetchMemories = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const profileId = localStorage.getItem('profileId');
       if (!profileId) {
         throw new Error('No profile ID found');
@@ -352,7 +353,7 @@ const MemoryCapture = () => {
       console.error('Failed to fetch memories:', err);
       setError('Failed to load memories');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [profile]); // Add profile as dependency since it's used in the function
 
@@ -764,6 +765,10 @@ return (
                   <CardContent sx={{ 
                     flex: 1, 
                     overflowY: 'auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingBottom: '0 important',
                     '&::-webkit-scrollbar': {
                       width: '8px',
                     },
@@ -779,12 +784,29 @@ return (
                       },
                     },
                   }}>
-                    <MemoryTimeline 
-                      memories={memories}
-                      onMemoryDeleted={fetchMemories}
-                      onMemorySelect={handleMemorySelect}
-                      selectedMemoryId={selectedMemory?.id || null}
-                    />
+                    {isLoading ? (
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        gap: 2
+                      }}>
+                        <CircularProgress 
+                          size={60}
+                          sx={{ color: '#1eb3b7' }}
+                        />
+                        <Typography variant="body1" color="textSecondary">
+                          {t('memory.loading_timeline')}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <MemoryTimeline 
+                        memories={memories}
+                        onMemoryDeleted={fetchMemories}
+                        onMemorySelect={handleMemorySelect}
+                        selectedMemoryId={selectedMemory?.id || null}
+                      />
+                    )}
                 </CardContent>
               </Card>
             </Grid>

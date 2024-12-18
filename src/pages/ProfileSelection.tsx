@@ -58,6 +58,13 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   
   useEffect(() => {
+
+    // Store both the ID and the profile item
+    localStorage.removeItem('profileId');
+    localStorage.removeItem('profiles');
+
+    window.dispatchEvent(new CustomEvent('profileSelected'));
+    
     const fetchProfiles = async () => {
       try {
         setLoading(true);
@@ -79,10 +86,12 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     // Find the selected profile from the current profiles list
     const selectedProfile = profiles.find(p => p.id === profileId);
 
-    // Store both the ID and the profiles array
+    // Store both the ID and the profile item
     localStorage.setItem('profileId', profileId);
     localStorage.setItem('profiles', JSON.stringify(selectedProfile));
 
+    window.dispatchEvent(new CustomEvent('profileSelected'));
+    
     if (onSelect) {
       onSelect(profileId);
     }

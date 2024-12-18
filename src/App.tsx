@@ -1,5 +1,5 @@
 import './App.css';
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import MemoryTimeline from './components/common/MemoryTimeline';
 import ProfileSetup from './pages/ProfileSetup';
@@ -103,16 +103,52 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const { t } = useTranslation();
 
-  React.useEffect(() => {
+  const updateProfileName = useCallback(() => {
     const profileId = localStorage.getItem('profileId');
+    setProfileName(null);
     if (profileId) {
       const profiles = localStorage.getItem('profiles');
       if (profiles) {
-        const parsedProfiles = JSON.parse(profiles);
-        setProfileName(parsedProfiles.first_name);
+        try {
+          const parsedProfile = JSON.parse(profiles);
+          console.log("PARSING")
+          setProfileName(parsedProfile.first_name);
+          
+        } catch (error) {
+          console.error('Error parsing profiles:', error);
+        }
       }
     }
   }, []);
+
+  // Initial load
+  useEffect(() => {
+    updateProfileName();
+  }, [updateProfileName]);
+
+  // Listen for storage changes
+  useEffect(() => {
+    // Handler for storage events
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'profileId' || event.key === 'profiles') {
+        updateProfileName();
+      }
+    };
+
+    // Handler for direct calls
+    const handleCustomEvent = (event: CustomEvent) => {
+      updateProfileName();
+    };
+
+    // Add event listeners
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('profileSelected', handleCustomEvent as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profileSelected', handleCustomEvent as EventListener);
+    };
+  }, [updateProfileName]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
