@@ -316,6 +316,13 @@ After the backend received an answer it follows these steps in sequence:
 ### Frontend: React, vite, mui v6 and Typescript
 The frontend uses plaing mui v6 styling and is intended to used by non-trained users. Handling instructions and step-by-step guidance should always be provided.
 
+#### Local storage for state management
+In the localStorage we have the following items:
+* i18nextLng: The current selected locale (Example "de")
+* token: the OAuth token received from the backend for the current user
+* user: a JSON object of the current user. Example: {"id":"e7f8856b-165a-4bf8-b3ae-551fb58472b9","email":"ralph.goellner@e-ntegration.de","first_name":"Ralph","last_name":"Göllner","is_validated":false}
+* profileId: the id of the current selected profile Example: "8f43b7d5-31d2-4f32-b956-195a83bef907"
+
 #### App (entry point)
 The app looks like this:
 -------------------
@@ -472,6 +479,11 @@ class Profile(ProfileCreate):
     id: UUID4
     created_at: datetime
     updated_at: datetime
+    subscribed_at: Optional[datetime] = None
+
+    @property
+    def is_subscribed(self) -> bool:
+        return self.subscribed_at is not None
 
     @property
     def age(self) -> int:
@@ -1087,6 +1099,34 @@ async def signup(request: SignupRequest):
     except Exception as e:
         print(f"Signup error: {str(e)}")  # Add debug logging
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/validation-status/{user_id}")
+async def check_validation_status(user_id: str):
+    """Check if a user's email is validated"""
+    try:
+        # Query user from Supabase
+        result = supabase.table("users").select("profile").eq("id", user_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = result.data[0]
+        profile = user.get("profile", {})
+
+        # Check validation status from profile JSONB
+        is_validated = profile.get("is_validated_by_email", False)
+
+        return {
+            "is_validated": is_validated,
+            "user_id": user_id
+        }
+
+    except Exception as e:
+        logger.error(f"Error checking validation status: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to check validation status: {str(e)}"
+        )
 
 @router.post("/verify-email")
 async def verify_email(verification_data: VerificationRequest):
@@ -2040,6 +2080,11 @@ class ProfileService:
                             profile_data['updated_at']
                         )
 
+                    if isinstance(profile_data['subscribed_at'], str):
+                        profile_data['subscribed_at'] = datetime.fromisoformat(profile_data['subscribed_at'])
+                    else:
+                        profile_data['subscribed_at'] = None
+
                     # Initialize metadata if it doesn't exist
                     if not profile_data.get('metadata'):
                         profile_data['metadata'] = {}
@@ -2750,6 +2795,11 @@ class ProfileService:
                         profile_data['updated_at'] = datetime.fromisoformat(
                             profile_data['updated_at']
                         )
+
+                    if isinstance(profile_data['subscribed_at'], str):
+                        profile_data['subscribed_at'] = datetime.fromisoformat(profile_data['subscribed_at'])
+                    else:
+                        profile_data['subscribed_at'] = None
 
                     # Initialize metadata if it doesn't exist
                     if not profile_data.get('metadata'):

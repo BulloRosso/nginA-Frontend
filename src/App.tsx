@@ -22,6 +22,7 @@ import { VerificationCheck, VerifiedRoute } from './components/verification';
 import LandingPage from './pages/LandingPage';  
 import IntroductionVideo from './pages/IntroductionVideo';
 import { useTranslation } from 'react-i18next';
+import ChatRobot from './components/chat/ChatRobot';
 
 const theme = createTheme({
   palette: {
@@ -277,6 +278,14 @@ const App = () => {
                       memories={[]}
                       onMemorySelect={(memory) => console.log('Selected memory:', memory)}
                     />
+                  </VerifiedRoute>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/chat" element={
+                <ProtectedRoute>
+                  <VerifiedRoute>
+                    <ChatRobot />
                   </VerifiedRoute>
                 </ProtectedRoute>
               } />

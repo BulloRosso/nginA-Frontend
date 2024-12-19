@@ -31,7 +31,8 @@ import {
   Delete as DeleteIcon,
   AccessTime as AccessTimeIcon,
   AutoFixHigh as MagicWandIcon,
-  Forum as ForumIcon
+  Forum as ForumIcon,
+  SmartToy as RobotIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Profile, calculateAge } from '../types/profile';
@@ -82,7 +83,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     fetchProfiles();
   }, []);
 
-  const handleProfileSelect = (profileId: string) => {
+  const handleProfileSelect = (profileId: string, target: string) => {
     // Find the selected profile from the current profiles list
     const selectedProfile = profiles.find(p => p.id === profileId);
 
@@ -95,7 +96,11 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     if (onSelect) {
       onSelect(profileId);
     }
-    navigate('/interview');
+    if (!target) {
+      navigate('/interview');
+    } else {
+      navigate(target)
+    }
   };
 
   const handleCreateNew = () => {
@@ -271,6 +276,23 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                         {t('profile.buy')}
                       </Button>
                     )}
+                    <Button
+                      variant="contained"
+                      startIcon={<RobotIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent profile selection
+                        handleProfileSelect(profile.id, '/chat');
+                      }}
+                      sx={{ 
+                        mr: 1,
+                        bgcolor: '#1eb3b7',
+                        '&:hover': {
+                          bgcolor: '#179699'
+                        }
+                      }}
+                    >
+                      {t('profile.chat')}
+                    </Button>
                     <Button
                       variant="contained"
                       startIcon={<MagicWandIcon />}

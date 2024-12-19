@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const resources = {
   en: {
     translation: {
+      chat: {
+        chat_with: "Chat with",
+        type_message: "Type your message here"
+      },
       landing: {
         title: "nOblivion",
         subtitle: "Precious memories persisted",
@@ -83,6 +87,7 @@ const resources = {
         next: "Next"
       },
       profile: {
+        chat: "Chat",
         buy: "Buy now!",
         "delete_success": "Profile deleted successfully",
         "delete_error": "Error when trying to delete profile. Try again later.",
@@ -183,6 +188,10 @@ const resources = {
   },
   de: {
     translation: {
+      chat: {
+        chat_with: "Rede mit",
+        type_message: "Tippe hier Deine Nachricht"
+      },
       landing: {
         title: "nOblivion",
         subtitle: "Wertvolle Erinnerungen bewahren",
@@ -255,6 +264,7 @@ const resources = {
         sessionwith: "Session mit",
       },
       profile: {
+        "chat": "Chat",        
         "buy": "Jetzt kaufen!",
         "delete_success": "Profil erfolgreich gelöscht",
         "delete_error": "Fehler beim Löschen des Profils. Bitte versuchen Sie es erneut.",
