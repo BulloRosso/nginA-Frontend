@@ -21,6 +21,7 @@ import {
   LocalOffer as PriceIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import '../../pages/styles/GoldButton.css';
 
 interface BuyProductProps {
   open: boolean;
@@ -103,10 +104,11 @@ const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profi
             left: '50%',
             transform: 'translateX(-50%)',
           }}
+          className="gold-button"
         >
-          <PriceIcon sx={{ fontSize: 40, color: '#fff', mb: 1 }} />
-          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'white', }}>
-            $299
+          <PriceIcon sx={{ fontSize: 40, color: 'black', mb: 1 }} />
+          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'black', }}>
+            {t('profile.currency')}299
           </Typography>
           <Typography variant="subtitle1" sx={{ color: '#000' }}>
             {t('buy.one_time_payment')}

@@ -92,6 +92,7 @@ const resources = {
       profile: {
         chat: "Chat",
         buy: "Buy now!",
+        currency: "US$",
         "delete_success": "Profile deleted successfully",
         "delete_error": "Error when trying to delete profile. Try again later.",
         "age": "Age",
@@ -271,7 +272,8 @@ const resources = {
         sessionwith: "Session mit",
       },
       profile: {
-        "chat": "Chat",        
+        "chat": "Chat",     
+        "currency": "€",  
         "buy": "Jetzt kaufen!",
         "delete_success": "Profil erfolgreich gelöscht",
         "delete_error": "Fehler beim Löschen des Profils. Bitte versuchen Sie es erneut.",
