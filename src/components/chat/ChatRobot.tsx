@@ -11,7 +11,18 @@ import {
   CircularProgress,
   Stack
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { 
+  Send as SendIcon, 
+  Mic as MicIcon, 
+} from '@mui/icons-material';
+
+// Add TypeScript declarations for the Web Speech API
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
 import ReactMarkdown from 'react-markdown';
 import { ChatService } from '../../services/chat';
 import { useTranslation } from 'react-i18next';
@@ -51,13 +62,68 @@ const markdownStyles = `
   }
 `;
 
+const hasInitialized = { current: false };
+
 const ChatRobot: React.FC = () => {
-  const { t } = useTranslation();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { t, i18n } = useTranslation();
+  const [messages, setMessages] = useState<Message[]>([{
+    text: t('chat.welcome_message'),
+    isUser: false,
+    timestamp: new Date()
+  }]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (!hasInitialized.current && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+        setTranscript(transcript);
+        setInputMessage(transcript);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+
+      // Automatically stop after 5 seconds of silence
+      recognitionRef.current.onspeechend = () => {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      };
+
+      // Handle errors
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      hasInitialized.current = true;
+    }
+
+    // Cleanup
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [i18n.language]); // Only reinitialize when language changes
 
   useEffect(() => {
     // Load profile data from localStorage
@@ -103,6 +169,24 @@ const ChatRobot: React.FC = () => {
       // Handle error appropriately
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      console.error('Speech recognition not supported');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      // Update language before starting
+      recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
+      setTranscript('');
+      recognitionRef.current.start();
+      setIsListening(true);
     }
   };
 
@@ -187,15 +271,53 @@ const ChatRobot: React.FC = () => {
 
         {/* Input Area */}
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            onClick={toggleListening}
+            disabled={isLoading}
+            sx={{
+              bgcolor: isListening ? 'red' : '#e0e0e0',
+              color: 'white',
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              transition: 'all 0.2s',
+              animation: isListening ? 'pulse 1.5s infinite' : 'none',
+              '@keyframes pulse': {
+                '0%': {
+                  boxShadow: '0 0 0 0 rgba(255, 0, 0, 0.4)'
+                },
+                '70%': {
+                  boxShadow: '0 0 0 10px rgba(255, 0, 0, 0)'
+                },
+                '100%': {
+                  boxShadow: '0 0 0 0 rgba(255, 0, 0, 0)'
+                }
+              },
+              '&:hover': {
+                bgcolor: isListening ? '#d32f2f' : '#bdbdbd'
+              },
+              '&.Mui-disabled': {
+                bgcolor: '#cccccc'
+              }
+            }}
+          >
+            <MicIcon />
+          </IconButton>
           <TextField
             fullWidth
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder={t('chat.type_message')}
+            placeholder={isListening ? t('chat.listening') : t('chat.type_message')}
             multiline
             maxRows={4}
             disabled={isLoading}
+            sx={{
+              '& .MuiInputBase-root': {
+                backgroundColor: isListening ? 'rgba(255, 0, 0, 0.05)' : 'transparent',
+                transition: 'background-color 0.3s ease'
+              }
+            }}
           />
           <IconButton 
             color="primary" 

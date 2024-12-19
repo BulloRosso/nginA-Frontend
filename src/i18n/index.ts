@@ -7,8 +7,11 @@ const resources = {
   en: {
     translation: {
       chat: {
-        chat_with: "Chat with",
-        type_message: "Type your message here"
+        "listening": "Listening... Speak now",
+          "speech_not_supported": "Speech recognition is not supported in your browser",
+        chat_with: "Hi, I am",
+        type_message: "Type your message here",
+        welcome_message: "I can tell you about people I know and experiences from my past. Let's figure out blind spots in my memory together."
       },
       landing: {
         title: "nOblivion",
@@ -189,8 +192,11 @@ const resources = {
   de: {
     translation: {
       chat: {
-        chat_with: "Rede mit",
-        type_message: "Tippe hier Deine Nachricht"
+        "listening": "Ich höre... Sprechen Sie jetzt",
+          "speech_not_supported": "Spracherkennung wird in Ihrem Browser nicht unterstützt",
+        chat_with: "Hi, ich bin",
+        type_message: "Tippe hier Deine Nachricht",
+        welcome_message: "Frage mich zu Personen und Ereignissen aus meiner Vergangenheit! Lass uns zusammen herausfinden, wo ich noch Erinnerungslücken habe."
       },
       landing: {
         title: "nOblivion",

@@ -6,7 +6,6 @@ import {
   Typography, 
   List, 
   ListItem,
-  ListItemAvatar, 
   Avatar,
   Button,
   Box,
@@ -25,21 +24,24 @@ import {
   Alert
 } from '@mui/material';
 import { 
-  PersonAdd as PersonAddIcon,
-  MoreVert as MoreVertIcon,
-  PictureAsPdf as PdfIcon,
+  LogoutRounded,
+  Menu as MenuIcon,
+  Home as HomeIcon,
+  People as PeopleIcon,
+  SmartToy as RobotIcon,
+  AutoFixHigh as MagicWandIcon,
   Delete as DeleteIcon,
   AccessTime as AccessTimeIcon,
-  AutoFixHigh as MagicWandIcon,
   Forum as ForumIcon,
-  SmartToy as RobotIcon
+  PersonAdd as PersonAddIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Profile, calculateAge } from '../types/profile';
-import { formatDistance, format } from 'date-fns';
+import { formatDistance } from 'date-fns';
 import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
-import BuyProduct from '../components/modals/BuyProduct'
+import BuyProduct from '../components/modals/BuyProduct';
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -52,24 +54,22 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const navigate = useNavigate();
-  const { t } = useTranslation();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  // Single effect for initialization
   useEffect(() => {
-
-    // Store both the ID and the profile item
-    localStorage.removeItem('profileId');
-    localStorage.removeItem('profiles');
-
-    window.dispatchEvent(new CustomEvent('profileSelected'));
-    
-    const fetchProfiles = async () => {
+    const initializeProfileSelection = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        // Clear local storage at component mount
+        localStorage.removeItem('profileId');
+        localStorage.removeItem('profiles');
+        window.dispatchEvent(new CustomEvent('profileSelected'));
+
+        // Fetch profiles
         const data = await ProfileService.getAllProfiles();
         setProfiles(data);
       } catch (error) {
@@ -80,26 +80,24 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       }
     };
 
-    fetchProfiles();
-  }, []);
+    initializeProfileSelection();
+  }, []); // Empty dependency array - runs once on mount
 
-  const handleProfileSelect = (profileId: string, target: string) => {
-    // Find the selected profile from the current profiles list
+  const handleProfileSelect = (profileId: string, route: string) => {
     const selectedProfile = profiles.find(p => p.id === profileId);
 
-    // Store both the ID and the profile item
-    localStorage.setItem('profileId', profileId);
-    localStorage.setItem('profiles', JSON.stringify(selectedProfile));
+    if (selectedProfile) {
+      localStorage.setItem('profileId', profileId);
+      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
+      window.dispatchEvent(new CustomEvent('profileSelected'));
 
-    window.dispatchEvent(new CustomEvent('profileSelected'));
-    
-    if (onSelect) {
-      onSelect(profileId);
-    }
-    if (!target) {
-      navigate('/interview');
-    } else {
-      navigate(target)
+      onSelect?.(profileId);
+      if (!route) {
+        navigate('/interview');
+      } else {
+        navigate(route);
+      }
+     
     }
   };
 
@@ -126,22 +124,15 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   };
 
   const handleDeleteConfirm = async () => {
+    if (!selectedProfileId) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
-
-      console.log('Deleting profile:', selectedProfileId);
-
-      if (selectedProfileId) {
-        await ProfileService.deleteProfile(selectedProfileId);
-
-        // Remove from local state
-        setProfiles(profiles.filter(p => p.id !== selectedProfileId));
-
-        // Show success message
-        setSuccessMessage(t('profile.delete_success'));
-      }
+      await ProfileService.deleteProfile(selectedProfileId);
+      setProfiles(profiles.filter(p => p.id !== selectedProfileId));
+      setSuccessMessage(t('profile.delete_success'));
     } catch (error) {
       console.error('Error deleting profile:', error);
       setError(t('profile.delete_error'));
@@ -152,18 +143,21 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSuccessMessage(null);
-  };
-
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container maxWidth="lg" sx={{ 
+        mt: 4, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '50vh' 
+      }}>
         <CircularProgress />
       </Container>
     );
   }
 
+  // Rest of your rendering code...
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -267,9 +261,8 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                           }
                         }}
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent profile selection
+                          e.stopPropagation();
                           setSelectedProfile(profile);
-                          console.log("BUYING")
                           setBuyModalOpen(true);
                         }}
                       >
@@ -280,8 +273,8 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                       variant="contained"
                       startIcon={<RobotIcon />}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent profile selection
-                        handleProfileSelect(profile.id, '/chat');
+                        e.stopPropagation();
+                        handleProfileSelect(profile.id,'/chat');
                       }}
                       sx={{ 
                         mr: 1,
@@ -325,15 +318,15 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
           >
-              <MenuItem 
-                onClick={(e) => {
-                  const profileToDelete = selectedProfileId;
-                  handleMenuClose();
-                  setSelectedProfileId(profileToDelete);
-                  setDeleteDialogOpen(true);
-                }} 
-                sx={{ color: 'error.main' }}
-              >
+            <MenuItem 
+              onClick={() => {
+                const profileToDelete = selectedProfileId;
+                handleMenuClose();
+                setSelectedProfileId(profileToDelete);
+                setDeleteDialogOpen(true);
+              }} 
+              sx={{ color: 'error.main' }}
+            >
               <DeleteIcon sx={{ mr: 1 }} />
               {t('profile.remove_profile')}
             </MenuItem>
@@ -352,14 +345,12 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             </DialogContent>
             <DialogActions>
               <Button 
-                type="button"
                 onClick={() => setDeleteDialogOpen(false)}
                 disabled={loading}
               >
                 {t('common.cancel')}
               </Button>
               <Button 
-                type="button"
                 onClick={handleDeleteConfirm} 
                 color="error" 
                 variant="contained"
@@ -370,28 +361,25 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               </Button>
             </DialogActions>
           </Dialog>
-          
         </Paper>
       </Box>
-      
-      {/* Success Snackbar */}
+
+      {/* Feedback Messages */}
       <Snackbar
         open={!!successMessage}
         autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSuccessMessage(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert 
-          onClose={handleCloseSnackbar}
+          onClose={() => setSuccessMessage(null)}
           severity="success"
           variant="filled"
-          sx={{ width: '100%' }}
         >
           {successMessage}
         </Alert>
       </Snackbar>
 
-      {/* Error Snackbar */}
       <Snackbar
         open={!!error}
         autoHideDuration={4000}
@@ -402,16 +390,17 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           onClose={() => setError(null)}
           severity="error"
           variant="filled"
-          sx={{ width: '100%' }}
         >
           {error}
         </Alert>
       </Snackbar>
+
       <BuyProduct
         open={buyModalOpen}
         onClose={() => setBuyModalOpen(false)}
         profileId={selectedProfile?.id || ''}
-        profileName={selectedProfile?.first_name || ''}/>
+        profileName={selectedProfile?.first_name || ''}
+      />
     </Container>
   );
 };
