@@ -101,7 +101,7 @@ const resources = {
         "remove_profile": "Remove Profile",
         "confirm_delete": "Confirm Delete",
         "delete_warning": "Are you sure you want to delete this profile? This action cannot be undone.",
-        "select_profile": "Select a Profile",
+        "select_profile": "Create or select a person to be interviewed",
         "create_new": "Create New Profile",
         "or_continue": "or continue with existing profile",
         "sessions": "Sessions",
@@ -112,6 +112,7 @@ const resources = {
           and your background. This information helps us create a more personalized
           and meaningful experience tailored specifically to your journey.`,
         help2: `If you are the person to be interviewed, please provide information about YOUR life - otherwise just describe the person you want to gift a nOblivion interview to.`,
+        help3: 'You can manage more than one person (called profile) with you nOblivion.',
         steps: {
           basic_info: "Basic Information",
           characterization: "Characterization"
@@ -282,7 +283,7 @@ const resources = {
         "remove_profile": "Entferne Profil",
         "confirm_delete": "Löschen bestätigen",
         "delete_warning": "Sind Sie sicher? Das Löschen kann nicht rückgängig gemacht werden.",
-        "select_profile": "Wählen Sie ein Profil",
+        "select_profile": "Eine Person für das Interview neu anlegen oder auswählen",
         "create_new": "Ein neues Profil erzeugen",
         "or_continue": "oder mit einem existierenden Profil fortfahren",
         "no_profiles": "Keine Profile vorhanden. Bitte erzeugen Sie ein neues Profil.",
@@ -290,6 +291,7 @@ const resources = {
         helpcaption:"Unser erster Schritt",
         help:`Bevor wir mit dem Interviewprozess beginnen, möchten wir mehr über Sie und Ihren Hintergrund erfahren. Diese Informationen helfen uns, eine individuellere und bedeutungsvollere Erfahrung zu schaffen, die speziell auf Ihr Umfeld abgestimmt ist.`,
         help2:`Wenn Sie die Person sind, die interviewt werden soll, geben Sie bitte Informationen über IHR Leben an – andernfalls beschreiben Sie einfach die Person, der Sie ein nOblivion-Interview schenken möchten.`,
+        help3:'Sie können mehr als eine Person (auch Profil genannt) mit nOblivion verwalten.',
         steps: {
           basic_info: "Grundinformationen",
           characterization: "Charakterisierung"

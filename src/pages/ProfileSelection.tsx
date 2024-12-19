@@ -42,6 +42,7 @@ import { formatDistance } from 'date-fns';
 import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
 import BuyProduct from '../components/modals/BuyProduct';
+import './styles/GoldButton.css';
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -171,17 +172,43 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               {error}
             </Typography>
           )}
-
-          <Button
-            variant="contained"
-            startIcon={<PersonAddIcon />}
-            onClick={handleCreateNew}
-            fullWidth
-            sx={{ mb: 3, backgroundColor: 'gold' }}
-          >
-            {t('profile.create_new')}
-          </Button>
-
+          <Box sx={{
+             display: 'flex',
+             justifyContent: 'space-between',
+             alignItems: 'end',
+             flexDirection: 'row'
+          }}>
+            <img src="/public/create-profile.jpg" style={{ width: '140px' }} alt="Noblivion Logo"></img>
+            <Button
+              variant="contained"
+              startIcon={<PersonAddIcon />}
+              onClick={handleCreateNew}
+              fullWidth
+              sx={{ mb: 3, backgroundColor: 'gold', '&:hover': {
+                    backgroundColor: '#e2bf02',
+                    color: 'white'
+                  } }}
+            >
+              {t('profile.create_new')}
+            </Button>
+            <Paper elevation={3} sx={{ p: 4, marginLeft: '80px', backgroundColor: '#f2f0e8' }}>
+              <Box 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary"
+                  sx={{ flex: 1 }}
+                >
+                  {t('profile.help3')}
+                </Typography>
+              </Box>
+              </Paper>
+          </Box>
           <Divider sx={{ my: 2 }}>{t('profile.or_continue')}</Divider>
 
           <List sx={{ width: '100%' }}>
@@ -252,14 +279,12 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                     {!profile.subscribed_at && (
                       <Button
                         variant="contained"
+                        className="gold-button"
                         sx={{ 
-                          bgcolor: 'gold',
-                          color: 'black',
-                          mr: 1,
-                          '&:hover': {
-                            bgcolor: '#ffd700',
-                          }
+                          mb: 0,
+                          mr: 3
                         }}
+                        
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedProfile(profile);
