@@ -178,7 +178,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
              alignItems: 'end',
              flexDirection: 'row'
           }}>
-            <img src="/public/create-profile.jpg" style={{ width: '140px' }} alt="Noblivion Logo"></img>
+            <img  onClick={handleCreateNew} src="/public/create-profile.jpg" style={{ cursor: 'pointer', width: '140px' }} alt="Noblivion Logo"></img>
             <Button
               variant="contained"
               startIcon={<PersonAddIcon />}
@@ -191,7 +191,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             >
               {t('profile.create_new')}
             </Button>
-            <Paper elevation={3} sx={{ p: 4, marginLeft: '80px', backgroundColor: '#f2f0e8' }}>
+            <Paper elevation={3} sx={{ p: 2, marginLeft: '80px', backgroundColor: '#f2f0e8' }}>
               <Box 
                 sx={{ 
                   height: '100%',
