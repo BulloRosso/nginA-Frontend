@@ -246,7 +246,10 @@ const MemoryCapture = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [isInitializing, setIsInitializing] = useState(true);  // For initial data load
+  const [isMemoryLoading, setIsMemoryLoading] = useState(false);  // For memory operations
+  const [isSubmitting, setIsSubmitting] = useState(false);  // For memory submission
+
   // Add the selection handler
   const handleMemorySelect = (memory: Memory) => {
     setSelectedMemory(prevSelected => 
@@ -283,33 +286,68 @@ const MemoryCapture = () => {
   const handleRemoveImage = (indexToRemove: number) => {
     setImages(images => images.filter((_, index) => index !== indexToRemove));
   };
+  const fetchMemories = useCallback(async () => {
+    try {
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      console.time('Total fetch');
+      const fetchedMemories = await MemoryService.getMemories(profileId);
+
+      // Only update state if the component is still mounted
+      setMemories(prevMemories => {
+        // If no memories and profile exists, create defaults
+        if (fetchedMemories.length === 0 && profile) {
+          return createDefaultMemories(profile);
+        }
+        return fetchedMemories;
+      });
+
+    } catch (err) {
+      console.error('Failed to fetch memories:', err);
+      setError('Failed to load memories');
+    } finally {
+      console.timeEnd('Total fetch');
+    }
+  }, []); 
   
   useEffect(() => {
-    const fetchProfileAndMemories = async () => {
+    const initializeData = async () => {
       try {
-        setLoading(true);
+        setIsInitializing(true);
         const profileId = localStorage.getItem('profileId');
         if (!profileId) {
           throw new Error('No profile ID found');
         }
 
-        // Fetch profile
-        const profileData = await ProfileService.getProfile(profileId);
-        setProfile(profileData);
+        console.time('Parallel API calls');
+        // Run all API calls in parallel
+        const [profileData, memoriesData, interviewData] = await Promise.all([
+          ProfileService.getProfile(profileId),
+          MemoryService.getMemories(profileId),
+          InterviewService.startInterview(profileId, i18n.language)
+        ]);
+        console.timeEnd('Parallel API calls');
 
-        // Fetch memories after profile is set
-        await fetchMemories();
+        // Set all states
+        setProfile(profileData);
+        setMemories(memoriesData.length === 0 ? createDefaultMemories(profileData) : memoriesData);
+        setSessionId(interviewData.session_id);
+        setQuestion(interviewData.initial_question);
+
       } catch (err) {
-        console.error('Failed to fetch data:', err);
-        setError('Failed to load profile or memories');
+        console.error('Failed to initialize:', err);
+        setError('Failed to load data');
       } finally {
-        setLoading(false);
+        setIsInitializing(false);
       }
     };
 
-    fetchProfileAndMemories();
-  }, []); 
-  
+    initializeData();
+  }, []);
+/*  
   useEffect(() => {
     const initInterview = async () => {
       try {
@@ -332,30 +370,7 @@ const MemoryCapture = () => {
 
     initInterview();
   }, [i18n.language]);
-
-  const fetchMemories = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const profileId = localStorage.getItem('profileId');
-      if (!profileId) {
-        throw new Error('No profile ID found');
-      }
-
-      const fetchedMemories = await MemoryService.getMemories(profileId);
-
-      // If no memories and profile exists, create defaults
-      if (fetchedMemories.length === 0 && profile) {
-        setMemories(createDefaultMemories(profile));
-      } else {
-        setMemories(fetchedMemories);
-      }
-    } catch (err) {
-      console.error('Failed to fetch memories:', err);
-      setError('Failed to load memories');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [profile]); // Add profile as dependency since it's used in the function
+*/
 
   // Camera handling
   const startCamera = async () => {
@@ -784,7 +799,7 @@ return (
                       },
                     },
                   }}>
-                    {isLoading ? (
+                    {isInitializing  ? (
                       <Box sx={{ 
                         display: 'flex', 
                         flexDirection: 'column', 
