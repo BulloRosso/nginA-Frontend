@@ -501,11 +501,18 @@ const MemoryCapture = () => {
         throw new Error('Missing profile ID or session ID');
       }
 
+      let user_id = JSON.parse(localStorage.getItem('user')).id;
+      if (!user_id ) {
+        console.log(localStorage.getItem('user'))
+        throw new Error('Cannot read user id from local storage');
+      }
+      
       // Submit response to get classification and sentiment
       const interviewResponse = await InterviewService.submitResponse(
         profileId,
         sessionId,
         {
+          user_id: user_id,
           text: response,
           language: i18n.language
         }

@@ -29,7 +29,7 @@ export const InterviewService = {
   submitResponse: async (
     profileId: string, 
     sessionId: string, 
-    response: { text: string; language: string }
+    response: { text: string; language: string, user_id: string }
   ): Promise<{
     sentiment: {
       joy: number;
@@ -44,6 +44,7 @@ export const InterviewService = {
     const result = await api.post(
       `/api/v1/interviews/${profileId}/response`,
       {
+        user_id: response.user_id,
         text: response.text,
         language: response.language,
         audio_url: null,
