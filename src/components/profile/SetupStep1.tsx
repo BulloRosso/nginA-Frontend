@@ -166,7 +166,7 @@ export const SetupStep1: React.FC<SetupStepProps> = ({
               startIcon={<PhotoCameraIcon />}
               size="small"
             >
-              {profile.imageUrl ? 'Change Photo' : 'Upload Photo'}
+              {profile.imageUrl ? t('profile.change_photo') : t('profile.upload_photo')}
             </Button>
           </Box>
         </label>

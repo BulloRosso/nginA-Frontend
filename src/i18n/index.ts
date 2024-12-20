@@ -115,6 +115,8 @@ const resources = {
         }
       },
       profile: {
+        "change_photo": "Change Photo",
+        "upload_photo": "Upload Photo",
         chat: "Chat",
         buy: "Buy now!",
         currency: "US$",
@@ -325,7 +327,9 @@ const resources = {
       },
       profile: {
         "chat": "Chat",     
-        "currency": "€",  
+        "currency": "€",
+        "change_photo": "Bild ändern",
+        "upload_photo": "Bild hochladen",
         "buy": "Jetzt kaufen!",
         "delete_success": "Profil erfolgreich gelöscht",
         "delete_error": "Fehler beim Löschen des Profils. Bitte versuchen Sie es erneut.",
