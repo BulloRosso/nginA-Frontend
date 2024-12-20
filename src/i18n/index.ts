@@ -132,8 +132,9 @@ const resources = {
         "or_continue": "or continue with existing profile",
         "sessions": "Sessions",
         "no_profiles": "No profiles found. Create a new one to get started.",
+        step3_description: "The following settings are for the auto rephrasing of your memories: e. g. 'I bought a new boat' vs. 'Ralph bought a new boat'. Our AI checks your grammar and applies a consistent style.",
         title: "Describe the person to be interviewed",
-        helpcation: "Our first step",
+        helpcaption: "Our first step",
         help: `Before we begin the interview process, we need to understand more about you
           and your background. This information helps us create a more personalized
           and meaningful experience tailored specifically to your journey.`,
@@ -141,7 +142,8 @@ const resources = {
         help3: 'You can manage more than one person (called profile) with you nOblivion.',
         steps: {
           basic_info: "Basic Information",
-          characterization: "Characterization"
+          characterization: "Characterization",
+          memory_style:"Memory style"
         },
         fields: {
           first_name: "First Name",
@@ -340,13 +342,15 @@ const resources = {
         "or_continue": "oder mit einem existierenden Profil fortfahren",
         "no_profiles": "Keine Profile vorhanden. Bitte erzeugen Sie ein neues Profil.",
         title: "Beschreibe die Person, mit der das Interview geführt wird",
+        step3_description: "Die folgende Einstellungen betreffen die automtische Umformulierung der eingegebenen Erinnerungen: z. B. 'Ich kaufte mir ein neues Boot' bzw. 'Ralph kaufte sich ein neue Boot'. Unsere KI korrigiert ihre Rechtschreibung während der Eingabe und sorgt für einen durchgängigen Stil.",
         helpcaption:"Unser erster Schritt",
         help:`Bevor wir mit dem Interviewprozess beginnen, möchten wir mehr über Sie und Ihren Hintergrund erfahren. Diese Informationen helfen uns, eine individuellere und bedeutungsvollere Erfahrung zu schaffen, die speziell auf Ihr Umfeld abgestimmt ist.`,
         help2:`Wenn Sie die Person sind, die interviewt werden soll, geben Sie bitte Informationen über IHR Leben an – andernfalls beschreiben Sie einfach die Person, der Sie ein nOblivion-Interview schenken möchten.`,
         help3:'Sie können mehr als eine Person (auch Profil genannt) mit nOblivion verwalten.',
         steps: {
           basic_info: "Grundinformationen",
-          characterization: "Charakterisierung"
+          characterization: "Charakterisierung",
+          memory_style:"Stil der Erinnerungen"
         },
         fields: {
           first_name: "Vorname",
