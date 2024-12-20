@@ -89,6 +89,31 @@ const resources = {
         back: "Back",
         next: "Next"
       },
+      "settings": {
+        "auth_error": "Authentication error. Please try logging in again.",
+        "login_required": "You must be logged in to save settings.",
+        "title": "Settings",
+        "save_success": "Settings saved successfully",
+        "save_error": "Failed to save settings",
+        "narrator_perspective": "Narrator Perspective",
+        "narrator_verbosity": "Verbosity Level",
+        "narrator_style": "Narrative Style",
+        "perspective": {
+          "ego": "First Person",
+          "third_person": "Third Person"
+        },
+        "verbosity": {
+          "verbose": "Detailed",
+          "normal": "Normal",
+          "brief": "Concise"
+        },
+        "style": {
+          "professional": "Professional",
+          "romantic": "Romantic",
+          "optimistic": "Optimistic",
+          "neutral": "Neutral"
+        }
+      },
       profile: {
         chat: "Chat",
         buy: "Buy now!",
@@ -199,6 +224,31 @@ const resources = {
         chat_with: "Hi, ich bin",
         type_message: "Tippe hier Deine Nachricht",
         welcome_message: "Frage mich zu Personen und Ereignissen aus meiner Vergangenheit! Lass uns zusammen herausfinden, wo ich noch Erinnerungslücken habe."
+      },
+      "settings": {
+        "auth_error": "Authentifizierungsfehler. Bitte melden Sie sich erneut an.",
+        "login_required": "Sie müssen angemeldet sein, um Einstellungen zu speichern.",
+        "title": "Einstellungen",
+        "save_success": "Einstellungen erfolgreich gespeichert",
+        "save_error": "Fehler beim Speichern der Einstellungen",
+        "narrator_perspective": "Erzählperspektive",
+        "narrator_verbosity": "Ausführlichkeit",
+        "narrator_style": "Erzählstil",
+        "perspective": {
+          "ego": "Ich-Perspektive",
+          "third_person": "Dritte Person"
+        },
+        "verbosity": {
+          "verbose": "Ausführlich",
+          "normal": "Normal",
+          "brief": "Kurz"
+        },
+        "style": {
+          "professional": "Professionell",
+          "romantic": "Romantisch",
+          "optimistic": "Optimistisch",
+          "neutral": "Neutral"
+        }
       },
       landing: {
         title: "nOblivion",

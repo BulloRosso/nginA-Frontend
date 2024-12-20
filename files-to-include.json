@@ -21,7 +21,9 @@
       "/src/pages/LandingPage.tsx",
       "/src/components/memories/MemoryTypeFilter.tsx",
       "/src/components/auth.tsx",
-      "/src/components/verification.tsx" 
+      "/src/components/verification.tsx",
+      "/src/components/chat/ChatRobot.tsx",
+      "/src/components/modals/BuyProduct.tsx"
    ],
    "frontend_services": [
       "/src/services/api.ts",
@@ -29,7 +31,8 @@
       "/src/services/memories.ts",
       "/src/services/profiles.ts",
       "/src/services/auth.ts",
-      "/scr/contexts/auth/auth.ts"
+      "/scr/contexts/auth/auth.ts",
+      "/src/services/chat.ts"
    ],
    "frontend_entrypoint": [
     "/src/App.tsx",

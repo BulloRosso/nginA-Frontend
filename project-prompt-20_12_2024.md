@@ -316,30 +316,44 @@ After the backend received an answer it follows these steps in sequence:
 ### Frontend: React, vite, mui v6 and Typescript
 The frontend uses plaing mui v6 styling and is intended to used by non-trained users. Handling instructions and step-by-step guidance should always be provided.
 
+#### Local storage for state management
+In the localStorage we have the following items:
+* i18nextLng: The current selected locale (Example "de")
+* token: the OAuth token received from the backend for the current user
+* user: a JSON object of the current user. Example: {"id":"e7f8856b-165a-4bf8-b3ae-551fb58472b9","email":"ralph.goellner@e-ntegration.de","first_name":"Ralph","last_name":"Göllner","is_validated":false}
+* profileId: the id of the current selected profile Example: "8f43b7d5-31d2-4f32-b956-195a83bef907"
+
 #### App (entry point)
 The app looks like this:
 -------------------
 
 ### src/App.tsx
 ```
-// src/App.tsx
 import './App.css';
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import MemoryTimeline from './components/common/MemoryTimeline';
 import ProfileSetup from './pages/ProfileSetup';
 import MemoryCapture from './pages/MemoryCapture';
 import ProfileSelection from './pages/ProfileSelection';
 import { LanguageSwitch } from './components/common/LanguageSwitch';
-import { Box, AppBar, Toolbar, Typography } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography, IconButton, Stack, Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { 
+  LogoutRounded,
+  Menu as MenuIcon,
+  Home as HomeIcon,
+  People as PeopleIcon
+} from '@mui/icons-material';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Login, Register, ForgotPassword } from './components/auth';
-import { AuthProvider } from './contexts/auth';
+import { AuthProvider, useAuth } from './contexts/auth';
 import { VerificationCheck, VerifiedRoute } from './components/verification';
 import LandingPage from './pages/LandingPage';  
 import IntroductionVideo from './pages/IntroductionVideo';
+import { useTranslation } from 'react-i18next';
+import ChatRobot from './components/chat/ChatRobot';
 
 const theme = createTheme({
   palette: {
@@ -349,14 +363,201 @@ const theme = createTheme({
   },
 });
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token'); // Or your auth check
+const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+  const handleNavigation = (path: string) => {
+    onClose();
+    navigate(path);
+  };
+
+  const handleLogout = () => {
+    onClose();
+    logout();
+    window.location.href = '/login';
+  };
+
+  // Create menu items array conditionally
+  const menuItems = [
+    // Basic navigation items
+    <MenuItem key="home" onClick={() => handleNavigation('/')}>
+      <ListItemIcon>
+        <HomeIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText primary={t('menu.home')} />
+    </MenuItem>,
+
+    <MenuItem key="profiles" onClick={() => handleNavigation('/profile-selection')}>
+      <ListItemIcon>
+        <PeopleIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText primary={t('menu.profiles')} />
+    </MenuItem>
+  ];
+
+  // Add logout items if authenticated
+  if (isAuthenticated) {
+    menuItems.push(
+      <Divider key="divider" />,
+      <MenuItem key="logout" onClick={handleLogout}>
+        <ListItemIcon>
+          <LogoutRounded fontSize="small" />
+        </ListItemIcon>
+        <ListItemText primary={t('menu.logout')} />
+      </MenuItem>
+    );
   }
 
-  return children;
+  return (
+    <Menu
+      anchorEl={anchorEl}
+      open={Boolean(anchorEl)}
+      onClose={onClose}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'right',
+      }}
+    >
+      {menuItems}
+    </Menu>
+  );
+};
+
+const Header = () => {
+  const { logout } = useAuth();
+  const [profileName, setProfileName] = React.useState<string>('');
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const { t } = useTranslation();
+
+  const updateProfileName = useCallback(() => {
+    const profileId = localStorage.getItem('profileId');
+    setProfileName(null);
+    if (profileId) {
+      const profiles = localStorage.getItem('profiles');
+      if (profiles) {
+        try {
+          const parsedProfile = JSON.parse(profiles);
+          console.log("PARSING")
+          setProfileName(parsedProfile.first_name);
+          
+        } catch (error) {
+          console.error('Error parsing profiles:', error);
+        }
+      }
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    updateProfileName();
+  }, [updateProfileName]);
+
+  // Listen for storage changes
+  useEffect(() => {
+    // Handler for storage events
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'profileId' || event.key === 'profiles') {
+        updateProfileName();
+      }
+    };
+
+    // Handler for direct calls
+    const handleCustomEvent = (event: CustomEvent) => {
+      updateProfileName();
+    };
+
+    // Add event listeners
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('profileSelected', handleCustomEvent as EventListener);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('profileSelected', handleCustomEvent as EventListener);
+    };
+  }, [updateProfileName]);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  const isAuthenticated = !!(token || user);
+
+  return (
+    <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
+      <Toolbar variant="dense">
+        <img src="/public/conch-logo.png" alt="Conch Logo" width="30" height="30" />
+        <Typography variant="h6" component="div" sx={{ 
+          marginLeft: '8px',
+          fontWeight: 'bold', 
+          flexGrow: 1 
+        }}>
+          <span style={{ color: 'red' }}>nO</span>blivion
+          {profileName && (
+            <span style={{ 
+              marginLeft: '16px', 
+              fontSize: '0.9em',
+              fontWeight: '400',
+              color: '#fff',
+              opacity: 0.9 
+            }}>
+              {t('appbar.sessionwith')} {profileName}
+            </span>
+          )}
+        </Typography>
+
+        <Stack direction="row" spacing={1} alignItems="center">
+          <LanguageSwitch />
+        </Stack>
+
+        {isAuthenticated && (
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={handleMenuOpen}
+            sx={{ ml: 1, color: 'white' }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        <AppMenu 
+          anchorEl={anchorEl}
+          onClose={handleMenuClose}
+          isAuthenticated={isAuthenticated}
+        />
+      </Toolbar>
+    </AppBar>
+  );
+};
+
+const AppLayout = ({ children }) => {
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <Header />
+      <VerificationCheck />
+      {children}
+    </Box>
+  );
+};
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+  return <AppLayout>{children}</AppLayout>;
 };
 
 const App = () => {
@@ -365,72 +566,61 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <I18nextProvider i18n={i18n}>
           <BrowserRouter>
-            
-            {/* Only show AppBar on non-landing pages */}
             <Routes>
+              {/* Landing page - no header */}
               <Route path="/" element={<LandingPage />} />
-              <Route
-                path="*"
-                element={
-                  <Box sx={{ flexGrow: 1 }}>
-                    <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
-                      <Toolbar variant="dense">
-                        <img src="/public/conch-logo.png" alt="Conch Logo" width="30" height="30" />
-                        <Typography variant="h6" component="div" sx={{ marginLeft: '8px',fontWeight: 'bold', flexGrow: 1 }}>
-                          <span style={{ color: 'red' }}>nO</span>blivion
-                        </Typography>
-                        <LanguageSwitch />
-                      </Toolbar>
-                    </AppBar>
 
-                    <VerificationCheck />
-                    
-                    <Routes>
-                      {/* Public routes */}
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/forgot-password" element={<ForgotPassword />} />
+              {/* Auth routes - no header */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                      {/* Protected and verified routes */}
-                      <Route path="/profile-selection" element={
-                        <ProtectedRoute>
-                          <VerifiedRoute>
-                            <ProfileSelection />
-                          </VerifiedRoute>
-                        </ProtectedRoute>
-                      } />
+              {/* Protected routes - with header */}
+              <Route path="/profile-selection" element={
+                <ProtectedRoute>
+                  <VerifiedRoute>
+                    <ProfileSelection />
+                  </VerifiedRoute>
+                </ProtectedRoute>
+              } />
 
-                      <Route path="/profile" element={
-                            <ProfileSetup />
-                      } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <ProfileSetup />
+                </ProtectedRoute>
+              } />
 
-                      {/* New route for introduction video */}
-                      <Route path="/introduction" element={
-                            <IntroductionVideo />
-                      } />
+              <Route path="/introduction" element={
+                <ProtectedRoute>
+                  <IntroductionVideo />
+                </ProtectedRoute>
+              } />
 
-                      <Route path="/interview" element={
-                        
-                            <MemoryCapture />
-                        
-                      } />
+              <Route path="/interview" element={
+                <ProtectedRoute>
+                  <MemoryCapture />
+                </ProtectedRoute>
+              } />
 
-                      <Route path="/timeline" element={
-                        <ProtectedRoute>
-                          <VerifiedRoute>
-                            <MemoryTimeline 
-                              memories={[]}
-                              onMemorySelect={(memory) => console.log('Selected memory:', memory)}
-                            />
-                          </VerifiedRoute>
-                        </ProtectedRoute>
-                      } />
-                    </Routes>
-                  </Box>
-                }
-              />
+              <Route path="/timeline" element={
+                <ProtectedRoute>
+                  <VerifiedRoute>
+                    <MemoryTimeline 
+                      memories={[]}
+                      onMemorySelect={(memory) => console.log('Selected memory:', memory)}
+                    />
+                  </VerifiedRoute>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/chat" element={
+                <ProtectedRoute>
+                  <VerifiedRoute>
+                    <ChatRobot />
+                  </VerifiedRoute>
+                </ProtectedRoute>
+              } />
             </Routes>
-            
           </BrowserRouter>
         </I18nextProvider>
       </ThemeProvider>
@@ -768,7 +958,9 @@ import './VerticalTimeline.css';
 
 interface TimelineProps {
   memories: Memory[];
-  onMemoryDeleted?: () => void; // Callback to refresh the memories list
+  onMemoryDeleted?: () => void; 
+  onMemorySelect?: (memory: Memory) => void;
+  selectedMemoryId?: string | null;
 }
 
 const categoryConfig = {
@@ -840,7 +1032,10 @@ const MemoryDescription: React.FC<{ description: string }> = ({ description }) =
   );
 };
 
-const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) => {
+const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
+                                                  onMemoryDeleted, 
+                                                  onMemorySelect,
+                                                  selectedMemoryId = null  }) => {
   const [isDeleting, setIsDeleting] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [editingMemory, setEditingMemory] = React.useState<Memory | null>(null);
@@ -1004,6 +1199,11 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
     }
   };
 
+  const handleIconClick = (e, memoryId: string) => {
+    e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    alert(memoryId)
+  }
 
   return (
         <Grid container spacing={0} sx={{ height: '100%' }}> {/* Changed from 700px to 100% */}
@@ -1043,24 +1243,49 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
           
                   return (
                     
-                    <VerticalTimelineElement
-                      key={memory.id}
-                      className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
-                      position={isEven ? 'right' : 'left'}
-                      date={formatDate(memory.time_period)}
-                      iconStyle={{ background: config.color, color: '#fff' }}
-                      icon={<IconComponent />}
-                      contentStyle={{
-                        background: config.background,
-                        borderRadius: '8px',
-                        paddingTop: (hasImages) ? '40px' : '8px',
-                        boxShadow: '0 3px 6px rgba(0,0,0,0.1)',
-                        position: 'relative' // Added for absolute positioning of delete button
-                      }}
-                      contentArrowStyle={{ borderRight: `7px solid ${config.background}` }}
-                    >
+                      <VerticalTimelineElement
+                        key={memory.id}
+                        className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
+                        position={isEven ? 'right' : 'left'}
+                        date={formatDate(memory.time_period)}
+                        iconStyle={{ 
+                          background: selectedMemoryId === memory.id ? '#fff' : config.color,
+                          color: selectedMemoryId === memory.id ? config.color : '#fff',
+                          cursor: 'pointer',
+                          border: selectedMemoryId === memory.id ? `2px solid ${config.color}` : 'none',
+                          transition: 'all 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.1)',
+                            boxShadow: '0 0 8px rgba(0,0,0,0.2)'
+                          }
+                        }}
+                        icon={
+                          <IconComponent 
+                            onClick={() => onMemorySelect?.(memory)} 
+                            sx={{ 
+                              fontSize: '1.2rem',
+                              transition: 'transform 0.2s ease',
+                              '&:hover': {
+                                transform: 'scale(1.2)'
+                              }
+                            }}
+                          />
+                        }
+                        contentStyle={{
+                          background: selectedMemoryId === memory.id ? '#fff' : config.background,
+                          borderRadius: '8px',
+                          paddingTop: (hasImages) ? '40px' : '8px',
+                          boxShadow: selectedMemoryId === memory.id 
+                            ? '0 0 0 2px #1eb3b7'
+                            : '0 3px 6px rgba(0,0,0,0.1)',
+                          position: 'relative'
+                        }}
+                        contentArrowStyle={{ 
+                          borderRight: `7px solid ${selectedMemoryId === memory.id ? '#1eb3b7' : config.background}` 
+                        }}
+                      >
                       {memory.image_urls && memory.image_urls.length > 0 && (
-                        <div style={{ position: 'absolute', top: '-35px' }} 
+                        <div style={{ position: 'absolute', top: '-38px' }} 
                           className="mt-3 grid grid-cols-3 gap-2">
                           {memory.image_urls.map((url, imgIndex) => (
                             <div 
@@ -1072,7 +1297,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                                 src={url}
                                 alt={`Memory ${imgIndex + 1}`}
                                 className="w-full h-24 object-cover rounded-lg transition-transform hover:scale-105"
-                                style={{borderRadius: '50%',
+                                style={{borderRadius: '6px',
                                         aspectRatio: '1/1', 
                                           width: '70px', 
                                           height: '100%', 
@@ -1085,7 +1310,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
                       )}
                       <MemoryDescription description={memory.description} />
                       {memory.location?.name && (
-                        <p className="text-sm text-gray-500 mt-2">
+                        <p className="text-sm text-gray-500 mt-2" style={{ position: 'relative', top: '-10px' }}>
                           <LocationIcon /> {memory.location.name}
                         </p>
                       )}
@@ -1191,9 +1416,9 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories, onMemoryDeleted }) 
               <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : isDragActive ? (
-            <p>Drop the files here ...</p>
+            <p>{t('memory.drop_here')}</p>
           ) : (
-            <p>Drag 'n' drop some images here, or click to select files</p>
+            <p>{t('memory.drag_drop')}</p>
           )}
         </div>
       </DialogContent>
@@ -1421,6 +1646,9 @@ import {
   PhotoLibrary as PhotoLibraryIcon,
   Send as SendIcon,
   Delete as DeleteIcon,
+  Close as CloseIcon,
+  TouchApp as TouchAppIcon,
+  PostAdd as AddMemoryIcon,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { InterviewService } from '../services/interviews';
@@ -1530,6 +1758,89 @@ const AnimatedMicIcon = styled(Box)(({ theme }) => ({
   }
 }));
 
+const SelectedMemoryDisplay = ({ memory, onClose }) => {
+  const { t } = useTranslation();
+
+  if (!memory) {
+    return (
+      <Card sx={{ 
+        mt: 2, 
+        backgroundColor: '#f8f9fa',
+        border: '1px dashed #ccc'
+      }}>
+        <CardContent sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 2,
+          p: 3
+        }}>
+          <TouchAppIcon 
+            sx={{ 
+              color: '#1eb3b7',
+              animation: 'pulse 2s infinite',
+              '@keyframes pulse': {
+                '0%': {
+                  transform: 'scale(1)',
+                  opacity: 0.7,
+                },
+                '50%': {
+                  transform: 'scale(1.1)',
+                  opacity: 1,
+                },
+                '100%': {
+                  transform: 'scale(1)',
+                  opacity: 0.7,
+                }
+              }
+            }} 
+          />
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ fontStyle: 'italic' }}
+          >
+            {t('memory.selection_hint', 'Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button.')}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card sx={{ mt: 2, position: 'relative', backgroundColor: '#f1efe8' }}>
+      <CardContent>
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <Typography variant="h6" gutterBottom sx={{ color: 'rgb(252, 156, 43)' }}>
+          <AddMemoryIcon /> {t('memory.selected_memory')} 
+        </Typography>
+
+        <Grid container spacing={2}>
+
+          <Grid item xs={12}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'Pangolin'
+              }}
+            >
+              {memory.description}
+            </Typography>
+          </Grid>
+
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+};
+
 const MemoryCapture = () => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -1551,6 +1862,18 @@ const MemoryCapture = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);  // For initial data load
+  const [isMemoryLoading, setIsMemoryLoading] = useState(false);  // For memory operations
+  const [isSubmitting, setIsSubmitting] = useState(false);  // For memory submission
+
+  // Add the selection handler
+  const handleMemorySelect = (memory: Memory) => {
+    setSelectedMemory(prevSelected => 
+      prevSelected?.id === memory.id ? null : memory
+    );
+  };
   
   // Initialize speech recognition
   if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -1581,33 +1904,68 @@ const MemoryCapture = () => {
   const handleRemoveImage = (indexToRemove: number) => {
     setImages(images => images.filter((_, index) => index !== indexToRemove));
   };
+  const fetchMemories = useCallback(async () => {
+    try {
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      console.time('Total fetch');
+      const fetchedMemories = await MemoryService.getMemories(profileId);
+
+      // Only update state if the component is still mounted
+      setMemories(prevMemories => {
+        // If no memories and profile exists, create defaults
+        if (fetchedMemories.length === 0 && profile) {
+          return createDefaultMemories(profile);
+        }
+        return fetchedMemories;
+      });
+
+    } catch (err) {
+      console.error('Failed to fetch memories:', err);
+      setError('Failed to load memories');
+    } finally {
+      console.timeEnd('Total fetch');
+    }
+  }, []); 
   
   useEffect(() => {
-    const fetchProfileAndMemories = async () => {
+    const initializeData = async () => {
       try {
-        setLoading(true);
+        setIsInitializing(true);
         const profileId = localStorage.getItem('profileId');
         if (!profileId) {
           throw new Error('No profile ID found');
         }
 
-        // Fetch profile
-        const profileData = await ProfileService.getProfile(profileId);
-        setProfile(profileData);
+        console.time('Parallel API calls');
+        // Run all API calls in parallel
+        const [profileData, memoriesData, interviewData] = await Promise.all([
+          ProfileService.getProfile(profileId),
+          MemoryService.getMemories(profileId),
+          InterviewService.startInterview(profileId, i18n.language)
+        ]);
+        console.timeEnd('Parallel API calls');
 
-        // Fetch memories after profile is set
-        await fetchMemories();
+        // Set all states
+        setProfile(profileData);
+        setMemories(memoriesData.length === 0 ? createDefaultMemories(profileData) : memoriesData);
+        setSessionId(interviewData.session_id);
+        setQuestion(interviewData.initial_question);
+
       } catch (err) {
-        console.error('Failed to fetch data:', err);
-        setError('Failed to load profile or memories');
+        console.error('Failed to initialize:', err);
+        setError('Failed to load data');
       } finally {
-        setLoading(false);
+        setIsInitializing(false);
       }
     };
 
-    fetchProfileAndMemories();
-  }, []); 
-  
+    initializeData();
+  }, []);
+/*  
   useEffect(() => {
     const initInterview = async () => {
       try {
@@ -1630,30 +1988,7 @@ const MemoryCapture = () => {
 
     initInterview();
   }, [i18n.language]);
-
-  const fetchMemories = useCallback(async () => {
-    try {
-      setLoading(true);
-      const profileId = localStorage.getItem('profileId');
-      if (!profileId) {
-        throw new Error('No profile ID found');
-      }
-
-      const fetchedMemories = await MemoryService.getMemories(profileId);
-
-      // If no memories and profile exists, create defaults
-      if (fetchedMemories.length === 0 && profile) {
-        setMemories(createDefaultMemories(profile));
-      } else {
-        setMemories(fetchedMemories);
-      }
-    } catch (err) {
-      console.error('Failed to fetch memories:', err);
-      setError('Failed to load memories');
-    } finally {
-      setLoading(false);
-    }
-  }, [profile]); // Add profile as dependency since it's used in the function
+*/
 
   // Camera handling
   const startCamera = async () => {
@@ -2048,6 +2383,12 @@ return (
                 </Box>
               </TabPanel>
               </CardContent>
+              <Box sx={{ px: 2, pb: 2 }}>
+                <SelectedMemoryDisplay 
+                  memory={selectedMemory} 
+                  onClose={() => setSelectedMemory(null)}
+                />
+              </Box>
             </Card>
             </Grid>
           
@@ -2057,6 +2398,10 @@ return (
                   <CardContent sx={{ 
                     flex: 1, 
                     overflowY: 'auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingBottom: '0 important',
                     '&::-webkit-scrollbar': {
                       width: '8px',
                     },
@@ -2072,10 +2417,29 @@ return (
                       },
                     },
                   }}>
-                  <MemoryTimeline 
-                    memories={memories} 
-                    onMemoryDeleted={fetchMemories} 
-                  />
+                    {isInitializing  ? (
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        gap: 2
+                      }}>
+                        <CircularProgress 
+                          size={60}
+                          sx={{ color: '#1eb3b7' }}
+                        />
+                        <Typography variant="body1" color="textSecondary">
+                          {t('memory.loading_timeline')}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <MemoryTimeline 
+                        memories={memories}
+                        onMemoryDeleted={fetchMemories}
+                        onMemorySelect={handleMemorySelect}
+                        selectedMemoryId={selectedMemory?.id || null}
+                      />
+                    )}
                 </CardContent>
               </Card>
             </Grid>
@@ -2179,7 +2543,6 @@ import {
   Typography, 
   List, 
   ListItem,
-  ListItemAvatar, 
   Avatar,
   Button,
   Box,
@@ -2198,19 +2561,25 @@ import {
   Alert
 } from '@mui/material';
 import { 
-  PersonAdd as PersonAddIcon,
-  MoreVert as MoreVertIcon,
-  PictureAsPdf as PdfIcon,
+  LogoutRounded,
+  Menu as MenuIcon,
+  Home as HomeIcon,
+  People as PeopleIcon,
+  SmartToy as RobotIcon,
+  AutoFixHigh as MagicWandIcon,
   Delete as DeleteIcon,
   AccessTime as AccessTimeIcon,
-  AutoFixHigh as MagicWandIcon,
-  Forum as ForumIcon
+  Forum as ForumIcon,
+  PersonAdd as PersonAddIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Profile, calculateAge } from '../types/profile';
-import { formatDistance, format } from 'date-fns';
+import { formatDistance } from 'date-fns';
 import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
+import BuyProduct from '../components/modals/BuyProduct';
+import './styles/GoldButton.css';
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -2223,15 +2592,22 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [buyModalOpen, setBuyModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  
+
+  // Single effect for initialization
   useEffect(() => {
-    const fetchProfiles = async () => {
+    const initializeProfileSelection = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        // Clear local storage at component mount
+        localStorage.removeItem('profileId');
+        localStorage.removeItem('profiles');
+        window.dispatchEvent(new CustomEvent('profileSelected'));
+
+        // Fetch profiles
         const data = await ProfileService.getAllProfiles();
         setProfiles(data);
       } catch (error) {
@@ -2242,15 +2618,25 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       }
     };
 
-    fetchProfiles();
-  }, []);
+    initializeProfileSelection();
+  }, []); // Empty dependency array - runs once on mount
 
-  const handleProfileSelect = (profileId: string) => {
-    localStorage.setItem('profileId', profileId);
-    if (onSelect) {
-      onSelect(profileId);
+  const handleProfileSelect = (profileId: string, route: string) => {
+    const selectedProfile = profiles.find(p => p.id === profileId);
+
+    if (selectedProfile) {
+      localStorage.setItem('profileId', profileId);
+      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
+      window.dispatchEvent(new CustomEvent('profileSelected'));
+
+      onSelect?.(profileId);
+      if (!route) {
+        navigate('/interview');
+      } else {
+        navigate(route);
+      }
+     
     }
-    navigate('/interview');
   };
 
   const handleCreateNew = () => {
@@ -2276,22 +2662,15 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   };
 
   const handleDeleteConfirm = async () => {
+    if (!selectedProfileId) return;
+
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-      setError(null);
-
-      console.log('Deleting profile:', selectedProfileId);
-
-      if (selectedProfileId) {
-        await ProfileService.deleteProfile(selectedProfileId);
-
-        // Remove from local state
-        setProfiles(profiles.filter(p => p.id !== selectedProfileId));
-
-        // Show success message
-        setSuccessMessage(t('profile.delete_success'));
-      }
+      await ProfileService.deleteProfile(selectedProfileId);
+      setProfiles(profiles.filter(p => p.id !== selectedProfileId));
+      setSuccessMessage(t('profile.delete_success'));
     } catch (error) {
       console.error('Error deleting profile:', error);
       setError(t('profile.delete_error'));
@@ -2302,18 +2681,21 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     }
   };
 
-  const handleCloseSnackbar = () => {
-    setSuccessMessage(null);
-  };
-
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+      <Container maxWidth="lg" sx={{ 
+        mt: 4, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '50vh' 
+      }}>
         <CircularProgress />
       </Container>
     );
   }
 
+  // Rest of your rendering code...
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -2327,17 +2709,43 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               {error}
             </Typography>
           )}
-
-          <Button
-            variant="contained"
-            startIcon={<PersonAddIcon />}
-            onClick={handleCreateNew}
-            fullWidth
-            sx={{ mb: 3, backgroundColor: 'gold' }}
-          >
-            {t('profile.create_new')}
-          </Button>
-
+          <Box sx={{
+             display: 'flex',
+             justifyContent: 'space-between',
+             alignItems: 'end',
+             flexDirection: 'row'
+          }}>
+            <img  onClick={handleCreateNew} src="/public/create-profile.jpg" style={{ cursor: 'pointer', width: '140px' }} alt="Noblivion Logo"></img>
+            <Button
+              variant="contained"
+              startIcon={<PersonAddIcon />}
+              onClick={handleCreateNew}
+              fullWidth
+              sx={{ mb: 3, backgroundColor: 'gold', '&:hover': {
+                    backgroundColor: '#e2bf02',
+                    color: 'white'
+                  } }}
+            >
+              {t('profile.create_new')}
+            </Button>
+            <Paper elevation={3} sx={{ p: 2, marginLeft: '80px', backgroundColor: '#f2f0e8' }}>
+              <Box 
+                sx={{ 
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary"
+                  sx={{ flex: 1 }}
+                >
+                  {t('profile.help3')}
+                </Typography>
+              </Box>
+              </Paper>
+          </Box>
           <Divider sx={{ my: 2 }}>{t('profile.or_continue')}</Divider>
 
           <List sx={{ width: '100%' }}>
@@ -2384,7 +2792,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                   </Grid>
 
                   {/* Session Info (Middle) */}
-                  <Grid item xs={5}>
+                  <Grid item xs={3}>
                     <Stack direction="row" spacing={3}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <ForumIcon sx={{ mr: 1, color: 'text.secondary' }} />
@@ -2404,7 +2812,42 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                   </Grid>
 
                   {/* Actions (Right) */}
-                  <Grid item xs={3} sx={{ textAlign: 'right' }}>
+                  <Grid item xs={5} sx={{ textAlign: 'right' }}>
+                    {!profile.subscribed_at && (
+                      <Button
+                        variant="contained"
+                        className="gold-button"
+                        sx={{ 
+                          mb: 0,
+                          mr: 3
+                        }}
+                        
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedProfile(profile);
+                          setBuyModalOpen(true);
+                        }}
+                      >
+                        {t('profile.buy')}
+                      </Button>
+                    )}
+                    <Button
+                      variant="contained"
+                      startIcon={<RobotIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleProfileSelect(profile.id,'/chat');
+                      }}
+                      sx={{ 
+                        mr: 1,
+                        bgcolor: '#1eb3b7',
+                        '&:hover': {
+                          bgcolor: '#179699'
+                        }
+                      }}
+                    >
+                      {t('profile.chat')}
+                    </Button>
                     <Button
                       variant="contained"
                       startIcon={<MagicWandIcon />}
@@ -2437,15 +2880,15 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
           >
-              <MenuItem 
-                onClick={(e) => {
-                  const profileToDelete = selectedProfileId;
-                  handleMenuClose();
-                  setSelectedProfileId(profileToDelete);
-                  setDeleteDialogOpen(true);
-                }} 
-                sx={{ color: 'error.main' }}
-              >
+            <MenuItem 
+              onClick={() => {
+                const profileToDelete = selectedProfileId;
+                handleMenuClose();
+                setSelectedProfileId(profileToDelete);
+                setDeleteDialogOpen(true);
+              }} 
+              sx={{ color: 'error.main' }}
+            >
               <DeleteIcon sx={{ mr: 1 }} />
               {t('profile.remove_profile')}
             </MenuItem>
@@ -2464,14 +2907,12 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             </DialogContent>
             <DialogActions>
               <Button 
-                type="button"
                 onClick={() => setDeleteDialogOpen(false)}
                 disabled={loading}
               >
                 {t('common.cancel')}
               </Button>
               <Button 
-                type="button"
                 onClick={handleDeleteConfirm} 
                 color="error" 
                 variant="contained"
@@ -2482,28 +2923,25 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               </Button>
             </DialogActions>
           </Dialog>
-          
         </Paper>
       </Box>
-      
-      {/* Success Snackbar */}
+
+      {/* Feedback Messages */}
       <Snackbar
         open={!!successMessage}
         autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSuccessMessage(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert 
-          onClose={handleCloseSnackbar}
+          onClose={() => setSuccessMessage(null)}
           severity="success"
           variant="filled"
-          sx={{ width: '100%' }}
         >
           {successMessage}
         </Alert>
       </Snackbar>
 
-      {/* Error Snackbar */}
       <Snackbar
         open={!!error}
         autoHideDuration={4000}
@@ -2514,12 +2952,17 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           onClose={() => setError(null)}
           severity="error"
           variant="filled"
-          sx={{ width: '100%' }}
         >
           {error}
         </Alert>
       </Snackbar>
-      
+
+      <BuyProduct
+        open={buyModalOpen}
+        onClose={() => setBuyModalOpen(false)}
+        profileId={selectedProfile?.id || ''}
+        profileName={selectedProfile?.first_name || ''}
+      />
     </Container>
   );
 };
@@ -4008,6 +4451,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth';
 import { Navigate, useLocation } from 'react-router-dom';
 import api  from '../services/api'
+import { AuthService } from '../services/auth';
 
 // In your verification components file
 interface VerificationDialogProps {
@@ -4050,12 +4494,45 @@ export const VerificationCheck: React.FC = () => {
 export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
+  const [isValidated, setIsValidated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkValidation = async () => {
+      if (user?.id) {
+        try {
+          const validationStatus = await AuthService.checkValidationStatus(user.id);
+          setIsValidated(validationStatus);
+        } catch (error) {
+          console.error('Validation check failed:', error);
+          setIsValidated(false);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkValidation();
+  }, [user?.id]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!user?.is_validated) {
+  if (isLoading) {
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!isValidated) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4 }}>
         <Paper elevation={3} sx={{ p: 3 }}>
@@ -4065,7 +4542,6 @@ export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ childre
           <Typography variant="body1" sx={{ mb: 2 }}>
             Please verify your email address to access this page.
           </Typography>
-          <VerificationCheck />
         </Paper>
       </Container>
     );
@@ -4250,6 +4726,541 @@ const verificationApi = {
     }
   }
 };
+```
+
+### src/components/chat/ChatRobot.tsx
+```
+// src/components/chat/ChatRobot.tsx
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  TextField,
+  IconButton,
+  Avatar,
+  CircularProgress,
+  Stack
+} from '@mui/material';
+import { 
+  Send as SendIcon, 
+  Mic as MicIcon, 
+} from '@mui/icons-material';
+
+// Add TypeScript declarations for the Web Speech API
+declare global {
+  interface Window {
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
+  }
+}
+import ReactMarkdown from 'react-markdown';
+import { ChatService } from '../../services/chat';
+import { useTranslation } from 'react-i18next';
+
+interface Message {
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+// Add styles for markdown content
+const markdownStyles = `
+  .markdown-content {
+    font-family: inherit;
+  }
+  .markdown-content p {
+    margin: 0 0 8px 0;
+  }
+  .markdown-content p:last-child {
+    margin-bottom: 0;
+  }
+  .markdown-content pre {
+    background-color: rgba(0, 0, 0, 0.04);
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+  }
+  .markdown-content code {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.04);
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  .markdown-content ul, .markdown-content ol {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+`;
+
+const hasInitialized = { current: false };
+
+const ChatRobot: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const [messages, setMessages] = useState<Message[]>([{
+    text: t('chat.welcome_message'),
+    isUser: false,
+    timestamp: new Date()
+  }]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (!hasInitialized.current && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0])
+          .map(result => result.transcript)
+          .join('');
+        setTranscript(transcript);
+        setInputMessage(transcript);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+
+      // Automatically stop after 5 seconds of silence
+      recognitionRef.current.onspeechend = () => {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      };
+
+      // Handle errors
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+
+      hasInitialized.current = true;
+    }
+
+    // Cleanup
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [i18n.language]); // Only reinitialize when language changes
+
+  useEffect(() => {
+    // Load profile data from localStorage
+    const profileData = localStorage.getItem('profiles');
+    if (profileData) {
+      setProfile(JSON.parse(profileData));
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSend = async () => {
+    if (!inputMessage.trim() || isLoading) return;
+
+    const newUserMessage = {
+      text: inputMessage,
+      isUser: true,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, newUserMessage]);
+    setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      const response = await ChatService.sendMessage(inputMessage);
+
+      const newBotMessage = {
+        text: response.answer,
+        isUser: false,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, newBotMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Handle error appropriately
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      console.error('Speech recognition not supported');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      // Update language before starting
+      recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
+      setTranscript('');
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <>
+      <style>{markdownStyles}</style>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
+        {/* Header with Avatar and Name */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <Avatar
+            src={profile?.profile_image_url}
+            alt={profile?.first_name}
+            sx={{ width: 64, height: 64, mr: 2 }}
+          />
+          <Typography variant="h5">
+            {t('chat.chat_with')} {profile?.first_name}
+          </Typography>
+        </Box>
+
+        {/* Messages Area */}
+        <Box sx={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          mb: 2,
+          p: 2,
+          backgroundColor: '#f5f5f5',
+          borderRadius: 1
+        }}>
+          <Stack spacing={2}>
+            {messages.map((message, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  justifyContent: message.isUser ? 'flex-end' : 'flex-start',
+                }}
+              >
+                <Paper
+                  sx={{
+                    p: 2,
+                    maxWidth: '70%',
+                    backgroundColor: message.isUser ? '#1eb3b7' : '#fff',
+                    color: message.isUser ? '#fff' : 'inherit',
+                  }}
+                >
+                  {message.isUser ? (
+                    <Typography variant="body1">{message.text}</Typography>
+                  ) : (
+                    <ReactMarkdown className="markdown-content">
+                      {message.text}
+                    </ReactMarkdown>
+                  )}
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      display: 'block',
+                      mt: 1,
+                      opacity: 0.7
+                    }}
+                  >
+                    {message.timestamp.toLocaleTimeString()}
+                  </Typography>
+                </Paper>
+              </Box>
+            ))}
+            {isLoading && (
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <CircularProgress size={20} />
+              </Box>
+            )}
+            <div ref={messagesEndRef} />
+          </Stack>
+        </Box>
+
+        {/* Input Area */}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <IconButton
+            onClick={toggleListening}
+            disabled={isLoading}
+            sx={{
+              bgcolor: isListening ? 'red' : '#e0e0e0',
+              color: 'white',
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              transition: 'all 0.2s',
+              animation: isListening ? 'pulse 1.5s infinite' : 'none',
+              '@keyframes pulse': {
+                '0%': {
+                  boxShadow: '0 0 0 0 rgba(255, 0, 0, 0.4)'
+                },
+                '70%': {
+                  boxShadow: '0 0 0 10px rgba(255, 0, 0, 0)'
+                },
+                '100%': {
+                  boxShadow: '0 0 0 0 rgba(255, 0, 0, 0)'
+                }
+              },
+              '&:hover': {
+                bgcolor: isListening ? '#d32f2f' : '#bdbdbd'
+              },
+              '&.Mui-disabled': {
+                bgcolor: '#cccccc'
+              }
+            }}
+          >
+            <MicIcon />
+          </IconButton>
+          <TextField
+            fullWidth
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder={isListening ? t('chat.listening') : t('chat.type_message')}
+            multiline
+            maxRows={4}
+            disabled={isLoading}
+            sx={{
+              '& .MuiInputBase-root': {
+                backgroundColor: isListening ? 'rgba(255, 0, 0, 0.05)' : 'transparent',
+                transition: 'background-color 0.3s ease'
+              }
+            }}
+          />
+          <IconButton 
+            color="primary" 
+            onClick={handleSend}
+            disabled={isLoading || !inputMessage.trim()}
+            sx={{ 
+              bgcolor: 'gold',
+              color: 'black',
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              '&:hover': {
+                bgcolor: '#ffd700'
+              },
+              '&.Mui-disabled': {
+                bgcolor: '#cccccc',
+                color: 'white'
+              }
+            }}
+          >
+            <SendIcon />
+          </IconButton>
+        </Box>
+      </Paper>
+    </Container>
+    </>
+  );
+};
+
+export default ChatRobot;
+```
+
+### src/components/modals/BuyProduct.tsx
+```
+// src/components/modals/BuyProduct.tsx
+import React, { useState, useMemo } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Button,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  CircularProgress
+} from '@mui/material';
+import {
+  Check as CheckIcon,
+  LocalOffer as PriceIcon
+} from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
+import '../../pages/styles/GoldButton.css';
+
+interface BuyProductProps {
+  open: boolean;
+  onClose: () => void;
+  profileId: string;
+  profileName: string;
+}
+
+const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profileName }) => {
+  const { t, i18n } = useTranslation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const benefits = useMemo(() => [
+    {
+      category: t('buy.category.memories'),
+      basic: t('buy.basic_memories'),
+      premium: t('buy.premium_memories'),
+      
+    },
+    {
+      category: t('buy.category.storage'),
+      basic: t('buy.basic_storage'),
+      premium: t('buy.premium_storage'),
+     
+    },
+    {
+      category: t('buy.category.export'),
+      basic: t('buy.basic_exports'),
+      premium: t('buy.premium_exports'),
+    
+    },
+    {
+      category: t('buy.category.support'),
+      basic: t('buy.basic_retention'),
+      premium: t('buy.premium_retention'),
+   
+    },
+  ], [t]); 
+
+  const handleCheckout = async () => {
+    try {
+      setIsSubmitting(true);
+      await ProfileService.subscribeProfile(profileId);
+      onClose();
+      // Optionally refresh the profiles list or show success message
+    } catch (error) {
+      console.error('Failed to process subscription:', error);
+      // Show error message to user
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>
+        <Typography variant="h4" sx={{ color: '#34495e', mb:0, fontFamily: 'Averia Libre' }} align="center" gutterBottom>
+          {t('buy.title', { name: profileName })}
+        </Typography>
+      </DialogTitle>
+
+      <DialogContent sx={{ backgroundImage: 'url(/public/noblivion-opener.jpg)',
+                           backgroundSize: 'cover' }}>
+        {/* Price Tag */}
+        <Box
+          sx={{
+            textAlign: 'center',
+            my: 4,
+            p: 3,
+            bgcolor: 'gold',
+            borderRadius: 2,
+            display: 'inline-block',
+            position: 'relative',
+           
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+          className="gold-button"
+        >
+          <PriceIcon sx={{ fontSize: 40, color: 'black', mb: 1 }} />
+          <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'black', }}>
+            {t('profile.currency')}299
+          </Typography>
+          <Typography variant="subtitle1" sx={{ color: '#000' }}>
+            {t('buy.one_time_payment')}
+          </Typography>
+        </Box>
+
+        {/* Benefits Table */}
+        <TableContainer component={Paper} sx={{ mb: 4, opacity: 0.8 }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                <TableCell>{t('buy.feature')}</TableCell>
+                <TableCell>{t('buy.basic')}</TableCell>
+                <TableCell sx={{ bgcolor: 'gold', color: '#000' }}>
+                  {t('buy.premium')}
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {benefits.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell component="th" scope="row">
+                    <b>{row.category}</b>
+                  </TableCell>
+                  <TableCell>{row.basic}</TableCell>
+                  <TableCell sx={{ bgcolor: '#fff9c4' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <CheckIcon sx={{ color: 'gold' }} />
+                      {row.premium}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Checkout Button */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Button
+            variant="contained"
+            size="large"
+            sx={{ color: "black", 
+                 backgroundColor: 'gold', 
+                 fontWeight: 'bold', 
+                 '&:hover': {
+                   backgroundColor: '#e2bf02',
+                   color: 'white'
+                 },
+                 borderRadius: '10px', mb: 2 }}
+            onClick={handleCheckout}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              t('buy.checkout')
+            )}
+          </Button>
+        </Box>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default BuyProduct;
 ```
 ---------------------
 
@@ -4733,7 +5744,6 @@ export const AuthService = {
       password: data.password
     });
 
-    // Store the token
     if (response.data.access_token) {
       localStorage.setItem('token', response.data.access_token);
     }
@@ -4743,8 +5753,6 @@ export const AuthService = {
 
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
-      console.log('Sending login request with:', { email }); // Debug logging
-
       const response = await api.post('/api/v1/auth/login', {
         email: email,
         password: password
@@ -4761,6 +5769,16 @@ export const AuthService = {
     }
   },
 
+  async checkValidationStatus(userId: string): Promise<boolean> {
+    try {
+      const response = await api.get(`/api/v1/auth/validation-status/${userId}`);
+      return response.data.is_validated;
+    } catch (error) {
+      console.error('Validation check error:', error);
+      return false;
+    }
+  },
+
   async resetPassword(email: string): Promise<void> {
     await api.post('/api/v1/auth/reset-password', { email });
   },
@@ -4773,6 +5791,35 @@ export const AuthService = {
 
 ### scr/contexts/auth/auth.ts
 [Content for scr/contexts/auth/auth.ts not found]
+
+### src/services/chat.ts
+```
+// src/services/chat.ts
+import api from './api';
+
+export const ChatService = {
+  sendMessage: async (message: string) => {
+    try {
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile selected');
+      }
+
+      const response = await api.post('/api/v1/chat', {
+        profile_id: profileId,
+        query_text: message
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error in chat service:', error);
+      throw error;
+    }
+  }
+};
+
+export default ChatService;
+```
 --------------
 
 #### Types
@@ -4908,6 +5955,11 @@ class Profile(ProfileCreate):
     id: UUID4
     created_at: datetime
     updated_at: datetime
+    subscribed_at: Optional[datetime] = None
+
+    @property
+    def is_subscribed(self) -> bool:
+        return self.subscribed_at is not None
 
     @property
     def age(self) -> int:
@@ -4946,6 +5998,7 @@ from .memories import router as memories_router
 from .achievements import router as achievements_router
 from .profiles import router as profiles_router
 from .auth  import router as auth_router
+from .chat  import router as chat_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(interviews_router)
@@ -4953,6 +6006,7 @@ router.include_router(memories_router)
 router.include_router(achievements_router)
 router.include_router(profiles_router)
 router.include_router(auth_router)
+router.include_router(chat_router)
 ```
 
 ### api/v1/achievements.py
@@ -5524,6 +6578,34 @@ async def signup(request: SignupRequest):
         print(f"Signup error: {str(e)}")  # Add debug logging
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/validation-status/{user_id}")
+async def check_validation_status(user_id: str):
+    """Check if a user's email is validated"""
+    try:
+        # Query user from Supabase
+        result = supabase.table("users").select("profile").eq("id", user_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user = result.data[0]
+        profile = user.get("profile", {})
+
+        # Check validation status from profile JSONB
+        is_validated = profile.get("is_validated_by_email", False)
+
+        return {
+            "is_validated": is_validated,
+            "user_id": user_id
+        }
+
+    except Exception as e:
+        logger.error(f"Error checking validation status: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to check validation status: {str(e)}"
+        )
+
 @router.post("/verify-email")
 async def verify_email(verification_data: VerificationRequest):
     try:
@@ -5630,6 +6712,80 @@ async def login(login_data: LoginRequest):  # Use Pydantic model for validation
         raise HTTPException(
             status_code=500,
             detail=f"Internal server error: {str(e)}"
+        )
+```
+
+### api/v1/chat.py
+```
+# api/v1/chat.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from uuid import UUID
+import neo4j
+from neo4j_graphrag.llm import OpenAILLM as LLM
+from neo4j_graphrag.embeddings.openai import OpenAIEmbeddings as Embeddings
+from neo4j_graphrag.retrievers import HybridRetriever
+from neo4j_graphrag.generation.graphrag import GraphRAG
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/chat", tags=["chat"])
+
+class ChatQuery(BaseModel):
+    profile_id: UUID
+    query_text: str
+
+class ChatResponse(BaseModel):
+    answer: str
+
+NEO4J_URI = os.getenv("NEO4J_URI")
+NEO4J_USERNAME = os.getenv("NEO4J_USERNAME")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
+
+async def get_graph_rag():
+    try:
+        neo4j_driver = neo4j.GraphDatabase.driver(
+            NEO4J_URI,
+            auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+        )
+
+        embedder = Embeddings()
+
+        hybrid_retriever = HybridRetriever(
+            neo4j_driver,
+            fulltext_index_name="fulltext_index_noblivion",
+            vector_index_name="vector_index_noblivion",
+            embedder=embedder
+        )
+
+        llm = LLM(model_name="gpt-4o-mini")
+        return GraphRAG(llm=llm, retriever=hybrid_retriever)
+    except Exception as e:
+        logger.error(f"Error initializing GraphRAG: {str(e)}")
+        raise
+
+@router.post("", response_model=ChatResponse)
+async def process_chat_message(query: ChatQuery):
+    try:
+        logger.info(f"Processing chat message for profile {query.profile_id}")
+        logger.debug(f"Query text: {query.query_text}")
+
+        # Initialize GraphRAG
+        rag = await get_graph_rag()
+
+        # Get response
+        response = rag.search(query_text=query.query_text)
+
+        logger.debug(f"Generated response: {response.answer}")
+        return ChatResponse(answer=response.answer)
+
+    except Exception as e:
+        logger.error(f"Error processing chat message: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process chat message: {str(e)}"
         )
 ```
 ----------------------
@@ -6476,6 +7632,11 @@ class ProfileService:
                             profile_data['updated_at']
                         )
 
+                    if isinstance(profile_data['subscribed_at'], str):
+                        profile_data['subscribed_at'] = datetime.fromisoformat(profile_data['subscribed_at'])
+                    else:
+                        profile_data['subscribed_at'] = None
+
                     # Initialize metadata if it doesn't exist
                     if not profile_data.get('metadata'):
                         profile_data['metadata'] = {}
@@ -7186,6 +8347,11 @@ class ProfileService:
                         profile_data['updated_at'] = datetime.fromisoformat(
                             profile_data['updated_at']
                         )
+
+                    if isinstance(profile_data['subscribed_at'], str):
+                        profile_data['subscribed_at'] = datetime.fromisoformat(profile_data['subscribed_at'])
+                    else:
+                        profile_data['subscribed_at'] = None
 
                     # Initialize metadata if it doesn't exist
                     if not profile_data.get('metadata'):

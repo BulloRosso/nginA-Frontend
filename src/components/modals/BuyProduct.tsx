@@ -151,7 +151,14 @@ const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profi
           <Button
             variant="contained"
             size="large"
-            sx={{ color: "black", backgroundColor: 'gold', fontWeight: 'bold', borderRadius: '10px', mb: 2 }}
+            sx={{ color: "black", 
+                 backgroundColor: 'gold', 
+                 fontWeight: 'bold', 
+                 '&:hover': {
+                   backgroundColor: '#e2bf02',
+                   color: 'white'
+                 },
+                 borderRadius: '10px', mb: 2 }}
             onClick={handleCheckout}
             disabled={isSubmitting}
           >

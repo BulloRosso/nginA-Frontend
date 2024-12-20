@@ -19,7 +19,8 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    // Ensure proper Bearer token format
+    config.headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   }
   return config;
 });
@@ -29,30 +30,41 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response) {
-      // Handle specific error cases
-      switch (error.response.status) {
-        case 401:
-          // Handle unauthorized
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-          break;
-        case 403:
-          // Handle forbidden
-          break;
-        case 404:
-          // Handle not found
-          break;
-        case 500:
-          // Handle server error
-          break;
-      }
-
       // Log the error for debugging
       console.error('API Error:', {
         status: error.response.status,
         data: error.response.data,
         url: error.config.url
       });
+
+      // Handle specific error cases
+      switch (error.response.status) {
+        case 401:
+          // Only logout if it's a token-related error
+          const errorDetail = error.response.data?.detail || '';
+          if (
+            errorDetail.includes('Invalid token') || 
+            errorDetail.includes('Token has expired') ||
+            errorDetail.includes('Could not validate credentials')
+          ) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+          }
+          break;
+
+        case 403:
+          console.warn('Forbidden access:', error.response.data);
+          break;
+
+        case 404:
+          console.warn('Resource not found:', error.response.data);
+          break;
+
+        case 500:
+          console.error('Server error:', error.response.data);
+          break;
+      }
     }
     return Promise.reject(error);
   }

@@ -23,6 +23,7 @@ import LandingPage from './pages/LandingPage';
 import IntroductionVideo from './pages/IntroductionVideo';
 import { useTranslation } from 'react-i18next';
 import ChatRobot from './components/chat/ChatRobot';
+import Settings from './components/modals/Settings';
 
 const theme = createTheme({
   palette: {
@@ -187,6 +188,7 @@ const Header = () => {
         </Typography>
 
         <Stack direction="row" spacing={1} alignItems="center">
+          {isAuthenticated && <Settings sx={{ color: 'white' }} />}
           <LanguageSwitch />
         </Stack>
 
