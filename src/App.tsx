@@ -20,6 +20,7 @@ import { Login, Register, ForgotPassword } from './components/auth';
 import { AuthProvider, useAuth } from './contexts/auth';
 import { VerificationCheck, VerifiedRoute } from './components/verification';
 import LandingPage from './pages/LandingPage';  
+import LandingPageBusiness from './pages/LandingPageBusiness'; 
 import IntroductionVideo from './pages/IntroductionVideo';
 import { useTranslation } from 'react-i18next';
 import ChatRobot from './components/chat/ChatRobot';
@@ -240,6 +241,7 @@ const App = () => {
             <Routes>
               {/* Landing page - no header */}
               <Route path="/" element={<LandingPage />} />
+              <Route path="/business" element={<LandingPageBusiness />} />
 
               {/* Auth routes - no header */}
               <Route path="/login" element={<Login />} />

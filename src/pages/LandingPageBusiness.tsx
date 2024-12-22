@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Container, Typography, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
-export default function LandingPage() {
+export default function LandingPageBusiness() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -22,11 +22,11 @@ export default function LandingPage() {
           flexDirection: 'column',
           justifyContent: 'start',
           backgroundColor: '#f8f9fa',
-          backgroundImage: 'url(/public/noblivion-opener.jpg)',
+          backgroundImage: 'url(/public/leaving_expert.jpg)',
           backgroundSize: '100vw',
           backgroundRepeat: 'no-repeat',
           position: 'relative',
-          overflow: 'hidden'
+          overflow: 'hidden' 
         }}
       >
         <Container maxWidth="lg">
@@ -37,39 +37,44 @@ export default function LandingPage() {
               py: 6
             }}
           >
-            <img src="/public/conch-logo.png" alt="Conch Logo" width="100" />
-
-            <Typography 
-              variant="h2" 
-              component="h1"
-              sx={{ 
-                fontWeight: 'bold',
-                mb: 3,
-                color: '#2c3e50'
-              }}
-            >
-              <span style={{ color: 'darkred'}}>nO</span>blivion
-            </Typography>
-            <Typography 
-              variant="h4" 
-              sx={{ 
-                mb: 4,
-                color: '#34495e'
-              }}
-            >
-              {t('landing.subtitle')}
-            </Typography>
+            <Box sx={{ justifyItems: 'center',
+                        textAlign: 'center', paddingLeft: '160px'}}>  
+              <img src="/public/conch-logo.png" alt="Conch Logo" width="100" />
+  
+              <Typography 
+                variant="h2" 
+                component="h1"
+                sx={{ 
+                  fontWeight: 'bold',
+                  mb: 6,
+                  color: '#2c3e50',
+                  textShadow: '1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
+                }}
+              >
+                <span style={{ color: 'darkred'}}>nO</span>blivion
+              </Typography>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  mb: 2,
+                  color: '#fff',
+                  textShadow: '2px 2px 2px #6B6B6B',
+                }}
+              >
+                {t('landing.subtitle_business')}
+              </Typography>
+              </Box>
             <Typography 
               variant="h6" 
               sx={{ 
-                mb: 6,
+                mb: 2,
                 color: '#fff',
                 textShadow: '2px 2px 2px #6B6B6B',
                 maxWidth: '800px',
                 mx: 'auto'
               }}
             >
-              {t('landing.description')}
+              {t('landing.description_business')}
             </Typography>
             <Button 
               variant="contained" 
@@ -99,7 +104,7 @@ export default function LandingPage() {
                 mx: 'auto'
               }}
             >
-              {t('landing.ds')}
+              {t('landing.ds_business')}
             </Typography>
           </Box>
         </Container>
@@ -114,21 +119,21 @@ export default function LandingPage() {
             fontWeight: 'bold',
             fontFamily: 'Averia Libre',
           }} textAlign="center" mb={8}>
-            {t('landing.backstory.quote')}
+            {t('landing.backstory_business.quote')}
           </Typography>  
           <Typography sx={{ 
             color: '#777',
             fontSize: '18px',
             fontFamily: 'Averia Libre',
           }} textAlign="center" mb={8}>
-            {t('landing.backstory.paragraph1')}
+            {t('landing.backstory_business.paragraph1')}
           </Typography>  
           <Typography sx={{ 
             color: '#777',
             fontSize: '18px',
             fontFamily: 'Averia Libre',
           }} textAlign="center" mb={8}>
-            {t('landing.backstory.paragraph2')}
+            {t('landing.backstory_business.paragraph2')}
           </Typography>  
         </Container>
       </Box>
@@ -153,25 +158,25 @@ export default function LandingPage() {
              
               <img src="/public/noblivion-icon-1.png" style={{ width: '160px'}}></img>
                <br></br>
-              <Typography variant="h5" mb={2}>1. {t('landing.features.create_profile.title')}</Typography>
+              <Typography variant="h5" mb={2}>1. {t('landing.features_business.create_profile.title')}</Typography>
               <Typography color="text.secondary">
-                {t('landing.features.create_profile.description')}
+                {t('landing.features_business.create_profile.description')}
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
               <img src="/public/noblivion-icon-2.png" style={{ width: '160px'}}></img>
               <br></br>
-              <Typography variant="h5" mb={2}>2. {t('landing.features.share_memories.title')}</Typography>
+              <Typography variant="h5" mb={2}>2. {t('landing.features_business.share_memories.title')}</Typography>
               <Typography color="text.secondary">
-                {t('landing.features.share_memories.description')}
+                {t('landing.features_business.share_memories.description')}
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
               <img src="/public/noblivion-icon-3.png" style={{ width: '160px'}}></img>
               <br></br>
-              <Typography variant="h5" mb={2}>3. {t('landing.features.preserve_legacy.title')}</Typography>
+              <Typography variant="h5" mb={2}>3. {t('landing.features_business.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">
-                {t('landing.features.preserve_legacy.description')}
+                {t('landing.features_business.preserve_legacy.description')}
               </Typography>
             </Box>
           </Box>
@@ -189,7 +194,7 @@ export default function LandingPage() {
       >
         <Container maxWidth="md">
           <Typography variant="h4" mb={4}>
-            {t('landing.cta.title')}
+            {t('landing.cta_business.title')}
           </Typography>
           <Button 
             variant="contained"
@@ -203,11 +208,8 @@ export default function LandingPage() {
               }
             }}
           >
-            {t('landing.cta.button')}
+            {t('landing.cta_business.button')}
           </Button>
-          <Typography variant="h5" mt={4}>
-            <a href="/business" style={{ textDecoration: 'underline' }}>{t('landing.business_edition_hint')}</a>
-          </Typography>
         </Container>
       </Box>
     </Box>

@@ -16,10 +16,14 @@ const resources = {
       landing: {
         title: "nOblivion",
         subtitle: "Precious memories persisted",
+        subtitle_business: "Never loose an expert again!",
         description: "Preserve your family's life stories through meaningful conversations with our AI interviewer.",
-        description_secondary: "Share memories, add photos, and create a lasting legacy for generations to come.",
+        decription_business: "The leaving experts situation is getting less painful if you preserve you expert's knowledge with nOblivion.",
+        ds: "Share memories, add photos, and create a lasting legacy for generations to come.",
+        business_edition_hint: "...also available as business edition!",
         try_now: "Try it now",
         how_it_works: "How it works",
+        ds_business: "You experts are available as AI chatbots 24/7 for your employees. Your IT experts can access the knowledge via API endpoints.",
         backstory: {
           quote: "Walking along the shore, we often stumble upon empty seashells – silent echoes of the past.",
           paragraph1: "Their stories remain a mystery, lost to time, yet they spark our imagination. These shells, once vibrant and alive in a colorful underwater world, now stand as fragile reminders of something greater. They teach us an essential truth: preserving the stories of the past gives us the wisdom to live more fully in the present.",
@@ -39,8 +43,26 @@ const resources = {
             description: "Add photos, organize memories, and create a beautiful timeline of life events which can be printed as book from the PDF file we create for you!"
           }
         },
+        "features_business": {
+          "create_profile": {
+            "title": "Create Profile",
+            "description": "Create a profile with basic information about your expert."
+          },
+          "share_memories": {
+            "title": "Expert Interviews",
+            "description": "30-minute sessions with our AI interviewer to preserve insider knowledge."
+          },
+          "preserve_legacy": {
+            "title": "Virtual Expert",
+            "description": "The wealth of your expert's experience can be accessed by your employees anytime in the form of an AI chatbot."
+          }
+        },
         cta: {
           title: "Gift yourself or a beloved one and start Preserving Your Memories Today",
+          button: "Try it now"
+        },
+        cta_business: {
+          title: "Try how easy it is using our personal edition",
           button: "Try it now"
         }
       },
@@ -257,14 +279,23 @@ const resources = {
       landing: {
         title: "nOblivion",
         subtitle: "Wertvolle Erinnerungen bewahren",
+        subtitle_business: "Nie wieder einen Experten verlieren!",
         description: "Bewahren Sie die Lebensgeschichten Ihrer Familie durch Gespräche mit unserem KI-Interviewer.",
+        description_business:"Die 'leaving experts'-Situation verliert ihren Schrecken, wenn Sie das Wissen ihrer Mitarbeitenden mit nOblivion konservieren.",
         ds: "Teilen Sie Erinnerungen, fügen Sie Fotos hinzu und schaffen Sie ein bleibendes Vermächtnis für kommende Generationen.",
+        ds_business: "Ihre Experten stehen den Kollegen rund um die Uhr als AI-Bot zur Verfügung und Ihre IT-Systeme können per API auf das Wissen zugreifen.",
         try_now: "Jetzt ausprobieren",
         how_it_works: "So funktioniert's",
+        business_edition_hint: "...auch verfügbar als Business-Edition!",
         backstory: {
           quote: "Am Strand finden wir oft leere Muscheln – stille Echos der Vergangenheit.",
           paragraph1: "Ihre Geschichten bleiben ein Geheimnis, verloren in der Zeit, und doch regen sie unsere Fantasie an. Diese Muscheln, einst lebendig in einer bunten Unterwasserwelt, stehen nun als zerbrechliche Erinnerungen an etwas Größeres. Sie lehren uns eine wesentliche Wahrheit: Das Bewahren der Geschichten der Vergangenheit gibt uns die Weisheit, intensiver in der Gegenwart zu leben.",
-          paragraph2: "Lasst uns diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
+          paragraph2: "Wir sollten diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
+        },
+        backstory_business: {
+          quote: "Das Wissen Ihrer Mitarbeiter ist der Charakter Ihres Unternehmens",
+          paragraph1: "Die Mitarbeiter eines Unternehmens prägen dessen Charakter und Identität durch ihre Fähigkeiten, Erfahrungen und Werte. Sie verkörpern das Wissen und die Kultur, die das Unternehmen einzigartig machen und seinen Erfolg sichern. Dieses Wissen, ob explizit oder implizit, ist ein wertvolles Gut, das durch Zusammenarbeit, Innovation und Tradition weitergegeben wird.",
+          paragraph2: "Es ist daher essenziell, das Wissen der Mitarbeiter zu bewahren, um Kontinuität, Anpassungsfähigkeit und Wettbewerbsfähigkeit zu gewährleisten, insbesondere in Zeiten des Wandels oder bei der Einführung neuer Technologien."
         },
         buy: {
           checkout: "Weiter zur Zahlung",
@@ -285,8 +316,26 @@ const resources = {
             description: "Fügen Sie Fotos hinzu, organisieren Sie Erinnerungen und erstellen Sie eine schöne Zeitleiste von Lebensereignissen, die als Buch aus der von uns erstellten PDF-Datei gedruckt werden kann!"
           }
         },
+        features_business: {
+          create_profile: {
+            title: "Profil erstellen",
+            description: "Erstellen Sie ein Profil mit grundlegenden Informationen Ihres Experten"
+          },
+          share_memories: {
+            title: "Experteninterviews",
+            description: "30minütige Sessions mit unserem KI-Interviewer konservieren das Insiderwissen"
+          },
+          preserve_legacy: {
+            title: "Virtueller Experte",
+            description: "Der Erfahrungsschatz Ihres Experten kann in Form eines KI-Chatbots von Ihren Mitarbeitern jederzeit genutzt werden"
+          }
+        },
         cta: {
           title: "Schenken Sie sich oder einer geliebten Person die Chance, Ihre Erinnerungen zu bewahren",
+          button: "Jetzt ausprobieren"
+        },
+        cta_business: {
+          title: "Testen Sie wie einfach es sich anfühlt mit unserer personal Edition",
           button: "Jetzt ausprobieren"
         }
       },
