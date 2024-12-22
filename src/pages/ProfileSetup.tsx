@@ -107,6 +107,13 @@ const ProfileSetup = () => {
       const currentLanguage = i18n.language || 'en';
       formData.append('language', currentLanguage);
 
+      // Get current user from localStorage
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+          throw new Error('No user data found');
+      }
+      const user = JSON.parse(userData);
+
       const profileData = {
         first_name: profile.firstName,
         last_name: profile.lastName,
@@ -120,7 +127,8 @@ const ProfileSetup = () => {
           narrator_style: profile.narratorStyle,
           narrator_perspective: profile.narratorPerspective,
           narrator_verbosity: profile.narratorVerbosity
-        }
+        },
+        user_id: user.id
       };
 
       formData.append('profile', JSON.stringify(profileData));
