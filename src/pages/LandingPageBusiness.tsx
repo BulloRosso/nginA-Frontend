@@ -1,7 +1,27 @@
 // src/components/LandingPage.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Container, Typography, Box } from '@mui/material';
+import { Button, 
+        Container, 
+        Typography, 
+        Box,
+        Table,
+        TableBody,
+        TableCell,
+        TableContainer,
+        TableHead,
+        TableRow,
+        Paper,
+        getIconButtonUtilityClass,
+} from '@mui/material';
+import {
+  Check as CheckIcon,
+  ChatTwoTone as ChatIcon,
+  CableTwoTone as APIIcon,
+  HubTwoTone as KnowledgeIcon,
+  EngineeringTwoTone as EngineeringIcon,
+  LocalOffer as PriceIcon
+} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
 export default function LandingPageBusiness() {
@@ -12,6 +32,47 @@ export default function LandingPageBusiness() {
     navigate('/profile');
   };
 
+  const getIcon = (idx: number) => {
+    switch (idx) {
+      case 0:
+        return <EngineeringIcon sx={{ marginRight: '10px' }} />;
+      case 1:
+        return <KnowledgeIcon sx={{ marginRight: '10px' }} />;
+      case 2:
+        return <ChatIcon sx={{ marginRight: '10px' }}/>;
+      case 3:
+        return <APIIcon sx={{ marginRight: '10px' }}/>;
+    }
+    return null;
+  }
+
+  const benefits = useMemo(() => [
+    {
+      category: t('landing.feature_comparison.agents'),
+      basic: t('landing.feature_comparison.basic_agents'),
+      premium: t('landing.feature_comparison.premium_agents'),
+
+    },
+    {
+      category: t('landing.feature_comparison.knowledge'),
+      basic: t('landing.feature_comparison.basic_knowledge'),
+      premium: t('landing.feature_comparison.premium_knowledge'),
+
+    },
+    {
+      category: t('landing.feature_comparison.bot'),
+      basic: t('landing.feature_comparison.basic_bot'),
+      premium: t('landing.feature_comparison.premium_bot'),
+
+    },
+    {
+      category: t('landing.feature_comparison.API'),
+      basic: t('landing.feature_comparison.basic_API'),
+      premium: t('landing.feature_comparison.premium_API'),
+
+    },
+  ], [t]); 
+  
   return (
     <Box>
       {/* Hero Section */}
@@ -104,14 +165,22 @@ export default function LandingPageBusiness() {
                 mx: 'auto'
               }}
             >
-              {t('landing.ds_business')}
+              
             </Typography>
           </Box>
         </Container>
       </Box>
 
+      <Box sx={{ py: 6, backgroundColor: '#f6f5ef' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h6" textAlign="center" mb={2}>
+            {t('landing.ds_business')}
+          </Typography>
+        </Container>
+      </Box>
+
       {/* Backstroy Section */}
-      <Box sx={{ py: 8, backgroundColor: '#f8f9fa', textAlign: 'center' }}>
+      <Box sx={{ py: 6, backgroundColor: '#f8f9fa', textAlign: 'center' }}>
         <Container maxWidth="md">
           <Typography sx={{ 
             color: '#1eb3b7',
@@ -139,9 +208,9 @@ export default function LandingPageBusiness() {
       </Box>
 
       {/* Features Section */}
-      <Box sx={{ py: 12, backgroundColor: 'white' }}>
+      <Box sx={{ py: 6, backgroundColor: 'white' }}>
         <Container maxWidth="lg">
-          <Typography variant="h3" textAlign="center" mb={8}>
+          <Typography variant="h3" textAlign="center" mb={4}>
             {t('landing.how_it_works')}
           </Typography>
           <Box 
@@ -179,6 +248,53 @@ export default function LandingPageBusiness() {
                 {t('landing.features_business.preserve_legacy.description')}
               </Typography>
             </Box>
+          </Box>
+        </Container>
+      </Box>
+
+      <Box sx={{ py: 6, backgroundColor: '#f6f5ef' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h3" textAlign="center" mb={4}>
+            {t('landing.feature_comparison_title')}
+          </Typography>
+          <Box 
+            sx={{ 
+              justifyItems: 'center',
+              textAlign: 'center',
+              py: 6
+            }}
+          >
+          {/* Benefits Table */}
+          <TableContainer component={Paper} sx={{  mb: 4 }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                  <TableCell>{t('buy.feature')}</TableCell>
+                  <TableCell>{t('landing.feature_comparison.title_personal')}</TableCell>
+                  <TableCell sx={{ bgcolor: 'gold', color: '#000' }}>
+                    {t('landing.feature_comparison.title_business')}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {benefits.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell component="th" scope="row">
+                      {getIcon(index)}
+                      <b>{row.category}</b>
+                    </TableCell>
+                    <TableCell>{row.basic}</TableCell>
+                    <TableCell sx={{ bgcolor: '#fff9c4' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CheckIcon sx={{ color: 'gold' }} />
+                        {row.premium}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
           </Box>
         </Container>
       </Box>

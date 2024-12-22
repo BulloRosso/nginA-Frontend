@@ -64,7 +64,24 @@ const resources = {
         cta_business: {
           title: "Try how easy it is using our personal edition",
           button: "Try it now"
-        }
+        },
+        "feature_comparison_title": "These Are the Highlights",
+          "feature_comparison": {
+            "title_personal": "nOblivion Personal Edition",
+            "title_business": "nOblivion Business Edition",
+            "API": "Access via API",
+            "basic_API": "no",
+            "premium_API": "yes",
+            "agents": "Agents",
+            "basic_agents": "no",
+            "premium_agents": "Every night, AI agents refine the knowledge graph",
+            "knowledge": "Knowledge Base",
+            "basic_knowledge": "Full-text / Vector / Graph",
+            "premium_knowledge": "Full-text / Vector / Graph",
+            "bot": "AI Chatbot",
+            "basic_bot": "Basic (limited queries)",
+            "premium_bot": "Advanced"
+          }
       },
       memory: {
         drop_here: "Drop the files here ...",
@@ -337,6 +354,23 @@ const resources = {
         cta_business: {
           title: "Testen Sie wie einfach es sich anfühlt mit unserer personal Edition",
           button: "Jetzt ausprobieren"
+        },
+        feature_comparison_title: "Das sind die Highlights",
+        feature_comparison: {
+          title_personal: "nOblivion Personal Edition",
+          title_business: "nOblivion Business Edition",
+          API: "Zugriff über API",
+          basic_API: "nein",
+          premium_API: "ja",
+          agents: "Agenten",
+          basic_agents: "nein",
+          premium_agents: "jede Nacht verfeinern KI Agenten den Knowledge Graph",
+          knowledge: "Wissenbasis",
+          basic_knowledge: "Volltext / Vektor / Graph",
+          premium_knowledge: "Volltext / Vektor / Graph",
+          bot: "KI Chatbot",
+          basic_bot: "Basis (begrenzte Anfragen)",
+          premium_bot: "Advanced",
         }
       },
       menu: {
