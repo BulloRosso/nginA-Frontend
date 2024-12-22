@@ -181,11 +181,11 @@ const ProfileSetup = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Container maxWidth="xl" sx={{ p: 3 }}>
         <Grid container spacing={4}>
           {/* Left Column */}
           <Grid item xs={12} md={4} >
-            <Paper elevation={3} sx={{ p: 4, backgroundColor: '#f2f0e8' }}>
+            <Paper elevation={3} sx={{ p: 3, backgroundColor: '#f2f0e8' }}>
               <Box 
                 sx={{ 
                   height: '100%',

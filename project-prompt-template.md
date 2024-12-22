@@ -1991,6 +1991,7 @@ class EmpatheticInterviewer:
             classification = await KnowledgeManagement.analyze_response(
                 response_text=response_text, 
                 client=self.openai_client,
+                profile_data=profile_data, 
                 language=language,
                 narrator_perspective=narrator_perspective,
                 narrator_style=narrator_style,
@@ -2165,6 +2166,10 @@ class ProfileService:
         try:
             logger.info(f"Parsing backstory for profile {profile_id} in language {language}")
 
+            # Create profile context string
+            pronoun = "him" if profile_data["gender"].lower() == "male" else "her"
+            profile_context = f"The main character of our memories is {profile_data['first_name']} {profile_data['last_name']} which is of {profile_data['gender']} gender. When rewriting memories reference to {pronoun} as {profile_data['first_name']}."
+
             # Create single session for all initial memories
             session_data = {
                 "id": str(uuid4()),
@@ -2262,6 +2267,8 @@ class ProfileService:
                             "content": f"""Extract distinct memories from the backstory and format them as a JSON object.
                             The date is a single string in the format "YYYY-MM-DD". If it is a timespan always use the start date.
                             Write all text content in {language} language.
+
+                            {profile_context}
 
                             Format each memory {perspective_text}, {style_text}. 
                             Compared to the source text, your description should be {verbosity_text}.
@@ -2601,6 +2608,7 @@ class KnowledgeManagement:
     async def analyze_response(
         response_text: str, 
         client, 
+        profile_data: dict,
         language: str = "en",
         narrator_perspective: str = "ego",
         narrator_style: str = "neutral",
@@ -2608,6 +2616,10 @@ class KnowledgeManagement:
     ) -> MemoryClassification:
         """Analyze user response to classify and enhance memory content with profile settings"""
         try:
+            # Use profile information
+            pronoun = "him" if profile_data["gender"].lower() == "male" else "her"
+            profile_context = f"The main character of our memories is {profile_data['first_name']} {profile_data['last_name']} which is of {profile_data['gender']} gender. When rewriting memories reference to {pronoun} as {profile_data['first_name']}."
+
             # Convert perspective setting to prompt text
             perspective_text = "in first person view" if narrator_perspective == "ego" else "in third person view"
 
@@ -2634,6 +2646,9 @@ class KnowledgeManagement:
 
             # Build the prompt
             prompt = f"""Analyze the following text and classify it as a memory or not. 
+
+            {profile_context}
+
             If it is a memory, rewrite it {perspective_text}, {style_text}. Also extract the category, location, and timestamp.
             Compared to the user's input, your rewritten text should be {verbosity_text}.
             If the exact date is unknown, please estimate the month and year based on context clues
@@ -2955,6 +2970,10 @@ class ProfileService:
         try:
             logger.info(f"Parsing backstory for profile {profile_id} in language {language}")
 
+            # Create profile context string
+            pronoun = "him" if profile_data["gender"].lower() == "male" else "her"
+            profile_context = f"The main character of our memories is {profile_data['first_name']} {profile_data['last_name']} which is of {profile_data['gender']} gender. When rewriting memories reference to {pronoun} as {profile_data['first_name']}."
+
             # Create single session for all initial memories
             session_data = {
                 "id": str(uuid4()),
@@ -3052,6 +3071,8 @@ class ProfileService:
                             "content": f"""Extract distinct memories from the backstory and format them as a JSON object.
                             The date is a single string in the format "YYYY-MM-DD". If it is a timespan always use the start date.
                             Write all text content in {language} language.
+
+                            {profile_context}
 
                             Format each memory {perspective_text}, {style_text}. 
                             Compared to the source text, your description should be {verbosity_text}.
