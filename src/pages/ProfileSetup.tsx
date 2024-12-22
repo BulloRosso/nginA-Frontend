@@ -51,6 +51,38 @@ const ProfileSetup = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const initializeProfileSelection = async () => {
+    try {
+      // Clear local storage at component mount
+      localStorage.removeItem('profileId');
+      localStorage.removeItem('profiles');
+      window.dispatchEvent(new CustomEvent('profileSelected'));
+
+      // Get current user ID from localStorage
+      const userData = localStorage.getItem('user');
+      if (!userData) {
+        setError('No user data found. Please log in again.');
+        return;
+      }
+
+      const user = JSON.parse(userData);
+      setCurrentUserId(user.id);
+
+      // Fetch profiles
+      const data = await ProfileService.getAllProfiles();
+
+      // Filter profiles for current user
+      const userProfiles = data.filter(profile => profile.user_id === user.id);
+      setProfiles(userProfiles);
+
+    } catch (error) {
+      console.error('Error fetching profiles:', error);
+      setError('Failed to load profiles. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const steps = [
     t('profile.steps.basic_info'),
     t('profile.steps.characterization'),

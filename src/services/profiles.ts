@@ -31,6 +31,11 @@ export const ProfileService = {
     return response.data;
   },
 
+  getProfilesForUser: async (userId: string): Promise<Profile[]> => {
+      const response = await api.get(`/api/v1/profiles/user/${userId}`);
+      return response.data;
+  },
+
   deleteProfile: async (profileId: string): Promise<void> => {
     const response = await api.delete(`/api/v1/profiles/${profileId}`);
     if (!response.data?.message) {

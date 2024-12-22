@@ -63,26 +63,36 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
   // Single effect for initialization
   useEffect(() => {
-    const initializeProfileSelection = async () => {
-      try {
-        // Clear local storage at component mount
-        localStorage.removeItem('profileId');
-        localStorage.removeItem('profiles');
-        window.dispatchEvent(new CustomEvent('profileSelected'));
+      const initializeProfileSelection = async () => {
+          try {
+              // Clear local storage at component mount
+              localStorage.removeItem('profileId');
+              localStorage.removeItem('profiles');
+              window.dispatchEvent(new CustomEvent('profileSelected'));
 
-        // Fetch profiles
-        const data = await ProfileService.getAllProfiles();
-        setProfiles(data);
-      } catch (error) {
-        console.error('Error fetching profiles:', error);
-        setError('Failed to load profiles. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+              // Get current user ID from localStorage
+              const userData = localStorage.getItem('user');
+              if (!userData) {
+                  setError('No user data found. Please log in again.');
+                  return;
+              }
 
-    initializeProfileSelection();
-  }, []); // Empty dependency array - runs once on mount
+              const user = JSON.parse(userData);
+
+              // Use new method to fetch profiles for current user
+              const userProfiles = await ProfileService.getProfilesForUser(user.id);
+              setProfiles(userProfiles);
+
+          } catch (error) {
+              console.error('Error fetching profiles:', error);
+              setError('Failed to load profiles. Please try again.');
+          } finally {
+              setLoading(false);
+          }
+      };
+
+      initializeProfileSelection();
+  }, []);
 
   const handleProfileSelect = (profileId: string, route: string) => {
     const selectedProfile = profiles.find(p => p.id === profileId);
