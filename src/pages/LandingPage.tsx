@@ -45,7 +45,8 @@ export default function LandingPage() {
               sx={{ 
                 fontWeight: 'bold',
                 mb: 3,
-                color: '#2c3e50'
+                color: '#2c3e50',
+                textShadow: '1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
               }}
             >
               <span style={{ color: 'darkred'}}>nO</span>blivion
@@ -88,20 +89,15 @@ export default function LandingPage() {
             >
               {t('landing.try_now')}
             </Button>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: 3,
-                mt: 3,
-                color: '#fff',
-                maxWidth: '800px',
-                textShadow: '2px 2px 2px #6B6B6B',
-                mx: 'auto'
-              }}
-            >
-              {t('landing.ds')}
-            </Typography>
           </Box>
+        </Container>
+      </Box>
+
+      <Box sx={{ py: 6, backgroundColor: '#f6f5ef' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h6" textAlign="center" mb={2}>
+            {t('landing.ds')}
+          </Typography>
         </Container>
       </Box>
 
