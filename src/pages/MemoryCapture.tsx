@@ -317,7 +317,14 @@ const MemoryCapture = () => {
     const initializeData = async () => {
       try {
         setIsInitializing(true);
-        const profileId = localStorage.getItem('profileId');
+        
+        let profileId = localStorage.getItem('profileId');
+        
+        // If not in localStorage, check sessionStorage (for interview tokens)
+        if (!profileId) {
+          profileId = sessionStorage.getItem('profile_id');
+        }
+        
         if (!profileId) {
           throw new Error('No profile ID found');
         }
