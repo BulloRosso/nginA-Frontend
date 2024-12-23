@@ -475,6 +475,7 @@ class ProfileCreate(BaseModel):
     spoken_languages: List[str] = []
     profile_image_url: Optional[str]
     metadata: Optional[Dict[str, Any]] = {}
+    user_id: UUID4 
 
 class Profile(ProfileCreate):
     id: UUID4
@@ -524,6 +525,7 @@ from .achievements import router as achievements_router
 from .profiles import router as profiles_router
 from .auth  import router as auth_router
 from .chat  import router as chat_router
+from .invitations import router as invitations_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(interviews_router)
@@ -532,6 +534,7 @@ router.include_router(achievements_router)
 router.include_router(profiles_router)
 router.include_router(auth_router)
 router.include_router(chat_router)
+router.include_router(invitations_router)
 ```
 
 ### api/v1/achievements.py
@@ -886,6 +889,64 @@ async def list_profiles() -> List[Profile]:
             status_code=500,
             detail=f"Failed to fetch profiles: {str(e)}")
 
+@router.get("/user/{user_id}")
+async def get_profiles_for_user(user_id: UUID) -> List[Profile]:
+    """Get all profiles for a specific user"""
+    try:
+        service = ProfileService()
+
+        # Get profiles only for the specified user
+        result = service.supabase.table("profiles")\
+            .select("*")\
+            .eq("user_id", str(user_id))\
+            .order('updated_at', desc=True)\
+            .execute()
+
+        profiles = []
+        for profile_data in result.data:
+            try:
+                # Convert date strings
+                if isinstance(profile_data['date_of_birth'], str):
+                    profile_data['date_of_birth'] = datetime.fromisoformat(
+                        profile_data['date_of_birth']
+                    ).date()
+
+                if isinstance(profile_data['created_at'], str):
+                    profile_data['created_at'] = datetime.fromisoformat(
+                        profile_data['created_at']
+                    )
+
+                if isinstance(profile_data['updated_at'], str):
+                    profile_data['updated_at'] = datetime.fromisoformat(
+                        profile_data['updated_at']
+                    )
+
+                # Add session count to metadata
+                session_count_result = service.supabase.table('interview_sessions')\
+                    .select('id', count='exact')\
+                    .eq('profile_id', profile_data['id'])\
+                    .execute()
+
+                if not profile_data.get('metadata'):
+                    profile_data['metadata'] = {}
+
+                profile_data['metadata']['session_count'] = session_count_result.count
+
+                profiles.append(Profile(**profile_data))
+            except Exception as e:
+                logger.error(f"Error converting profile data: {str(e)}")
+                logger.error(f"Problematic profile data: {profile_data}")
+                continue
+
+        return profiles
+
+    except Exception as e:
+        logger.error(f"Error fetching user profiles: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch user profiles: {str(e)}"
+        )
+
 @router.post("")
 async def create_profile(
     profile_image: UploadFile = File(...),
@@ -894,8 +955,14 @@ async def create_profile(
 ):
     try:
         profile_data = json.loads(profile)
+
         first_name = profile_data.get("first_name")
         last_name = profile_data.get("last_name")
+        user_id = profile_data.get("user_id")
+
+        if not first_name or not last_name or not user_id:  # Update validation
+            raise ValueError("first_name, last_name, and user_id are required.")
+
         profile_data["date_of_birth"] = datetime.strptime(profile_data["date_of_birth"], "%Y-%m-%d").date()
 
         if not first_name or not last_name:
@@ -1393,13 +1460,8 @@ async def update_user_profile(
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from uuid import UUID
-import neo4j
-from neo4j_graphrag.llm import OpenAILLM as LLM
-from neo4j_graphrag.embeddings.openai import OpenAIEmbeddings as Embeddings
-from neo4j_graphrag.retrievers import HybridRetriever
-from neo4j_graphrag.generation.graphrag import GraphRAG
-import os
 import logging
+from services.knowledgemanagement import KnowledgeManagement
 
 logger = logging.getLogger(__name__)
 
@@ -1412,31 +1474,6 @@ class ChatQuery(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
 
-NEO4J_URI = os.getenv("NEO4J_URI")
-NEO4J_USERNAME = os.getenv("NEO4J_USERNAME")
-NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
-
-async def get_graph_rag():
-    try:
-        neo4j_driver = neo4j.GraphDatabase.driver(
-            NEO4J_URI,
-            auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
-        )
-
-        embedder = Embeddings()
-
-        hybrid_retriever = HybridRetriever(
-            neo4j_driver,
-            fulltext_index_name="fulltext_index_noblivion",
-            vector_index_name="vector_index_noblivion",
-            embedder=embedder
-        )
-
-        llm = LLM(model_name="gpt-4o-mini")
-        return GraphRAG(llm=llm, retriever=hybrid_retriever)
-    except Exception as e:
-        logger.error(f"Error initializing GraphRAG: {str(e)}")
-        raise
 
 @router.post("", response_model=ChatResponse)
 async def process_chat_message(query: ChatQuery):
@@ -1444,14 +1481,12 @@ async def process_chat_message(query: ChatQuery):
         logger.info(f"Processing chat message for profile {query.profile_id}")
         logger.debug(f"Query text: {query.query_text}")
 
-        # Initialize GraphRAG
-        rag = await get_graph_rag()
+        # Initialize knowledge management and use RAG
+        knowledge_manager = KnowledgeManagement()
+        answer = await knowledge_manager.query_with_rag(query.query_text, str(query.profile_id))
 
-        # Get response
-        response = rag.search(query_text=query.query_text)
-
-        logger.debug(f"Generated response: {response.answer}")
-        return ChatResponse(answer=response.answer)
+        logger.debug(f"Generated response: {answer}")
+        return ChatResponse(answer=answer)
 
     except Exception as e:
         logger.error(f"Error processing chat message: {str(e)}")
@@ -1543,6 +1578,7 @@ from uuid import UUID
 from models.memory import MemoryCreate
 from supabase import create_client, Client
 import os
+import asyncio
 from datetime import datetime
 import logging
 import traceback
@@ -1564,12 +1600,29 @@ class MemoryService:
             supabase_url=os.getenv("SUPABASE_URL"),
             supabase_key=os.getenv("SUPABASE_KEY")
         )
+
     @classmethod
     async def delete_memory(cls, memory_id: UUID) -> bool:
         """Delete a memory by ID"""
         try:
             logger.debug(f"Attempting to delete memory with ID: {memory_id}")
             instance = cls.get_instance()
+
+            # First, get the profile_id from the memory
+            memory_result = instance.supabase.table(cls.table_name).select(
+                "profile_id"
+            ).eq(
+                "id", str(memory_id)
+            ).execute()
+
+            if not memory_result.data:
+                logger.warning(f"No memory found with ID {memory_id} during profile_id lookup for delete")
+                return False
+
+            profile_id = memory_result.data[0].get('profile_id')
+            if not profile_id:
+                logger.warning(f"Memory {memory_id} has no profile_id")
+                return False
 
             # Delete the memory from Supabase
             result = instance.supabase.table(cls.table_name).delete().eq(
@@ -1582,6 +1635,13 @@ class MemoryService:
             if not result.data:
                 logger.warning(f"No memory found with ID {memory_id}")
                 return False
+
+            # Import KnowledgeManagement here to avoid circular import
+            from services.knowledgemanagement import KnowledgeManagement
+
+            # Delete the memory from neo4j 
+            km = KnowledgeManagement()
+            asyncio.create_task(km.delete_memory(str(profile_id), str(memory_id)))
 
             return True
 
@@ -1712,12 +1772,15 @@ class MemoryService:
             # Insert into database with error logging
             try:
                 response = instance.supabase.table(cls.table_name).insert(data).execute()
-                logger.debug(f"Supabase response: {response}")
 
                 if not response.data:
                     raise Exception("No data returned from memory creation")
 
-                return response.data[0]
+                inserted_row = response.data[0]  # Assuming only one row is inserted
+                auto_generated_id = inserted_row.get('id')
+
+                return auto_generated_id
+
             except Exception as e:
                 logger.error(f"Error inserting into database: {str(e)}")
                 logger.error(traceback.format_exc())
@@ -1792,23 +1855,35 @@ class MemoryService:
             logger.debug(f"Adding media to memory {memory_id}")
             instance = cls.get_instance()
 
-            # Verify memory exists
+            # First get the memory to verify it exists and get profile_id
             memory = instance.supabase.table(cls.table_name)\
-                .select("image_urls")\
+                .select("*")\
                 .eq("id", str(memory_id))\
                 .execute()
 
             if not memory.data:
                 raise Exception("Memory not found")
 
+            profile_id = memory.data[0].get('profile_id')
+
+            # Get user_id from profiles table
+            profile = instance.supabase.table("profiles")\
+                .select("user_id")\
+                .eq("id", profile_id)\
+                .execute()
+
+            if not profile.data:
+                raise Exception("Profile not found")
+
+            user_id = profile.data[0].get('user_id')
             current_urls = memory.data[0].get('image_urls', [])
             new_urls = []
 
             for idx, (file_content, content_type) in enumerate(zip(files, content_types)):
                 try:
-                    # Generate unique filename
+                    # Generate unique filename including user_id in path
                     file_ext = "jpg" if "jpeg" in content_type.lower() else "png"
-                    filename = f"{memory_id}/{uuid.uuid4()}.{file_ext}"
+                    filename = f"{user_id}/{memory_id}/{uuid.uuid4()}.{file_ext}"
 
                     # Upload to Supabase Storage
                     result = instance.supabase.storage\
@@ -1822,12 +1897,21 @@ class MemoryService:
                     if hasattr(result, 'error') and result.error:
                         raise Exception(f"Upload error: {result.error}")
 
-                    # Get public URL
-                    url = instance.supabase.storage\
+                    # Get public URL with signed URL
+                    signed_url = instance.supabase.storage\
                         .from_(cls.storage_bucket)\
-                        .get_public_url(filename)
+                        .create_signed_url(
+                            path=filename,
+                            expires_in=31536000  # 1 year in seconds
+                        )
 
-                    new_urls.append(url)
+                    if 'signedURL' in signed_url:
+                        new_urls.append(signed_url['signedURL'])
+                    else:
+                        public_url = instance.supabase.storage\
+                            .from_(cls.storage_bucket)\
+                            .get_public_url(filename)
+                        new_urls.append(public_url)
 
                 except Exception as e:
                     logger.error(f"Error uploading file {idx}: {str(e)}")
@@ -1976,9 +2060,17 @@ class EmpatheticInterviewer:
             ).execute()
 
             if not profile_result.data:
-                raise Exception(f"Profile not found {user_id}")
+                raise Exception(f"User not found {user_id}")
 
             profile_settings = profile_result.data[0].get("profile", {})
+
+            # Second, fetch the profile
+            profile_basics = self.supabase.table("profiles").select("*").eq("id", str(profile_id)).execute()
+
+            if not profile_basics.data:
+                raise Exception("Profile not found")
+
+            profile_data = profile_basics.data[0]
 
             # Get narrative settings with defaults
             narrator_perspective = profile_settings.get("narrator_perspective", "ego")
@@ -2004,32 +2096,43 @@ class EmpatheticInterviewer:
                       f"location='{classification.location}' "
                       f"timestamp='{classification.timestamp}'")
 
+            # Initialize memory_id as None
+            memory_id = None
+
             # If it's a memory, store it
             if classification.is_memory:
                 logger.info(f"rewrittenText='{classification.rewritten_text}'")
                 logger.info(f"narrator_perspective='{narrator_perspective}'")
-                await self.knowledge_manager.store_memory(
+                memory_id = await self.knowledge_manager.store_memory(
                     profile_id,
                     session_id,
                     classification
                 )
 
-            # Analyze sentiment
-            sentiment = await self._analyze_sentiment(
-                classification.rewritten_text if classification.is_memory else response_text
-            )
+                # Generate follow-up question based on the processed response
+                next_question = await self.generate_next_question(
+                    profile_id, 
+                    session_id,
+                    language
+                )
+            else:
+                # Use RAG for non-memory responses
+                logger.info("Using RAG for non-memory response")
+                next_question = await self.knowledge_manager.query_with_rag(response_text, str(profile_id))
 
-            # Generate follow-up question based on the processed response
-            next_question = await self.generate_next_question(
-                profile_id, 
-                session_id,
-                language
-            )
+            # Return default sentiment values instead of analyzing
+            default_sentiment = {
+                "joy": 0.5,
+                "sadness": 0.0,
+                "nostalgia": 0.5,
+                "intensity": 0.5
+            }
 
             return {
-                "sentiment": sentiment,
+                "sentiment": default_sentiment,
                 "follow_up": next_question,
-                "is_memory": classification.is_memory
+                "is_memory": classification.is_memory,
+                "memory_id": memory_id
             }
 
         except Exception as e:
@@ -2038,7 +2141,7 @@ class EmpatheticInterviewer:
                 "sentiment": {"joy": 0.5, "nostalgia": 0.5},
                 "follow_up": "Can you tell me more about that?",
                 "is_memory": False,
-                "memory_id": memory.id if memory else None
+                "memory_id": None
             }
 
     async def _analyze_sentiment(self, text: str) -> Dict[str, float]:
@@ -2426,6 +2529,7 @@ class ProfileService:
                 "spoken_languages": profile_data.spoken_languages,
                 "profile_image_url": profile_data.profile_image_url,
                 "metadata": metadata,
+                "user_id": str(profile_data.user_id),
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat()
             }
@@ -2574,11 +2678,15 @@ from models.memory import (
 )
 from services.memory import MemoryService
 import neo4j
+from neo4j import GraphDatabase
 from neo4j_graphrag.llm import OpenAILLM as LLM
 from neo4j_graphrag.embeddings.openai import OpenAIEmbeddings as Embeddings
 from neo4j_graphrag.experimental.pipeline.kg_builder import SimpleKGPipeline
-from neo4j_graphrag.retrievers import VectorRetriever
+from neo4j_graphrag.retrievers import HybridCypherRetriever
 from neo4j_graphrag.generation.graphrag import GraphRAG
+from neo4j_graphrag.experimental.components.types import (
+    LexicalGraphConfig
+)
 from neo4j_graphrag.experimental.components.text_splitters.fixed_size_splitter import FixedSizeSplitter
 import os
 import asyncio
@@ -2654,6 +2762,8 @@ class KnowledgeManagement:
             If the exact date is unknown, please estimate the month and year based on context clues
             or use the current date if no time information is available.
 
+            If the user asks a question, it is never classified as a memory.
+
             IMPORTANT: Keep the response in the original language ({language}).
 
             Text: {response_text}
@@ -2699,6 +2809,61 @@ class KnowledgeManagement:
             logger.error(f"Error analyzing response: {str(e)}")
             raise
 
+    async def delete_memory(self, profile_id: str, memory_id: str) -> bool:
+        """
+        Delete a memory node and its relationships from Neo4j.
+        Args:
+            profile_id: The profile ID
+            memory_id: The memory ID
+        Returns:
+            bool: True if deletion was successful
+        """
+        driver = None
+        session = None
+        try:
+            # Construct the node ID
+            node_id = f"noblivion_{profile_id}_{memory_id}"
+
+            # Create Neo4j driver
+            driver = neo4j.GraphDatabase.driver(
+                NEO4J_URI,
+                auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+            )
+
+            # Create session
+            session = driver.session()
+
+            # Define the Cypher query
+            cypher_query = """
+            MATCH (n:Chunk)
+            WHERE n.id STARTS WITH $node_id
+            DETACH DELETE n
+            """
+
+            try:
+                # Execute the query synchronously
+                session.run(
+                    cypher_query,
+                    node_id=node_id
+                )
+                logger.info(f"Successfully deleted nodes with ID pattern: {node_id}")
+                return True
+
+            except Exception as e:
+                logger.error(f"Error executing Neo4j query: {str(e)}")
+                raise
+
+        except Exception as e:
+            logger.error(f"Error in delete_memory: {str(e)}")
+            raise
+
+        finally:
+            # Clean up resources
+            if session:
+                session.close()
+            if driver:
+                driver.close()
+
     async def store_memory(self, profile_id: UUID, session_id: UUID, classification: MemoryClassification) -> Optional[Memory]:
         """
         Store classified memory in both Supabase and Neo4j (future implementation)
@@ -2733,23 +2898,23 @@ class KnowledgeManagement:
             }
 
             # Store in Supabase
-            stored_memory = await MemoryService.create_memory(
+            stored_memory_id = await MemoryService.create_memory(
                 MemoryCreate(**memory_data),
                 profile_id,
                 session_id
             )
 
             # in the background: store in Neo4j knowledge graph (vector and graph search)
-            asyncio.create_task(self.append_to_rag(classification.rewritten_text, classification.category, classification.location))
+            asyncio.create_task(self.append_to_rag(classification.rewritten_text, profile_id, stored_memory_id, classification.category, classification.location))
 
-            logger.info(f"Memory stored successfully")
-            return stored_memory
+            logger.info(f"Memory stored successfully as " + stored_memory_id)
+            return stored_memory_id
 
         except Exception as e:
             logger.error(f"Error storing memory: {str(e)}")
             raise
 
-    async def append_to_rag(self, memory_text, category, location):
+    async def append_to_rag(self, memory_text, profile_id, memory_id, category, location):
 
         neo4j_driver = neo4j.GraphDatabase.driver(NEO4J_URI,
             auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
@@ -2856,6 +3021,8 @@ class KnowledgeManagement:
              llm=ex_llm,
              driver=neo4j_driver,
              embedder=embedder,
+             lexical_graph_config= LexicalGraphConfig(id_prefix=f'noblivion_{profile_id}_{memory_id}', 
+                                                      document_node_label='memory_node' ),
              relations=relations_noblivion,
              entities=entities_noblivion,
              text_splitter=FixedSizeSplitter(chunk_size=2000, chunk_overlap=500),
@@ -2870,6 +3037,51 @@ class KnowledgeManagement:
         logger.info(f"...> RAG pipeline execution time: {execution_time} seconds")
 
         return ""
+
+    async def query_with_rag(self, query_text: str, profile_id) -> str:
+        """
+        Query the knowledge graph using RAG and return the answer.
+        """
+        try:
+            logger.info("Initializing GraphRAG for query")
+            neo4j_driver = neo4j.GraphDatabase.driver(
+                NEO4J_URI,
+                auth=(NEO4J_USERNAME, NEO4J_PASSWORD)
+            )
+
+            embedder = Embeddings()
+
+            # Limit the query to match only nodes for the profile
+            retrieval_query = "MATCH (n:Chunk)" f"WHERE n.id STARTS WITH 'noblivion_{profile_id}'" "RETURN n"
+
+            hybrid_retriever = HybridCypherRetriever(
+                neo4j_driver,
+                "vector_index_noblivion",
+                "fulltext_index_noblivion",
+                retrieval_query,
+                embedder
+            )
+
+            llm = LLM(
+                model_name="gpt-4o-mini",
+                model_params={
+                    "max_tokens": 2000,  # Limit output tokens
+                    "temperature": 0.2
+                }
+            )
+            rag = GraphRAG(llm=llm, retriever=hybrid_retriever)
+
+            # Get response
+            logger.debug(f"Executing RAG query: {query_text}")
+            response = rag.search(query_text=query_text, 
+                                  retriever_config= { 'top_k': 5 })
+            logger.debug(f"Generated response: {response.answer}")
+
+            return response.answer
+
+        except Exception as e:
+            logger.error(f"Error processing RAG query: {str(e)}")
+            raise Exception(f"Failed to process RAG query: {str(e)}")
 ```
 
 ### services/email.py
@@ -2879,8 +3091,11 @@ import os
 from mailersend import emails
 from pathlib import Path
 from dotenv import load_dotenv
+import logging
+import datetime
+import aiofiles
 
-load_dotenv()
+logger = logging.getLogger(__name__)
 
 class EmailService:
     def __init__(self):
@@ -2888,50 +3103,97 @@ class EmailService:
         self.sender_domain = os.getenv('MAILERSEND_SENDER_EMAIL')
         self.mailer = emails.NewEmail(self.api_key)
 
-    def send_verification_email(self, to_email: str, verification_code: str):
+    def _create_mail_body(
+        self,
+        to_email: str,
+        subject: str,
+        html_content: str
+    ) -> dict:
+        """Create a standardized mail body for MailerSend"""
+        mail_body = {}
+
+        # Set sender
+        mail_from = {
+            "name": "Noblivion",
+            "email": self.sender_domain
+        }
+        self.mailer.set_mail_from(mail_from, mail_body)
+
+        # Set recipient
+        recipients = [
+            {
+                "name": to_email,
+                "email": to_email
+            }
+        ]
+        self.mailer.set_mail_to(recipients, mail_body)
+
+        # Set subject
+        self.mailer.set_subject(subject, mail_body)
+
+        # Set content
+        self.mailer.set_html_content(html_content, mail_body)
+
+        # Create plain text version
+        # Simple conversion - you might want to improve this
+        plain_text = html_content.replace('<br>', '\n').replace('</p>', '\n\n')
+        self.mailer.set_plaintext_content(plain_text, mail_body)
+
+        return mail_body
+
+    async def send_interview_invitation(self, to_email: str, profile_name: str, token: str, expires_at: str):
         try:
             # Read template
-            template_path = Path("templates/account-verification-en.html")
+            template_path = Path("templates/interview-invitation.html")
             with open(template_path, "r") as f:
                 html_content = f.read()
 
-            # Replace placeholder
-            html_content = html_content.replace("{verification_code}", verification_code)
+            # Format the date
+            formatted_date = expires_at.strftime("%B %d, %Y")  # e.g., "December 24, 2024"
 
-            # Prepare empty mail body
-            mail_body = {}
+            # Replace placeholders
+            html_content = html_content\
+                .replace("{profile_name}", profile_name)\
+                .replace("{interview_url}", f"{os.getenv('FRONTEND_URL')}/interview-token?token={token}")\
+                .replace("{expiry_date}", formatted_date)
 
-            # Set sender
-            mail_from = {
-                "name": "Noblivion",
-                "email": self.sender_domain
-            }
-            self.mailer.set_mail_from(mail_from, mail_body)
-
-            # Set recipient
-            recipients = [
-                {
-                    "name": to_email,
-                    "email": to_email
-                }
-            ]
-            self.mailer.set_mail_to(recipients, mail_body)
-
-            # Set subject
-            self.mailer.set_subject("Verify your Noblivion account", mail_body)
-
-            # Set content
-            self.mailer.set_html_content(html_content, mail_body)
-            self.mailer.set_plaintext_content(
-                f"Your verification code is: {verification_code}", 
-                mail_body
+            # Create mail body
+            mail_body = self._create_mail_body(
+                to_email=to_email,
+                subject=f"You're invited to share memories about {profile_name}",
+                html_content=html_content
             )
 
-            # Send email synchronously
+            # Send email
             return self.mailer.send(mail_body)
 
         except Exception as e:
-            print(f"Failed to send verification email: {str(e)}")
+            logger.error(f"Failed to send invitation email: {str(e)}")
+            raise
+
+    async def send_expiry_reminder(self, to_email: str, profile_name: str, expires_at: str):
+        try:
+            template_path = Path("templates/expiry-reminder.html")
+            with open(template_path, "r") as f:
+                html_content = f.read()
+
+            # Format the date
+            formatted_date = expires_at.strftime("%B %d, %Y")
+
+            html_content = html_content\
+                .replace("{profile_name}", profile_name)\
+                .replace("{expiry_date}", formatted_date)
+
+            mail_body = self._create_mail_body(
+                to_email=to_email,
+                subject=f"Reminder: Interview invitation for {profile_name} expires soon",
+                html_content=html_content
+            )
+
+            return self.mailer.send(mail_body)
+
+        except Exception as e:
+            logger.error(f"Failed to send expiry reminder: {str(e)}")
             raise
 ```
 
@@ -3230,6 +3492,7 @@ class ProfileService:
                 "spoken_languages": profile_data.spoken_languages,
                 "profile_image_url": profile_data.profile_image_url,
                 "metadata": metadata,
+                "user_id": str(profile_data.user_id),
                 "created_at": datetime.utcnow().isoformat(),
                 "updated_at": datetime.utcnow().isoformat()
             }

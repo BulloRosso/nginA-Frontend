@@ -368,6 +368,7 @@ export const Register = ({ onSuccess }) => {
 
 // ForgotPassword Component
 export const ForgotPassword = ({ onSuccess }) => {
+  const { t } = useTranslation(['common']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -379,12 +380,14 @@ export const ForgotPassword = ({ onSuccess }) => {
     setError(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await AuthService.requestPasswordReset(email);
       setSuccess(true);
+      // We still show success even if email doesn't exist (security best practice)
       onSuccess?.();
     } catch (error) {
-      setError(error.message);
+      // We don't show specific errors to prevent email enumeration
+      setError(t('auth.password_reset_error'));
+      console.error('Password reset request error:', error);
     } finally {
       setLoading(false);
     }
@@ -394,13 +397,13 @@ export const ForgotPassword = ({ onSuccess }) => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Typography variant="h5" component="h1" gutterBottom align="center">
-          Reset Password
+          {t('common.auth.reset_password')}
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Password reset instructions have been sent to your email
+            {t('common.auth.password_reset_instructions_sent')}
           </Alert>
         )}
 
@@ -422,12 +425,12 @@ export const ForgotPassword = ({ onSuccess }) => {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : 'Send Reset Instructions'}
+            {loading ? <CircularProgress size={24} /> : t('common.auth.send_reset_instructions')}
           </Button>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Link href="/login" variant="body2">
-              Back to Sign In
+              {t('common.auth.back_to_login')}
             </Link>
           </Box>
         </Box>

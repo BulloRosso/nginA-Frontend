@@ -34,5 +34,16 @@
   "memoryfilter": {
     "year_range": "Year range",
     "year_filter": "Filter by year"
+  },
+  "auth": {
+    "reset_password": "Reset Password",
+    "password_reset_instructions_sent": "If the email exists in our system, you will receive password reset instructions shortly.",
+    "password_reset_error": "Unable to process password reset request. Please try again later.",
+    "send_reset_instructions": "Send Reset Instructions",
+    "back_to_login": "Back to Sign In",
+    "email": "Email",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password"
   }
+  
 }}

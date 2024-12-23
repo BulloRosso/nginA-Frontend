@@ -17,6 +17,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Login, Register, ForgotPassword } from './components/auth';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AuthProvider, useAuth } from './contexts/auth';
 import { VerificationCheck, VerifiedRoute } from './components/verification';
 import LandingPage from './pages/LandingPage';  
@@ -261,7 +262,8 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              
               {/* Protected routes - with header */}
               <Route path="/profile-selection" element={
                 <ProtectedRoute>
