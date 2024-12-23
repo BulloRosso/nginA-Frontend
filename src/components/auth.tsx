@@ -59,13 +59,16 @@ export const Login = ({ onSuccess }) => {
         formData.password
       );
 
+      // First get validation status
+      const validationStatus = await AuthService.checkValidationStatus(response.user.id);
+
       console.log('Login response:', response); // Debug log
       login({
         id: response.user.id,
         email: response.user.email,
         first_name: response.user.first_name,
         last_name: response.user.last_name,
-        is_validated: response.user.is_validated || false // Ensure this is set
+        is_validated: validationStatus
       });
       navigate('/profile-selection');
     } catch (error: any) {
