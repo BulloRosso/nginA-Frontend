@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function LandingPageBusiness() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['landing', 'common']);
 
   const handleGetStarted = () => {
     navigate('/profile');

@@ -1,27 +1,34 @@
+{ "commmon":
 {
-  "app": {
-    "name": "Noblivion",
-    "tagline": "Preserve Your Family Memories"
+  "error": "Error",
+  "loading": "Loading...",
+  "save": "Save",
+  "cancel": "Cancel",
+  "back": "Back",
+  "next": "Next",
+  "validating_access": "Validating access...",
+  "access_denied": "Access denied",
+  "session_expired": "Your session has expired",
+  "loading_data": "Loading data...",
+  "saving": "Saving...",
+  "try_again": "Try Again",
+  "error_occurred": "An error occurred",
+  "sessionwith": "session with",
+  "categories": {
+    "childhood": "Childhood",
+    "career": "Career",
+    "travel": "Travel",
+    "relationships": "Relationships",
+    "hobbies": "Hobbies",
+    "pets": "Pets"
   },
-  "navigation": {
-    "profile": "Profile",
-    "interview": "Interview",
-    "memories": "Memories",
-    "timeline": "Timeline"
+  "menu": {
+    "home": "Home",
+    "profiles": "Select profile",
+    "logout": "Logout"
   },
-  "actions": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "confirm": "Confirm",
-    "back": "Back",
-    "next": "Next",
-    "finish": "Finish"
-  },
-  "validation": {
-    "required": "This field is required",
-    "invalidEmail": "Invalid email address",
-    "invalidDate": "Invalid date"
+  "memoryfilter": {
+    "year_range": "Year range",
+    "year_filter": "Filter by year"
   }
-}
+}}

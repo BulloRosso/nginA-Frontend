@@ -1,0 +1,22 @@
+{ "buy": {
+  "checkout": "Zur Kasse gehen",
+  "feature": "Funktion",
+  "basic": "Kostenlos",
+  "premium": "Premium",
+  "category": { 
+    "memories": "Erinnerungen", 
+    "storage": "Bilder/Fotos", 
+    "export": "PDF-Erstellung", 
+    "support": "Speicherdauer" 
+  },
+  "basic_memories": "bis zu 10",
+  "premium_memories": "bis zu 500",
+  "basic_exports": "2",
+  "premium_exports": "unbegrenzt",
+  "basic_storage": "1 pro Erinnerung",
+  "premium_storage": "10 pro Erinnerung",
+  "basic_retention": "3 Monate",
+  "premium_retention": "unbegrenzt",
+  "title": "Beginnen Sie jetzt, Erinnerungen zu speichern!",
+  "one_time_payment": "Einmalzahlung"
+}}

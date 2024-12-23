@@ -17,7 +17,7 @@ import api from '../../services/api';
 import { NarratorSettings } from './NarratorSettings';
 
 const Settings = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['settings','common']);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

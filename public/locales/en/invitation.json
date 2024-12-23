@@ -1,0 +1,47 @@
+{ "invitation": {
+  "title": "Invite to Interview",
+  "email_label": "Email Address",
+  "send": "Send Invitation",
+  "create_error": "Failed to create invitation",
+  "extend_title": "Extend Invitation",
+  "days_label": "Extension Days",
+  "extend_error": "Failed to extend invitation",
+  "current_invitee": "Current Invitee",
+  "expires_on": "Current Expiry",
+  "new_expiry": "New Expiry Date",
+  "confirm_revoke": "Are you sure you want to revoke this invitation?",
+  "show_expired": "Show Expired",
+  "sent_success": "Interview invitation sent successfully",
+  "extend": "Extend",
+  "revoke": "Revoke",
+  "loading_dashboard": "Loading invitations dashboard...",
+  "refreshing": "Refreshing invitations...",
+  "load_error": "Failed to load invitations",
+  "sending": "Sending invitation...",
+  "extending": "Extending invitation...",
+  "access_error": "Access Error",
+  "table": {
+    "profile": "Profile",
+    "email": "Email",
+    "status": "Status",
+    "expires": "Expires",
+    "sessions": "Sessions",
+    "actions": "Actions"
+  },
+  "status": {
+    "active": "Active",
+    "expired": "Expired",
+    "revoked": "Revoked"
+  },
+  "stats": {
+    "total": "Total Invitations",
+    "active": "Active Invitations"
+  },
+  "validating": "Validating invitation...",
+  "invalid_token_message": "This interview invitation is either invalid or has expired. Please contact the person who invited you for a new invitation.",
+  "errors": {
+    "No token provided": "No invitation token provided",
+    "Invalid or expired token": "This invitation is no longer valid",
+    "Failed to validate invitation token": "Could not validate the invitation"
+  }
+}}

@@ -25,6 +25,9 @@ import IntroductionVideo from './pages/IntroductionVideo';
 import { useTranslation } from 'react-i18next';
 import ChatRobot from './components/chat/ChatRobot';
 import Settings from './components/modals/Settings';
+import InvitationsDashboard from './components/invitations/InvitationsDashboard';
+import TokenHandler from './components/interview/TokenHandler';
+import { TokenProtectedRoute } from './hoc/withTokenProtection';
 
 const theme = createTheme({
   palette: {
@@ -57,14 +60,14 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
       <ListItemIcon>
         <HomeIcon fontSize="small" />
       </ListItemIcon>
-      <ListItemText primary={t('menu.home')} />
+      <ListItemText primary={t('common.menu.home')} />
     </MenuItem>,
 
     <MenuItem key="profiles" onClick={() => handleNavigation('/profile-selection')}>
       <ListItemIcon>
         <PeopleIcon fontSize="small" />
       </ListItemIcon>
-      <ListItemText primary={t('menu.profiles')} />
+      <ListItemText primary={t('common.menu.profiles')} />
     </MenuItem>
   ];
 
@@ -76,7 +79,7 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
         <ListItemIcon>
           <LogoutRounded fontSize="small" />
         </ListItemIcon>
-        <ListItemText primary={t('menu.logout')} />
+        <ListItemText primary={t('common.menu.logout')} />
       </MenuItem>
     );
   }
@@ -183,7 +186,7 @@ const Header = () => {
               color: '#fff',
               opacity: 0.9 
             }}>
-              {t('appbar.sessionwith')} {profileName}
+              {t('common.sessionwith')} {profileName}
             </span>
           )}
         </Typography>
@@ -243,6 +246,13 @@ const App = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/business" element={<LandingPageBusiness />} />
 
+              <Route 
+                path="/interview-token" 
+                element={
+                  <TokenHandler />
+                } 
+              />
+              
               {/* Auth routes - no header */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -268,11 +278,19 @@ const App = () => {
                   <IntroductionVideo />
                 </ProtectedRoute>
               } />
+              
+              <Route path="/invitations" element={
+                <ProtectedRoute>
+                  <VerifiedRoute>
+                    <InvitationsDashboard />
+                  </VerifiedRoute>
+                </ProtectedRoute>
+              } />
 
               <Route path="/interview" element={
-                <ProtectedRoute>
+                <TokenProtectedRoute>
                   <MemoryCapture />
-                </ProtectedRoute>
+                </TokenProtectedRoute>
               } />
 
               <Route path="/timeline" element={

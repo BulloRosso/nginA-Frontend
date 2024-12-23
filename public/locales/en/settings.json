@@ -1,0 +1,26 @@
+{ "settings":
+{
+  "auth_error": "Authentication error. Please try logging in again.",
+  "login_required": "You must be logged in to save settings.",
+  "title": "Settings",
+  "save_success": "Settings saved successfully",
+  "save_error": "Failed to save settings",
+  "narrator_perspective": "Narrator Perspective",
+  "narrator_verbosity": "Verbosity Level",
+  "narrator_style": "Narrative Style",
+  "perspective": {
+    "ego": "First Person",
+    "third_person": "Third Person"
+  },
+  "verbosity": {
+    "verbose": "Detailed",
+    "normal": "Normal",
+    "brief": "Concise"
+  },
+  "style": {
+    "professional": "Professional",
+    "romantic": "Romantic",
+    "optimistic": "Optimistic",
+    "neutral": "Neutral"
+  }
+}}

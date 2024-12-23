@@ -28,7 +28,7 @@ export const NarratorSettings: React.FC<NarratorSettingsProps> = ({
   settings,
   onSettingChange
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['settings','common']);
 
   return (
     <Box sx={{ mt: 2 }}>

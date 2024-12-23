@@ -1,32 +1,65 @@
+{ "profile":
 {
-  "title": "Profil-Einrichtung",
-  "subtitle": "Persönliche Informationen eingeben",
-  "form": {
-    "firstName": "Vorname",
-    "lastName": "Nachname",
-    "dateOfBirth": "Geburtsdatum",
-    "placeOfBirth": "Geburtsort",
-    "gender": {
-      "label": "Geschlecht",
-      "male": "Männlich",
-      "female": "Weiblich",
-      "other": "Andere"
-    },
-    "children": {
-      "label": "Kinder",
-      "add": "Kind hinzufügen",
-      "placeholder": "Name des Kindes eingeben"
-    },
-    "languages": {
-      "label": "Gesprochene Sprachen",
-      "add": "Sprache hinzufügen",
-      "placeholder": "Sprache eingeben"
-    },
-    "image": {
-      "label": "Profilbild",
-      "upload": "Bild hochladen",
-      "change": "Bild ändern",
-      "remove": "Bild entfernen"
-    }
-  }
-}
+  "chat": "Chat",    
+  "invite_interview": "Zum Interview einladen",
+  "currency": "€",
+  "change_photo": "Bild ändern",
+  "upload_photo": "Bild hochladen",
+  "buy": "Jetzt kaufen!",
+  "delete_success": "Profil erfolgreich gelöscht",
+  "delete_error": "Fehler beim Löschen des Profils. Bitte versuchen Sie es erneut.",
+  "age": "Alter",
+  "sessions": "Sitzungen",
+  "total_sessions": "Sitzungen insg.",
+  "last_session": "Letzte Sitzung",
+  "create_book": "Erzeuge Buch als PDF",
+  "remove_profile": "Entferne Profil",
+  "confirm_delete": "Löschen bestätigen",
+  "delete_warning": "Sind Sie sicher? Das Löschen kann nicht rückgängig gemacht werden.",
+  "select_profile": "Eine Person für das Interview neu anlegen oder auswählen",
+  "create_new": "Ein neues Profil erzeugen",
+  "or_continue": "oder mit einem existierenden Profil fortfahren",
+  "no_profiles": "Keine Profile vorhanden. Bitte erzeugen Sie ein neues Profil.",
+  "title": "Beschreibe die Person, mit der das Interview geführt wird",
+  "step3_description": "Die folgende Einstellungen betreffen die automtische Umformulierung der eingegebenen Erinnerungen: z. B. 'Ich kaufte mir ein neues Boot' bzw. 'Ralph kaufte sich ein neue Boot'. Unsere KI korrigiert ihre Rechtschreibung während der Eingabe und sorgt für einen durchgängigen Stil.",
+  "helpcaption":"Unser erster Schritt",
+  "help": "Bevor wir mit dem Interviewprozess beginnen, möchten wir mehr über Sie und Ihren Hintergrund erfahren. Diese Informationen helfen uns, eine individuellere und bedeutungsvollere Erfahrung zu schaffen, die speziell auf Ihr Umfeld abgestimmt ist.",
+  "help2": "Wenn Sie die Person sind, die interviewt werden soll, geben Sie bitte Informationen über IHR Leben an – andernfalls beschreiben Sie einfach die Person, der Sie ein nOblivion-Interview schenken möchten.",
+  "help3": "Sie können mehr als eine Person (auch Profil genannt) mit nOblivion verwalten.",
+  "steps": {
+    "basic_info": "Grundinformationen",
+    "characterization": "Charakterisierung",
+    "memory_style":"Stil der Erinnerungen"
+  },
+  "fields": {
+    "first_name": "Vorname",
+    "last_name": "Nachname",
+    "dob": "Geburtsdatum",
+    "pob": "Geburtsort",
+    "gender": "Geschlecht",
+    "add_child": "Kind hinzufügen",
+    "add_language": "Sprache hinzufügen"
+  },
+  "gender": {
+    "male": "Männlich",
+    "female": "Weiblich",
+    "other": "Divers"
+  },
+  "backstory": {
+    "label": "Charakterisierung",
+    "description": "Bitte beschreiben Sie die Person in mindestens drei Sätzen. Berücksichtigen Sie wichtige Lebensereignisse, Persönlichkeitsmerkmale und bemerkenswerte Eigenschaften.",
+    "placeholder": "Beschreiben Sie die Lebensgeschichte, Persönlichkeit und bemerkenswerte Erfahrungen der Person..."
+  },
+  "errors": {
+    "required_first_name": "Vorname ist erforderlich",
+    "required_last_name": "Nachname ist erforderlich",
+    "required_dob": "Geburtsdatum ist erforderlich",
+    "required_pob": "Geburtsort ist erforderlich",
+    "required_gender": "Geschlecht ist erforderlich",
+    "required_image": "Profilbild ist erforderlich",
+    "required_backstory": "Bitte geben Sie mindestens drei Sätze für die Charakterisierung ein",
+    "invalid_image": "Bitte laden Sie eine gültige Bilddatei hoch",
+    "save_failed": "Profil konnte nicht gespeichert werden"
+  },
+  "continue_to_interview": "Weiter zum Interview"
+}}

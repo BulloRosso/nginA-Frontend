@@ -1,0 +1,81 @@
+{ "landing":
+{
+  "title": "nOblivion",
+  "subtitle": "Wertvolle Erinnerungen bewahren",
+  "subtitle_business": "Nie wieder einen Experten verlieren!",
+  "description": "Bewahren Sie die Lebensgeschichten Ihrer Familie durch Gespräche mit unserem KI-Interviewer.",
+  "description_business":"Die 'leaving experts'-Situation verliert ihren Schrecken, wenn Sie das Wissen ihrer Mitarbeitenden mit nOblivion konservieren.",
+  "ds": "Teilen Sie Erinnerungen, fügen Sie Fotos hinzu und schaffen Sie ein bleibendes Vermächtnis für kommende Generationen.",
+  "ds_business": "Ihre Experten stehen den Kollegen rund um die Uhr als AI-Bot zur Verfügung und Ihre IT-Systeme können per API auf das Wissen zugreifen.",
+  "try_now": "Jetzt ausprobieren",
+  "how_it_works": "So funktioniert's",
+  "business_edition_hint": "...auch verfügbar als Business-Edition!",
+  "backstory": {
+    "quote": "Am Strand finden wir oft leere Muscheln – stille Echos der Vergangenheit.",
+    "paragraph1": "Ihre Geschichten bleiben ein Geheimnis, verloren in der Zeit, und doch regen sie unsere Fantasie an. Diese Muscheln, einst lebendig in einer bunten Unterwasserwelt, stehen nun als zerbrechliche Erinnerungen an etwas Größeres. Sie lehren uns eine wesentliche Wahrheit: Das Bewahren der Geschichten der Vergangenheit gibt uns die Weisheit, intensiver in der Gegenwart zu leben.",
+    "paragraph2": "Wir sollten diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
+  },
+  "backstory_business": {
+    "quote": "Das Wissen Ihrer Mitarbeiter ist der Charakter Ihres Unternehmens",
+    "paragraph1": "Die Mitarbeiter eines Unternehmens prägen dessen Charakter und Identität durch ihre Fähigkeiten, Erfahrungen und Werte. Sie verkörpern das Wissen und die Kultur, die das Unternehmen einzigartig machen und seinen Erfolg sichern. Dieses Wissen, ob explizit oder implizit, ist ein wertvolles Gut, das durch Zusammenarbeit, Innovation und Tradition weitergegeben wird.",
+    "paragraph2": "Es ist daher essenziell, das Wissen der Mitarbeiter zu bewahren, um Kontinuität, Anpassungsfähigkeit und Wettbewerbsfähigkeit zu gewährleisten, insbesondere in Zeiten des Wandels oder bei der Einführung neuer Technologien."
+  },
+  "buy": {
+    "checkout": "Weiter zur Zahlung",
+    "title": "Jetzt kaufen und Erinnerungen bewahren",
+    "one_time_payment": "Einmal-Zahlung"
+  },
+  "features": {
+    "create_profile": {
+      "title": "Profil erstellen",
+      "description": "Erstellen Sie ein Profil mit grundlegenden Informationen über sich oder Ihre Angehörigen"
+    },
+    "share_memories": {
+      "title": "Erinnerungen teilen",
+      "description": "Führen Sie natürliche Gespräche mit unserem KI-Interviewer, um Lebensgeschichten festzuhalten"
+    },
+    "preserve_legacy": {
+      "title": "Vermächtnis bewahren",
+      "description": "Fügen Sie Fotos hinzu, organisieren Sie Erinnerungen und erstellen Sie eine schöne Zeitleiste von Lebensereignissen, die als Buch aus der von uns erstellten PDF-Datei gedruckt werden kann!"
+    }
+  },
+  "features_business": {
+    "create_profile": {
+      "title": "Profil erstellen",
+      "description": "Erstellen Sie ein Profil mit grundlegenden Informationen Ihres Experten"
+    },
+    "share_memories": {
+      "title": "Experteninterviews",
+      "description": "30minütige Sessions mit unserem KI-Interviewer konservieren das Insiderwissen"
+    },
+    "preserve_legacy": {
+      "title": "Virtueller Experte",
+      "description": "Der Erfahrungsschatz Ihres Experten kann in Form eines KI-Chatbots von Ihren Mitarbeitern jederzeit genutzt werden"
+    }
+  },
+  "cta": {
+    "title": "Schenken Sie sich oder einer geliebten Person die Chance, Ihre Erinnerungen zu bewahren",
+    "button": "Jetzt ausprobieren"
+  },
+  "cta_business": {
+    "title": "Testen Sie wie einfach es sich anfühlt mit unserer personal Edition",
+    "button": "Jetzt ausprobieren"
+  },
+  "feature_comparison_title": "Das sind die Highlights",
+  "feature_comparison": {
+    "title_personal": "nOblivion Personal Edition",
+    "title_business": "nOblivion Business Edition",
+    "API": "Zugriff über API",
+    "basic_API": "nein",
+    "premium_API": "ja",
+    "agents": "Agenten",
+    "basic_agents": "nein",
+    "premium_agents": "jede Nacht verfeinern KI Agenten den Knowledge Graph",
+    "knowledge": "Wissenbasis",
+    "basic_knowledge": "Volltext / Vektor / Graph",
+    "premium_knowledge": "Volltext / Vektor / Graph",
+    "bot": "KI Chatbot",
+    "basic_bot": "Basis (begrenzte Anfragen)",
+    "premium_bot": "Advanced"
+  }
+}}

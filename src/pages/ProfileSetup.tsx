@@ -28,7 +28,7 @@ import { SetupStep3 } from '../components/profile/SetupStep3';
 import { ProfileData, ValidationErrors } from '../types/profile-setup';
 
 const ProfileSetup = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['profile','common']);
   const [activeStep, setActiveStep] = useState(0);
   const [profile, setProfile] = useState<ProfileData>({
     firstName: '',

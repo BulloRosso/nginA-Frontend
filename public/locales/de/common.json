@@ -1,27 +1,36 @@
+{ "common":
 {
-  "app": {
-    "name": "Noblivion",
-    "tagline": "Bewahren Sie Ihre Familienerinnerungen"
+  "error": "Fehler",
+  "loading": "Lädt...",
+  "save": "Speichern",
+  "cancel": "Abbrechen",
+  "back": "Zurück",
+  "next": "Weiter",
+  "delete": "Löschen",
+  "validating_access": "Zugriff wird überprüft...",
+  "access_denied": "Zugriff verweigert",
+  "session_expired": "Ihre Sitzung ist abgelaufen",
+  "loading_data": "Daten werden geladen...",
+  "saving": "Wird gespeichert...",
+  "try_again": "Erneut versuchen",
+  "error_occurred": "Ein Fehler ist aufgetreten",
+  "sessionwith": "Session mit",
+  "categories": {
+    "childhood": "Kindheit",
+    "career": "Beruf",
+    "travel": "Reise",
+    "relationships": "Familie",
+    "hobbies": "Hobbys",
+    "pets": "Haustiere"
   },
-  "navigation": {
-    "profile": "Profil",
-    "interview": "Interview",
-    "memories": "Erinnerungen",
-    "timeline": "Zeitleiste"
+  "memoryfilter": {
+    "drop_here": "Bild hier ablegen ...",
+    "year_range": "Jahresbereich",
+    "year_filter": "Filtern nach Jahr"
   },
-  "actions": {
-    "save": "Speichern",
-    "cancel": "Abbrechen",
-    "edit": "Bearbeiten",
-    "delete": "Löschen",
-    "confirm": "Bestätigen",
-    "back": "Zurück",
-    "next": "Weiter",
-    "finish": "Fertig"
-  },
-  "validation": {
-    "required": "Dieses Feld ist erforderlich",
-    "invalidEmail": "Ungültige E-Mail-Adresse",
-    "invalidDate": "Ungültiges Datum"
+  "menu": {
+    "home": "Home",
+    "profiles": "Profilauswahl",
+    "logout": "Abmelden"
   }
-}
+}}

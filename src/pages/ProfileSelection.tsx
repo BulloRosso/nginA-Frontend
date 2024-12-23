@@ -34,6 +34,7 @@ import {
   AccessTime as AccessTimeIcon,
   Forum as ForumIcon,
   PersonAdd as PersonAddIcon,
+  MailOutline as InviteIcon, 
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +44,7 @@ import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
 import BuyProduct from '../components/modals/BuyProduct';
 import './styles/GoldButton.css';
+import InvitationDialog from '../components/modals/InvitationDialog';
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -58,8 +60,9 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['profile','common']);
 
   // Single effect for initialization
   useEffect(() => {
@@ -355,6 +358,18 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           >
             <MenuItem 
               onClick={() => {
+                const profileToInvite = selectedProfileId;
+                handleMenuClose();
+                setSelectedProfileId(profileToInvite);
+                setInviteDialogOpen(true);
+              }}
+            >
+              <InviteIcon sx={{ mr: 1 }} />
+              {t('profile.invite_interview')}
+            </MenuItem>
+            
+            <MenuItem 
+              onClick={() => {
                 const profileToDelete = selectedProfileId;
                 handleMenuClose();
                 setSelectedProfileId(profileToDelete);
@@ -435,6 +450,18 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
         onClose={() => setBuyModalOpen(false)}
         profileId={selectedProfile?.id || ''}
         profileName={selectedProfile?.first_name || ''}
+      />
+
+      <InvitationDialog
+        open={inviteDialogOpen}
+        onClose={() => {
+          setInviteDialogOpen(false);
+          setSelectedProfileId(null);
+        }}
+        profile={profiles.find(p => p.id === selectedProfileId) || null}
+        onSuccess={() => {
+          setSuccessMessage(t('invitation.sent_success'));
+        }}
       />
     </Container>
   );

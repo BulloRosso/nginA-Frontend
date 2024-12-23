@@ -224,7 +224,7 @@ const SelectedMemoryDisplay = ({ memory, onClose }) => {
 };
 
 const MemoryCapture = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['interview','common']);
   const [loading, setLoading] = useState(false);
   const [question, setQuestion] = useState('');
   const [response, setResponse] = useState('');

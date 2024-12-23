@@ -1,0 +1,21 @@
+{ "buy": {
+  "checkout": "Proceed to Checkout",
+  "feature": "Feature",
+  "basic": "Free",
+  "premium": "Premium",
+  "category": { 
+    "memories": "Memories", 
+    "storage": "Images/Photos", 
+    "export": "PDF creation", 
+    "support": "Retention" } ,
+  "basic_memories": "up to 10",
+  "premium_memories": "up to 500",
+  "basic_exports": "2",
+  "premium_exports": "unlimited",
+  "basic_storage": "1 per memory",
+  "premium_storage": "10 per memory",
+  "basic_retention": "3 months",
+  "premium_retention": "unlimited",
+  "title": "Start saving memories now!",
+  "one_time_payment": "One-time payment"
+}}

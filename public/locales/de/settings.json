@@ -1,0 +1,26 @@
+{ "settings":
+{
+  "auth_error": "Authentifizierungsfehler. Bitte melden Sie sich erneut an.",
+  "login_required": "Sie müssen angemeldet sein, um Einstellungen zu speichern.",
+  "title": "Einstellungen",
+  "save_success": "Einstellungen erfolgreich gespeichert",
+  "save_error": "Fehler beim Speichern der Einstellungen",
+  "narrator_perspective": "Erzählperspektive",
+  "narrator_verbosity": "Ausführlichkeit",
+  "narrator_style": "Erzählstil",
+  "perspective": {
+    "ego": "Ich-Perspektive",
+    "third_person": "Dritte Person"
+  },
+  "verbosity": {
+    "verbose": "Ausführlich",
+    "normal": "Normal",
+    "brief": "Kurz"
+  },
+  "style": {
+    "professional": "Professionell",
+    "romantic": "Romantisch",
+    "optimistic": "Optimistisch",
+    "neutral": "Neutral"
+  }
+}}

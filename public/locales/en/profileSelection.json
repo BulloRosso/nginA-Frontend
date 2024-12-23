@@ -1,0 +1,8 @@
+{ "profileSelection": {
+  "title": "Select a Profile",
+  "createNew": "Create New Profile",
+  "or": "or continue with existing profile",
+  "noProfiles": "No profiles found. Create a new one to get started.",
+  "age": "Age",
+  "lastInterview": "Last interview"
+}}

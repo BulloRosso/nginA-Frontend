@@ -1,0 +1,7 @@
+{ "chat": {
+  "listening": "Ich höre... Sprechen Sie jetzt",
+    "speech_not_supported": "Spracherkennung wird in Ihrem Browser nicht unterstützt",
+  "chat_with": "Hi, ich bin",
+  "type_message": "Tippe hier Deine Nachricht",
+  "welcome_message": "Frage mich zu Personen und Ereignissen aus meiner Vergangenheit! Lass uns zusammen herausfinden, wo ich noch Erinnerungslücken habe."
+}}

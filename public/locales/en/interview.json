@@ -1,0 +1,23 @@
+{ "interview": {
+  "loading_question": "Loading question...",
+  "add_images": "Upload",
+  "use_camera": "Snapshot",
+  "drag_or_click": "Drag or click to select image(s)",
+  "share_memory": "Share your memory...",
+  "transcribing": "Transcribing",
+  "upload_images": "Upload image(s)",
+  "capture": "Capture Photo",
+  "close_camera": "Close Camera",
+  "stop_recording": "Stop Recording",
+  "save_memory": "Save Memory",
+  "upload_photo": "Upload Photo",
+  "start_recording": "Speak",
+  "initial_question": "Tell me about a memorable moment from your life...",
+  "tab_interview": "Our Interview",
+  "tab_sessions": "Recent Sessions",
+  "tab_tips": "Tips",
+  "previous_sessions": "Previous Interview Sessions",
+  "no_previous_sessions": "No previous sessions found.",
+  "tips_title": "Tips for Better Memories",
+  "tips_content": "Share specific details and emotions to make your memories more vivid."
+}}

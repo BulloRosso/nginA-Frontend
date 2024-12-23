@@ -1,0 +1,71 @@
+{ "landing":
+{
+  "title": "nOblivion",
+  "subtitle": "Precious memories persisted",
+  "subtitle_business": "Never loose an expert again!",
+  "description": "Preserve your family's life stories through meaningful conversations with our AI interviewer.",
+  "decription_business": "The leaving experts situation is getting less painful if you preserve you expert's knowledge with nOblivion.",
+  "ds": "Share memories, add photos, and create a lasting legacy for generations to come.",
+  "business_edition_hint": "...also available as business edition!",
+  "try_now": "Try it now",
+  "how_it_works": "How it works",
+  "ds_business": "You experts are available as AI chatbots 24/7 for your employees. Your IT experts can access the knowledge via API endpoints.",
+  "backstory": {
+    "quote": "Walking along the shore, we often stumble upon empty seashells – silent echoes of the past.",
+    "paragraph1": "Their stories remain a mystery, lost to time, yet they spark our imagination. These shells, once vibrant and alive in a colorful underwater world, now stand as fragile reminders of something greater. They teach us an essential truth: preserving the stories of the past gives us the wisdom to live more fully in the present.",
+    "paragraph2": "Let us honor these tales, for in understanding where we come from, we shape a brighter, more meaningful today."
+  },
+  "features": {
+    "create_profile": {
+      "title": "Create Profile",
+      "description": "Start by creating a profile with basic information about yourself or your loved one"
+    },
+    "share_memories": {
+      "title": "Share Memories",
+      "description": "Engage in natural conversations with our AI interviewer to capture life stories"
+    },
+    "preserve_legacy": {
+      "title": "Preserve Legacy",
+      "description": "Add photos, organize memories, and create a beautiful timeline of life events which can be printed as book from the PDF file we create for you!"
+    }
+  },
+  "features_business": {
+    "create_profile": {
+      "title": "Create Profile",
+      "description": "Create a profile with basic information about your expert."
+    },
+    "share_memories": {
+      "title": "Expert Interviews",
+      "description": "30-minute sessions with our AI interviewer to preserve insider knowledge."
+    },
+    "preserve_legacy": {
+      "title": "Virtual Expert",
+      "description": "The wealth of your expert's experience can be accessed by your employees anytime in the form of an AI chatbot."
+    }
+  },
+  "cta": {
+    "title": "Gift yourself or a beloved one and start Preserving Your Memories Today",
+    "button": "Try it now"
+  },
+  "cta_business": {
+    "title": "Try how easy it is using our personal edition",
+    "button": "Try it now"
+  },
+  "feature_comparison_title": "These Are the Highlights",
+    "feature_comparison": {
+      "title_personal": "nOblivion Personal Edition",
+      "title_business": "nOblivion Business Edition",
+      "API": "Access via API",
+      "basic_API": "no",
+      "premium_API": "yes",
+      "agents": "Agents",
+      "basic_agents": "no",
+      "premium_agents": "Every night, AI agents refine the knowledge graph",
+      "knowledge": "Knowledge Base",
+      "basic_knowledge": "Full-text / Vector / Graph",
+      "premium_knowledge": "Full-text / Vector / Graph",
+      "bot": "AI Chatbot",
+      "basic_bot": "Basic (limited queries)",
+      "premium_bot": "Advanced"
+    }
+}}

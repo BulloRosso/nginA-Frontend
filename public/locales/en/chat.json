@@ -1,0 +1,7 @@
+{ "chat": {
+  "listening": "Listening... Speak now",
+  "speech_not_supported": "Speech recognition is not supported in your browser",
+  "chat_with": "Hi, I am",
+  "type_message": "Type your message here",
+  "welcome_message": "I can tell you about people I know and experiences from my past. Let's figure out blind spots in my memory together."
+}}

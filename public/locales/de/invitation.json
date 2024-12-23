@@ -1,0 +1,51 @@
+{ "invitation": {
+  "title": "Zum Interview einladen",
+  "email_label": "E-Mail-Adresse",
+  "send": "Einladung senden",
+  "create_error": "Einladung konnte nicht erstellt werden",
+  "extend_title": "Einladung verlängern",
+  "days_label": "Verlängerung in Tagen",
+  "extend_error": "Verlängerung fehlgeschlagen",
+  "current_invitee": "Aktuelle(r) Eingeladene(r)",
+  "expires_on": "Aktuelles Ablaufdatum",
+  "new_expiry": "Neues Ablaufdatum",
+  "confirm_revoke": "Möchten Sie diese Einladung wirklich zurückziehen?",
+  "show_expired": "Abgelaufene anzeigen",
+  "sent_success": "Interview-Einladung erfolgreich versendet",
+  "extend": "Verlängern",
+  "revoke": "Zurückziehen",
+  "list_title": "Interview-Einladungen",
+  "loading_dashboard": "Einladungsübersicht wird geladen...",
+  "refreshing": "Einladungen werden aktualisiert...",
+  "load_error": "Einladungen konnten nicht geladen werden",
+  "sending": "Einladung wird gesendet...",
+  "extending": "Einladung wird verlängert...",
+  "access_error": "Zugriffsfehler",
+  "table": {
+    "profile": "Profil",
+    "email": "E-Mail",
+    "status": "Status",
+    "expires": "Läuft ab",
+    "sessions": "Sitzungen",
+    "actions": "Aktionen"
+  },
+  "status": {
+    "active": "Aktiv",
+    "expired": "Abgelaufen",
+    "revoked": "Zurückgezogen"
+  },
+  "stats": {
+    "total": "Gesamte Einladungen",
+    "active": "Aktive Einladungen",
+    "expired": "Abgelaufene Einladungen",
+    "total_sessions": "Gesamte Sitzungen",
+    "average_sessions": "Durchschnittliche Sitzungen"
+  },
+  "validating": "Einladung wird überprüft...",
+  "invalid_token_message": "Diese Interview-Einladung ist entweder ungültig oder abgelaufen. Bitte kontaktieren Sie die Person, die Sie eingeladen hat, für eine neue Einladung.",
+  "errors": {
+    "No token provided": "Kein Einladungs-Token vorhanden",
+    "Invalid or expired token": "Diese Einladung ist nicht mehr gültig",
+    "Failed to validate invitation token": "Einladung konnte nicht überprüft werden"
+  }
+}}
