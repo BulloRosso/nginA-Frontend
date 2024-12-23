@@ -79,6 +79,10 @@ export const Login = ({ onSuccess }) => {
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <img src="/public/conch-logo.png" alt="Conch Logo" width="80px" />
+        </Box>
+      
         <Typography variant="h5" component="h1" gutterBottom align="center">
           {t('common.welcomenoblivion')}
         </Typography>
@@ -91,6 +95,7 @@ export const Login = ({ onSuccess }) => {
             label="Email"
             name="email"
             type="email"
+            InputLabelProps={{ shrink: true }}
             value={formData.email}
             onChange={handleChange}
             margin="normal"
@@ -106,6 +111,7 @@ export const Login = ({ onSuccess }) => {
             value={formData.password}
             onChange={handleChange}
             margin="normal"
+            InputLabelProps={{ shrink: true }}
             required
             autoComplete="current-password"
             InputProps={{
