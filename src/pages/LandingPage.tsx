@@ -9,7 +9,7 @@ export default function LandingPage() {
   const { t } = useTranslation(['landing', 'common']);
 
   const handleGetStarted = () => {
-    navigate('/profile');
+    navigate('/introduction');
   };
 
   return (

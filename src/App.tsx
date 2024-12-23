@@ -246,6 +246,10 @@ const App = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/business" element={<LandingPageBusiness />} />
 
+              <Route path="/introduction" element={
+                  <IntroductionVideo />
+              } />
+              
               <Route 
                 path="/interview-token" 
                 element={
@@ -273,11 +277,7 @@ const App = () => {
                 </ProtectedRoute>
               } />
 
-              <Route path="/introduction" element={
-                <ProtectedRoute>
-                  <IntroductionVideo />
-                </ProtectedRoute>
-              } />
+             
               
               <Route path="/invitations" element={
                 <ProtectedRoute>

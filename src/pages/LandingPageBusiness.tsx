@@ -29,7 +29,7 @@ export default function LandingPageBusiness() {
   const { t } = useTranslation(['landing', 'common']);
 
   const handleGetStarted = () => {
-    navigate('/profile');
+    navigate('/introduction');
   };
 
   const getIcon = (idx: number) => {

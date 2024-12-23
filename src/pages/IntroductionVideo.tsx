@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 export default function IntroductionVideo() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
-
+  const { t } = useTranslation(['common']);
+  
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play();
@@ -13,7 +15,7 @@ export default function IntroductionVideo() {
   }, []);
 
   const handleVideoEnd = () => {
-    navigate('/interview');
+    navigate('/profile-selection');
   };
 
   return (
@@ -28,7 +30,7 @@ export default function IntroductionVideo() {
       }}
     >
       <Typography variant="h4" sx={{ mb: 4 }}>
-        Before we begin, please watch this video
+        {t('common.watch_video')}
       </Typography>
       <Box sx={{ width: '100%', maxWidth: '800px' }}>
         <video

@@ -1,6 +1,10 @@
 { "commmon":
 {
   "error": "Error",
+  "watch_video": "Before we start...",
+  "welcomenoblivion": "Welcome to nOblivion",
+  "forgotpassword": "Forgot Password?",
+  "signin": "Sign in",
   "loading": "Loading...",
   "save": "Save",
   "cancel": "Cancel",

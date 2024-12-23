@@ -23,9 +23,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { AuthService, SignupData } from '../services/auth';
 import { useAuth } from '../contexts/auth';
+import { useTranslation } from 'react-i18next';
 
+ 
 // Login Component
 export const Login = ({ onSuccess }) => {
+  const { t } = useTranslation(['common']);
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -77,7 +80,7 @@ export const Login = ({ onSuccess }) => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Typography variant="h5" component="h1" gutterBottom align="center">
-          Welcome Back
+          {t('common.welcomenoblivion')}
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -126,12 +129,12 @@ export const Login = ({ onSuccess }) => {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : 'Sign In'}
+            {loading ? <CircularProgress size={24} /> : t('common.signin')}
           </Button>
 
           <Box sx={{ mt: 2, textAlign: 'right' }}>
             <Link href="/forgot-password" variant="body2">
-              Forgot password?
+              {t('common.forgotpassword')}
             </Link>
           </Box>
 
@@ -139,7 +142,7 @@ export const Login = ({ onSuccess }) => {
 
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Button
+              <Button disabled
                 fullWidth
                 variant="outlined"
                 startIcon={<GoogleIcon />}
@@ -149,7 +152,7 @@ export const Login = ({ onSuccess }) => {
               </Button>
             </Grid>
             <Grid item xs={6}>
-              <Button
+              <Button disabled
                 fullWidth
                 variant="outlined"
                 startIcon={<GitHubIcon />}

@@ -60,7 +60,7 @@ const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
   memories,
   onYearRangeChange
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(["common"]);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [yearRange, setYearRange] = useState<[number, number]>([0, 0]);
   const [initialYearRange, setInitialYearRange] = useState<[number, number]>([0, 0]);
@@ -69,27 +69,27 @@ const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
   const categoryConfig = useMemo(() => ({
       [Category.CHILDHOOD]: {
         icon: <SchoolIcon />,
-        label: t('categories.childhood')
+        label: t('common.categories.childhood')
       },
       [Category.CAREER]: {
         icon: <WorkIcon />,
-        label: t('categories.career')
+        label: t('common.categories.career')
       },
       [Category.TRAVEL]: {
         icon: <TravelIcon />,
-        label: t('categories.travel')
+        label: t('common.categories.travel')
       },
       [Category.RELATIONSHIPS]: {
         icon: <RelationshipsIcon />,
-        label: t('categories.relationships')
+        label: t('common.categories.relationships')
       },
       [Category.HOBBIES]: {
         icon: <HobbiesIcon />,
-        label: t('categories.hobbies')
+        label: t('common.categories.hobbies')
       },
       [Category.PETS]: {
         icon: <PetsIcon />,
-        label: t('categories.pets')
+        label: t('common.categories.pets')
       }
   }), [t, forceUpdate]); // Recreate when language changes
   
@@ -177,7 +177,7 @@ const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
       {hasMultipleYears && (
         <>
           <Box className="flex flex-col items-center mb-4">
-            <Tooltip title={t('memoryfilter.year_filter')} placement="left">
+            <Tooltip title={t('common.memoryfilter.year_filter')} placement="left">
               <span>
                 <IconButton 
                   onClick={handleClick}
@@ -216,7 +216,7 @@ const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
                 mt: 0,
               }}>
                 <Typography>
-                  {t('memoryfilter.year_range')}
+                  {t('common.memoryfilter.year_range')}
                 </Typography>
                 <IconButton 
                   size="small" 

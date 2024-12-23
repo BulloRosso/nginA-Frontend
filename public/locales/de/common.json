@@ -1,6 +1,10 @@
 { "common":
 {
   "error": "Fehler",
+  "watch_video": "Bevor wir beginnen...",
+  "welcomenoblivion": "Willkommen bei nOblivion",
+  "forgotpassword": "Passwort vergessen?",
+  "signin": "Anmelden",
   "loading": "Lädt...",
   "save": "Speichern",
   "cancel": "Abbrechen",
