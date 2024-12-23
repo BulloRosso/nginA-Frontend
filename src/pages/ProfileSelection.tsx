@@ -40,6 +40,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { Profile, calculateAge } from '../types/profile';
 import { formatDistance } from 'date-fns';
+import { de, enUS } from 'date-fns/locale';
 import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
 import BuyProduct from '../components/modals/BuyProduct';
@@ -62,8 +63,19 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation(['profile','common']);
+  const { t, i18n } = useTranslation(['profile','common']);
 
+  // Map i18n languages to date-fns locales
+  const locales = {
+    'de': de,
+    'en': enUS,
+    // Add more locales as needed
+  };
+
+  const getCurrentLocale = () => {
+    return locales[i18n.language] || enUS;  // fallback to English
+  };
+  
   // Single effect for initialization
   useEffect(() => {
       const initializeProfileSelection = async () => {
@@ -280,7 +292,10 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <AccessTimeIcon sx={{ mr: 1, color: 'text.secondary' }} />
                           <Typography variant="body2" color="text.secondary">
-                            {formatDistance(new Date(profile.updated_at), new Date(), { addSuffix: true })}
+                            {formatDistance(new Date(profile.updated_at), new Date(), { 
+                              addSuffix: true,
+                              locale: getCurrentLocale()
+                            })}
                           </Typography>
                         </Box>
                       )}
