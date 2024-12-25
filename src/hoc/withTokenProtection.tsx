@@ -5,6 +5,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { InvitationService } from '../services/invitations';
 import { useAuth } from '../contexts/auth';
+import { AppLayout } from '../components/layout/AppLayout';  
 
 interface TokenValidationState {
   isValid: boolean;
@@ -123,7 +124,16 @@ export type WithTokenProtectionProps = {
 export const TokenProtectedRoute: React.FC<{
   children: React.ReactElement;
 }> = ({ children }) => {
-  const ProtectedComponent = withTokenProtection(() => children);
+  const { isAuthenticated } = useAuth();
+  const ProtectedComponent = withTokenProtection(() => {
+    // If using regular authentication, wrap with AppLayout
+    if (isAuthenticated) {
+      return <AppLayout>{children}</AppLayout>;
+    }
+    // If using interview token, render without AppLayout
+    return children;
+  });
+
   return <ProtectedComponent />;
 };
 

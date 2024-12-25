@@ -1,15 +1,17 @@
-{ "commmon":
+{ "common":
 {
   "error": "Error",
   "watch_video": "Before we start...",
   "welcomenoblivion": "Welcome (back) to nOblivion",
   "forgotpassword": "Forgot Password?",
+  "remaining_time": "Remaining time",
   "signin": "Sign in",
   "loading": "Loading...",
   "save": "Save",
   "cancel": "Cancel",
   "back": "Back",
   "next": "Next",
+  "skip_video": "Skip Video",
   "validating_access": "Validating access...",
   "access_denied": "Access denied",
   "session_expired": "Your session has expired",
@@ -17,7 +19,7 @@
   "saving": "Saving...",
   "try_again": "Try Again",
   "error_occurred": "An error occurred",
-  "sessionwith": "session with",
+  "sessionwith": "Interview with",
   "categories": {
     "childhood": "Childhood",
     "career": "Career",

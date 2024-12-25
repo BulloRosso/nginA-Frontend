@@ -177,7 +177,7 @@ const ProfileSetup = () => {
 
       const data = await response.json();
       localStorage.setItem('profileId', data.id);
-      navigate('/introduction');
+      navigate('/interview');
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : t('profile.errors.save_failed'));
     } finally {

@@ -129,7 +129,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const [activeFilters, setActiveFilters] = useState<Set<Category>>(new Set());
   const [yearRange, setYearRange] = useState<[number, number] | null>(null);
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['memory', 'common']);
   
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString(i18n.language, {
