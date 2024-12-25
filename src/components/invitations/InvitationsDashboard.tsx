@@ -24,7 +24,7 @@ import {
   TimerOff as ExpiredIcon,
   CheckCircle as ActiveIcon,
   Block as RevokedIcon,
-  Extension as ExtendIcon,
+  MoreTime as ExtendIcon,
   Cancel as RevokeIcon
 } from '@mui/icons-material';
 import { format, formatDistance } from 'date-fns';
@@ -42,17 +42,19 @@ const statusIcons = {
 };
 
 const InvitationsDashboard: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['invitation', 'common']);
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [stats, setStats] = useState<InvitationStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [includeExpired, setIncludeExpired] = useState(false);
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
   const [selectedInvitation, setSelectedInvitation] = useState<Invitation | null>(null);
-
+  const [error, setError] = useState<string | null>(null);
+  
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [invitationsData, statsData] = await Promise.all([
         InvitationService.getDashboard(includeExpired),
         InvitationService.getStats()
@@ -61,6 +63,7 @@ const InvitationsDashboard: React.FC = () => {
       setStats(statsData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      setError(t('invitation.fetch_error'));
     } finally {
       setLoading(false);
     }
@@ -78,10 +81,12 @@ const InvitationsDashboard: React.FC = () => {
   const handleRevoke = async (invitationId: string) => {
     if (window.confirm(t('invitation.confirm_revoke'))) {
       try {
+         setError(null);
         await InvitationService.revokeInvitation(invitationId);
         fetchData();
       } catch (error) {
         console.error('Error revoking invitation:', error);
+         setError(t('invitation.revoke_error'));
       }
     }
   };

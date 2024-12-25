@@ -28,6 +28,9 @@
     "sessions": "Sessions",
     "actions": "Actions"
   },
+  "fetch_error": "Failed to fetch invitations",
+  "revoke_error": "Failed to revoke invitation",
+  "load_error": "Error Loading Invitations",
   "status": {
     "active": "Active",
     "expired": "Expired",

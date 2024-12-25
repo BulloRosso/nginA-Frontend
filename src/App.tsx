@@ -11,7 +11,8 @@ import {
   LogoutRounded,
   Menu as MenuIcon,
   Home as HomeIcon,
-  People as PeopleIcon
+  People as PeopleIcon,
+  MailOutline as InviteIcon
 } from '@mui/icons-material';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
@@ -69,6 +70,13 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
         <PeopleIcon fontSize="small" />
       </ListItemIcon>
       <ListItemText primary={t('common.menu.profiles')} />
+    </MenuItem>,
+
+    <MenuItem key="invitations" onClick={() => handleNavigation('/invitations')}>
+      <ListItemIcon>
+        <InviteIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText primary={t('common.menu.invitations')} />
     </MenuItem>
   ];
 

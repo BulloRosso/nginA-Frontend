@@ -35,7 +35,8 @@
   "menu": {
     "home": "Home",
     "profiles": "Profilauswahl",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "invitations": "Einladungen"
   },
   "auth": {
     "reset_password": "Reset Password",

@@ -34,6 +34,9 @@
     "expired": "Abgelaufen",
     "revoked": "Zurückgezogen"
   },
+  "fetch_error": "Failed to fetch invitations",
+  "revoke_error": "Failed to revoke invitation",
+  "load_error": "Error Loading Invitations",
   "stats": {
     "total": "Gesamte Einladungen",
     "active": "Aktive Einladungen",

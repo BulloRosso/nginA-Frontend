@@ -62,18 +62,6 @@ export const AuthService = {
     }
   },
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    try {
-      await api.post('/api/v1/auth/reset-password', {
-        token,
-        new_password: newPassword
-      });
-    } catch (error) {
-      console.error('Password reset error:', error);
-      throw error;
-    }
-  },
-
   async checkValidationStatus(userId: string): Promise<boolean> {
     try {
       const response = await api.get(`/api/v1/auth/validation-status/${userId}`);

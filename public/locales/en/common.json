@@ -29,7 +29,8 @@
   "menu": {
     "home": "Home",
     "profiles": "Select profile",
-    "logout": "Logout"
+    "logout": "Logout",
+    "invitations": "Invitations"
   },
   "memoryfilter": {
     "year_range": "Year range",
