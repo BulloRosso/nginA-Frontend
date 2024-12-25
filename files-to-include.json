@@ -5,6 +5,7 @@
       "/src/types/memory.ts",
       "/src/types/profile.ts",
       "/scr/types/profile-setup.ts",
+      "/src/types/invitation.ts",
       "/src/i18n/index.ts"
    ],
    "frontend_packages": [
@@ -31,13 +32,16 @@
       "/src/components/auth.tsx",
       "/src/components/verification.tsx",
       "/src/components/chat/ChatRobot.tsx",
-      "/src/components/modals/BuyProduct.tsx"
+      "/src/components/modals/BuyProduct.tsx",
+      "/src/components/invitations/InvitationsDashboard.tsx",
+      "/src/components/invitations/ExtendInvitationDialog.tsx"
    ],
    "frontend_services": [
       "/src/services/api.ts",
       "/src/services/interviews.ts",
       "/src/services/memories.ts",
       "/src/services/profiles.ts",
+      "/src/services/invitations.ts",
       "/src/services/auth.ts",
       "/scr/contexts/auth/auth.ts",
       "/src/services/chat.ts",

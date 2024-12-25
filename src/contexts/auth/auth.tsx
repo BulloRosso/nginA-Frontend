@@ -63,9 +63,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initializeAuth();
+
+    // Add storage event listener
+    const handleStorageChange = (e: StorageEvent) => {
+      console.log('Storage changed:', e.key, e.oldValue, e.newValue);
+      if (e.key === 'token' || e.key === 'user') {
+        initializeAuth();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const login = (userData: User) => {
+    console.log('Login called with:', userData);
     setUser(userData);
     setIsAuthenticated(true);
     // Store user data in localStorage
@@ -73,6 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    console.log('Logout called');
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('token');

@@ -65,7 +65,7 @@ const markdownStyles = `
 const hasInitialized = { current: false };
 
 const ChatRobot: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('chat', 'common');
   const [messages, setMessages] = useState<Message[]>([{
     text: t('chat.welcome_message'),
     isUser: false,

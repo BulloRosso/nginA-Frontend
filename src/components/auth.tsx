@@ -33,43 +33,40 @@ export const Login = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [mfaSetup, setMfaSetup] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      console.log('Attempting login with:', formData.email); // Debug logging
-
       const response = await AuthService.login(
         formData.email,
         formData.password
       );
 
-      // First get validation status
-      const validationStatus = await AuthService.checkValidationStatus(response.user.id);
+      if (response.mfa_required) {
+        setMfaSetup({
+          userId: response.user.id,
+          mfaData: response.mfa_data
+        });
+        return;
+      }
 
-      console.log('Login response:', response); // Debug log
-      login({
-        id: response.user.id,
-        email: response.user.email,
-        first_name: response.user.first_name,
-        last_name: response.user.last_name,
-        is_validated: validationStatus
-      });
+      login(response.user);
       navigate('/profile-selection');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -77,6 +74,11 @@ export const Login = ({ onSuccess }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMFAComplete = () => {
+    // Re-login after MFA setup to get fresh token
+    handleSubmit(new Event('submit') as React.FormEvent);
   };
 
   return (
@@ -182,6 +184,16 @@ export const Login = ({ onSuccess }) => {
           </Box>
         </Box>
       </Paper>
+
+      {mfaSetup && (
+        <MFASetupModal
+          open={true}
+          onClose={() => setMfaSetup(null)}
+          userId={mfaSetup.userId}
+          mfaData={mfaSetup.mfaData}
+          onSetupComplete={handleMFAComplete}
+        />
+      )}
     </Container>
   );
 };

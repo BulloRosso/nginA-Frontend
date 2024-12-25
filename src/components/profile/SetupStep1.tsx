@@ -49,7 +49,7 @@ export const SetupStep1: React.FC<SetupStepProps> = ({
   errors,
   setErrors 
 }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['profile', 'common']);
   const [newChild, setNewChild] = useState('');
   const [newLanguage, setNewLanguage] = useState('');
 

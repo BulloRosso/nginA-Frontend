@@ -35,6 +35,23 @@ export const AuthService = {
     return response.data;
   },
 
+  async verifyMFA(userId: string, code: string, accessToken: string): Promise<void> {
+    try {
+      const response = await api.post('/api/v1/auth/verify-mfa', {
+        user_id: userId,
+        totp_code: code,
+        access_token: accessToken
+      });
+
+      if (!response.data.success) {
+        throw new Error('MFA verification failed');
+      }
+    } catch (error) {
+      console.error('MFA verification error:', error);
+      throw error;
+    }
+  },
+  
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
       const response = await api.post('/api/v1/auth/login', {

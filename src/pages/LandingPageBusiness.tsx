@@ -20,6 +20,7 @@ import {
   CableTwoTone as APIIcon,
   HubTwoTone as KnowledgeIcon,
   EngineeringTwoTone as EngineeringIcon,
+  Widgets as WidgetsIcon,
   LocalOffer as PriceIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +43,8 @@ export default function LandingPageBusiness() {
         return <ChatIcon sx={{ marginRight: '10px' }}/>;
       case 3:
         return <APIIcon sx={{ marginRight: '10px' }}/>;
+      case 4:
+        return <WidgetsIcon sx={{ marginRight: '10px' }}/>;
     }
     return null;
   }
@@ -69,6 +72,12 @@ export default function LandingPageBusiness() {
       category: t('landing.feature_comparison.API'),
       basic: t('landing.feature_comparison.basic_API'),
       premium: t('landing.feature_comparison.premium_API'),
+
+    },
+    {
+      category: t('landing.feature_comparison.categories'),
+      basic: t('landing.feature_comparison.basic_categories'),
+      premium: t('landing.feature_comparison.premium_categories'),
 
     },
   ], [t]); 

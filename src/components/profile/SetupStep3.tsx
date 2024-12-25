@@ -10,52 +10,15 @@ export const SetupStep3: React.FC<SetupStepProps> = ({
   profile, 
   setProfile 
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["profile","common"]);
   const [settings, setSettings] = useState({
     narrator_perspective: 'ego',
     narrator_verbosity: 'normal',
     narrator_style: 'neutral'
   });
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const userId = JSON.parse(localStorage.getItem('user')).id;
-        const response = await api.get(`/api/v1/auth/profile/${userId}`);
-        const profile = response.data?.profile || {};
-
-        // Update both local state and form state
-        const newSettings = {
-          narrator_perspective: profile.narrator_perspective || 'ego',
-          narrator_verbosity: profile.narrator_verbosity || 'normal',
-          narrator_style: profile.narrator_style || 'neutral'
-        };
-        setSettings(newSettings);
-
-        // Update parent form state
-        setProfile(prev => ({
-          ...prev,
-          narratorPerspective: newSettings.narrator_perspective,
-          narratorStyle: newSettings.narrator_style,
-          narratorVerbosity: newSettings.narrator_verbosity
-        }));
-      } catch (error) {
-        console.error('Failed to fetch settings:', error);
-      }
-    };
-
-    fetchSettings();
-  }, []);
-
   const handleSettingChange = async (key: string, value: string) => {
     try {
-      const userData = localStorage.getItem('user');
-      if (!userData) {
-        throw new Error('No user data found');
-      }
-      const userId = JSON.parse(userData).id;
-
-      // Update local state
       const newSettings = {
         ...settings,
         [key]: value
@@ -69,29 +32,10 @@ export const SetupStep3: React.FC<SetupStepProps> = ({
         [formKey]: value
       }));
 
-      // Get current profile
-      const response = await api.get(`/api/v1/auth/profile/${userId}`);
-      const currentProfile = response.data?.profile || {};
-
-      // Update backend
-      await api.post('/api/v1/auth/profile', {
-        profile: {
-          ...currentProfile,
-          ...newSettings
-        }
-      });
-
+      // Optional: Update backend only after form submission
+      // Remove immediate API call that causes reload
     } catch (err) {
       console.error('Settings update error:', err);
-      // Revert settings on error
-      const userId = JSON.parse(localStorage.getItem('user')).id;
-      const response = await api.get(`/api/v1/auth/profile/${userId}`);
-      const profile = response.data?.profile || {};
-      setSettings({
-        narrator_perspective: profile.narrator_perspective || 'ego',
-        narrator_verbosity: profile.narrator_verbosity || 'normal',
-        narrator_style: profile.narrator_style || 'neutral'
-      });
     }
   };
 

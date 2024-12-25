@@ -46,7 +46,15 @@
     "back_to_login": "Back to Sign In",
     "email": "Email",
     "new_password": "Neues Password",
-    "confirm_password": "Password wiederholen"  
+    "confirm_password": "Password wiederholen",
+    "mfa": {
+       "setup_title": "Zwei-Faktor-Authentifizierung einrichten",
+       "setup_instructions": "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App (z.B. Google Authenticator)",
+       "manual_entry": "Code für manuelle Eingabe",
+       "enter_code": "6-stelligen Code eingeben",
+       "verify": "Überprüfen und aktivieren",
+       "invalid_code": "Ungültiger Code. Bitte versuchen Sie es erneut."
+     }
   }
   
 }}

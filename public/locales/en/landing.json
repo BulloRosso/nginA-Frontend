@@ -66,6 +66,9 @@
       "premium_knowledge": "Full-text / Vector / Graph",
       "bot": "AI Chatbot",
       "basic_bot": "Basic (limited queries)",
-      "premium_bot": "Advanced"
+      "premium_bot": "Advanced",
+      "categories": "Memory Categories",
+      "basic_categories": "6 fixed categories",
+      "premium_categories": "12 individual ones (per profile)"
     }
 }}

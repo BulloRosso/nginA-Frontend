@@ -76,6 +76,9 @@
     "premium_knowledge": "Volltext / Vektor / Graph",
     "bot": "KI Chatbot",
     "basic_bot": "Basis (begrenzte Anfragen)",
-    "premium_bot": "Advanced"
+    "premium_bot": "Advanced",
+    "categories": "Erinnerungs-Kategorien",
+    "basic_categories": "6 feste Kategorien",
+    "premium_categories": "12 individuelle Kategorien (pro Profil)"
   }
 }}

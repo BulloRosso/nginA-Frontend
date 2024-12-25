@@ -30,6 +30,8 @@ export const NarratorSettings: React.FC<NarratorSettingsProps> = ({
 }) => {
   const { t } = useTranslation(['settings','common']);
 
+
+  
   return (
     <Box sx={{ mt: 2 }}>
       {/* Perspective Setting */}

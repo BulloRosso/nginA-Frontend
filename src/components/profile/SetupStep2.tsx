@@ -9,7 +9,7 @@ export const SetupStep2: React.FC<SetupStepProps> = ({
   setProfile, 
   errors 
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["profile","common"]);
 
   return (
     <Box sx={{ mt: 3 }}>

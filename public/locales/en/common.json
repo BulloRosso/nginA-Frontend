@@ -44,7 +44,15 @@
     "back_to_login": "Back to Sign In",
     "email": "Email",
     "new_password": "New Password",
-    "confirm_password": "Confirm Password"
+    "confirm_password": "Confirm Password",
+    "mfa": {
+      "setup_title": "Set up Two-Factor Authentication",
+      "setup_instructions": "Scan this QR code with your authenticator app (e.g., Google Authenticator)",
+      "manual_entry": "Manual entry code",
+      "enter_code": "Enter 6-digit code",
+      "verify": "Verify and Enable",
+      "invalid_code": "Invalid code. Please try again."
+    }
   }
   
 }}
