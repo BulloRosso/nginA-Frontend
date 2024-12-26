@@ -20,6 +20,12 @@
     "PRIVACY": "Können Sie Ihre Datenschutzrichtlinien erklären?",
     "CONTACT": "Wie kann ich den persönlichen Support kontaktieren?"
   },
+  "profile_rating": {
+    "completeness": "Vollständigkeit",
+    "memories_stored": "Gespeicherte Erinnerungen:",
+    "memories_with_images": "Erinnerungen mit Bildern:",
+    "min_memories_note": "30 Erinnerungen für Buchdruck benötigt"
+  },
   "bug_report": {
     "severity": "Schweregrad",
     "feature_request": "Feature-Anfrage",

@@ -36,6 +36,16 @@ export const ProfileService = {
       return response.data;
   },
 
+  getProfileRating: async (profileId: string): Promise<{
+    completeness: number;
+    memories_count: number;
+    memories_with_images: number;
+    rating: string;
+  }> => {
+    const response = await api.get(`/api/v1/profiles/rating/${profileId}`);
+    return response.data;
+  },
+  
   deleteProfile: async (profileId: string): Promise<void> => {
     const response = await api.delete(`/api/v1/profiles/${profileId}`);
     if (!response.data?.message) {

@@ -63,8 +63,8 @@ const DonutChart: React.FC<DonutChartProps> = ({ value, maxValue = 1, label, sub
         <Box
           sx={{
             position: 'absolute',
-            top: 10,
-            left: 20,
+            top: 20,
+            left: 10,
             right: 0,
             bottom: 0,
             display: 'flex',
@@ -80,7 +80,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ value, maxValue = 1, label, sub
           </Typography>
         </Box>
       </Box>
-      <Typography variant="body1" sx={{ mt: 1, fontWeight: 'bold', textAlign: 'center' }}>
+      <Typography variant="body1" sx={{ mt: 1, textAlign: 'center' }}>
         {sublabel}
       </Typography>
     </Box>
@@ -96,14 +96,14 @@ export const ProfileRating: React.FC = () => {
   };
 
   return (
-    <Paper sx={{ p: 2, maxWidth: '800px', mt: 1 }}>
+    <Paper sx={{ p: 3, mt: 2 }}>
       <Grid container spacing={3}>
         {/* First row with donut charts */}
         <Grid item xs={12} md={4}>
           <DonutChart
             value={mockData.completeness}
             label="45%"
-            sublabel="Completeness"
+            sublabel={t('supportbot.profile_rating.completeness')}
             color="#1eb3b7"  // Your app's primary color
           />
         </Grid>
@@ -112,7 +112,7 @@ export const ProfileRating: React.FC = () => {
             value={mockData.memories_count}
             maxValue={30}
             label={`${mockData.memories_count}`}
-            sublabel={`Memories stored: ${mockData.memories_count}`}
+            sublabel={t('supportbot.profile_rating.memories_stored') +` ${mockData.memories_count}`}
             color="#ffd700"  // Gold color
           />
         </Grid>
@@ -121,7 +121,7 @@ export const ProfileRating: React.FC = () => {
             value={mockData.memories_with_images}
             maxValue={mockData.memories_count}
             label={`${calculateImagePercentage(mockData.memories_count, mockData.memories_with_images)}%`}
-            sublabel={`Memories with images: ${mockData.memories_with_images}`}
+            sublabel={t('supportbot.profile_rating.memories_with_images') + ` ${mockData.memories_with_images}`}
             color="#82ca9d"  // A nice green
           />
         </Grid>

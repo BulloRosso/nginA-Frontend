@@ -21,6 +21,12 @@
     "CONTACT": "How can I contact human support?",
     "PROFILE_RATING": "How would you rate a profile?"
   },
+  "profile_rating": {
+    "completeness": "Completeness",
+    "memories_stored": "Memories stored:",
+    "memories_with_images": "Memories with images:",
+    "min_memories_note": "30 memories needed for book printing"
+  },
   "bug_report": {
     "severity": "Severity",
     "feature_request": "Feature Request",
