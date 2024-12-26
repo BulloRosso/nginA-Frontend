@@ -14,6 +14,7 @@ import {
 import { Send as SendIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { BugReport, TopicButton } from './answer-modules/AnswerModules';
+import { ProfileRating } from './answer-modules/ProfileRating';
 import { SupportBotService } from '../services/supportbot';
 
 interface Message {
@@ -113,6 +114,12 @@ const SupportBot: React.FC = () => {
         />
       );
       cleanText = cleanText.replace(fullMatch, '');
+    }
+
+    // Parse profile Rating tags
+    if (text.includes('<ProfileRating />')) {
+      modules.push(<ProfileRating key={`profile-${Date.now()}`} />);
+      cleanText = cleanText.replace('<ProfileRating />', '');
     }
 
     return [cleanText.trim(), modules];

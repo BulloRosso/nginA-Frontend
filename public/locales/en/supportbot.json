@@ -10,6 +10,7 @@
     "TECHNICAL_ISSUES": "Technical Support",
     "PRIVACY": "Privacy Info",
     "CONTACT": "Contact Support"
+    "PROFILE_RATING": "Rate Your Profile"
   },
   "topics": {
     "GETTING_STARTED": "Can you explain how to get started with nOblivion?",
@@ -17,7 +18,8 @@
     "PRICING": "What are the pricing options and subscriptions?",
     "TECHNICAL_ISSUES": "I'm experiencing technical issues. Can you help?",
     "PRIVACY": "Can you explain your privacy and data protection policies?",
-    "CONTACT": "How can I contact human support?"
+    "CONTACT": "How can I contact human support?",
+    "PROFILE_RATING": "How would you rate a profile?"
   },
   "bug_report": {
     "severity": "Severity",
