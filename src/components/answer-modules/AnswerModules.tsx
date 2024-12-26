@@ -60,8 +60,8 @@ export const BugReport: React.FC = () => {
 
   return (
     <Grid container spacing={2} sx={{ p: 2 }}>
-      <Grid item xs={12}>
-        <FormControl fullWidth>
+      <Grid item xs={4}>
+        <FormControl fullWidth sx={{ backgroundColor: '#fbd1d4'}}>
           <InputLabel>{t('supportbot.bug_report.severity')}</InputLabel>
           <Select
             value={formData.severity}
@@ -77,12 +77,14 @@ export const BugReport: React.FC = () => {
           </Select>
         </FormControl>
       </Grid>
-      <Grid item xs={12}>
+      <Grid item xs={8}>
         <TextField
           fullWidth
           required
+          sx={{ backgroundColor: ''}}
           label={t('supportbot.bug_report.subject')}
           value={formData.subject}
+          sx={{ backgroundColor: '#fff'}}
           onChange={(e) => setFormData({
             ...formData,
             subject: e.target.value
@@ -97,6 +99,7 @@ export const BugReport: React.FC = () => {
           rows={4}
           label={t('supportbot.bug_report.message')}
           value={formData.message}
+          sx={{ backgroundColor: '#fff'}}
           onChange={(e) => setFormData({
             ...formData,
             message: e.target.value
@@ -137,10 +140,10 @@ export const TopicButton: React.FC<TopicButtonProps> = ({ cmd, title }) => {
     if (clicked) return;
 
     setClicked(true);
-    const message = t(`topics.${cmd}`);
+    const message = t(`supportbot.topics.${cmd}`);
 
     // Dispatch a custom event that SupportBot will listen to
-    const event = new CustomEvent('supportbot.supportbot:topic', {
+    const event = new CustomEvent('supportbot:topic', {
       detail: { message }
     });
     window.dispatchEvent(event);

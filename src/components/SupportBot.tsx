@@ -31,18 +31,55 @@ const SupportBot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Set initial message
+    const initialMessage = t('supportbot.initial_message');
+    const messageWithButtons = initialMessage + ' <TopicButton cmd="GETTING_STARTED" /> <TopicButton cmd="INTERVIEW_PROCESS" />';
+    console.log('Message before parsing:', messageWithButtons);
+
+    const [cleanText, modules] = parseModules(messageWithButtons);
+    console.log('Parsed result:', { cleanText, modules });
+
     setMessages([{
-      text: t('supportbot.initial_message'),
+      text: cleanText,
       isUser: false,
       timestamp: new Date(),
-      modules: [
-        <TopicButton key="getting-started" cmd="GETTING_STARTED" />,
-        <TopicButton key="interview-process" cmd="INTERVIEW_PROCESS" />
-      ]
+      modules: modules
     }]);
   }, [t]);
 
+  useEffect(() => {
+    const handleTopicClick = async (event: CustomEvent<{ message: string }>) => {
+      const { message } = event.detail;
+
+      // Add user message to chat
+      setMessages(prev => [...prev, {
+        text: message,
+        isUser: true,
+        timestamp: new Date()
+      }]);
+
+      setIsLoading(true);
+
+      try {
+        const response = await sendMessage(message);
+        setMessages(prev => [...prev, {
+          text: response.text,
+          isUser: false,
+          timestamp: new Date(),
+          modules: response.modules
+        }]);
+      } catch (error) {
+        console.error('Error handling topic click:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener('supportbot:topic', handleTopicClick as EventListener);
+    return () => {
+      window.removeEventListener('supportbot:topic', handleTopicClick as EventListener);
+    };
+  }, []); // Empty dependency array as we don't need to re-create this listener
+  
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -66,12 +103,13 @@ const SupportBot: React.FC = () => {
     let match;
     while ((match = topicButtonRegex.exec(text)) !== null) {
       const [fullMatch, cmd, title] = match;
-      console.log("Parsing buttons")
+      console.log("CMD/TITLE " + cmd + " " + title)
+      let ntitle = t('supportbot.buttons.' + cmd)
       modules.push(
         <TopicButton 
           key={`topic-${cmd}-${Date.now()}`} 
           cmd={cmd}
-          title={t('supportbot.buttons.' + cmd)}
+          title={ntitle}
         />
       );
       cleanText = cleanText.replace(fullMatch, '');
