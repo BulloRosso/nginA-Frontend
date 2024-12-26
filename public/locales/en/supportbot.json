@@ -1,0 +1,31 @@
+{ "supportbot": {
+  "initial_message": "If you have any questions about nOblivion or bugs to report - I am your Bot!",
+  "type_message": "Type your message here...",
+  "error_message": "Sorry, I encountered an error. Please try again.",
+  "buttons": {
+    "GETTING_STARTED": "Getting Started Guide",
+    "INTERVIEW_PROCESS": "How It Works",
+    "PRICING": "Pricing Info",
+    "TECHNICAL_ISSUES": "Technical Support",
+    "PRIVACY": "Privacy Info",
+    "CONTACT": "Contact Support"
+  },
+  "topics": {
+    "GETTING_STARTED": "Can you explain how to get started with nOblivion?",
+    "INTERVIEW_PROCESS": "How does the interview practice process work?",
+    "PRICING": "What are the pricing options and subscriptions?",
+    "TECHNICAL_ISSUES": "I'm experiencing technical issues. Can you help?",
+    "PRIVACY": "Can you explain your privacy and data protection policies?",
+    "CONTACT": "How can I contact human support?"
+  },
+  "bug_report": {
+    "severity": "Severity",
+    "feature_request": "Feature Request",
+    "bug": "Bug",
+    "severe_bug": "Severe Bug",
+    "subject": "Subject",
+    "message": "Message for Support",
+    "submit": "Submit Bug Report",
+    "thank_you": "Thank you for taking the time for feedback. We will get in touch with you regarding your report soon."
+  }
+}}

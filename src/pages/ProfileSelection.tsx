@@ -46,6 +46,7 @@ import { useTranslation } from 'react-i18next';
 import BuyProduct from '../components/modals/BuyProduct';
 import './styles/GoldButton.css';
 import InvitationDialog from '../components/modals/InvitationDialog';
+import SupportBot from '../components/SupportBot';
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -478,6 +479,10 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           setSuccessMessage(t('invitation.sent_success'));
         }}
       />
+
+      <Box sx={{ mt: 2 }}>
+        <SupportBot />
+      </Box>
     </Container>
   );
 };
