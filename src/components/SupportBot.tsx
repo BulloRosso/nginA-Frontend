@@ -170,16 +170,36 @@ const SupportBot: React.FC = () => {
 
   return (
     <Container disableGutters sx={{ mt: 2, mb: 2 }}>
-      <Paper elevation={3} sx={{ p: 3, height: '600px', display: 'flex', flexDirection: 'column' }}>
+      <Paper elevation={3} sx={{ p: 3, paddingBottom: 0, marginBottom: 0, height: '600px', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <Box 
+          sx={{ 
+            height: '50px',
+            bgcolor: '#f2f0e8',
+            borderRadius: 0,
+            mb: 0,
+            display: 'flex',
+            alignItems: 'center',
+            pl: 8, // Space for the avatar
+            position: 'relative',
+            borderBottom: '1px solid #e8e6dc'
+          }}
+        >
           <Avatar
             src="/img/supportbot.png"
             alt="SupportBot"
-            sx={{ width: 48, height: 48, mr: 2 }}
+            sx={{ 
+              width: 64, 
+              height: 64, 
+              position: 'absolute',
+              left: -10,
+              top: -35,
+              border: '3px solid white',
+              boxShadow: 2
+            }}
           />
-          <Typography variant="h6">
-            SupportBot
+          <Typography variant="h6" sx={{ color: 'text.primary' }}>
+            {t('supportbot.title')}
           </Typography>
         </Box>
 
@@ -190,7 +210,7 @@ const SupportBot: React.FC = () => {
           mb: 2,
           p: 2,
           backgroundColor: '#f5f5f5',
-          borderRadius: 1
+          borderRadius: '0px 0px 6px 6px'
         }}>
           <Stack spacing={2}>
             {messages.map((message, index) => (
@@ -239,7 +259,7 @@ const SupportBot: React.FC = () => {
         </Box>
 
         {/* Input Area */}
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           <TextField
             fullWidth
             value={inputMessage}

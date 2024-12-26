@@ -1,6 +1,6 @@
 {
   "supportbot": {
-    
+  "title": "Nobby, Ihr nOblivion-Erklärer",
   "initial_message": "Wenn Sie Fragen zu nOblivion haben oder Fehler melden möchten - ich bin Ihr Bot!",
   "type_message": "Geben Sie Ihre Nachricht hier ein...",
   "error_message": "Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",

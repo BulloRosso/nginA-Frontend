@@ -1,4 +1,5 @@
 { "supportbot": {
+  "title": "Nobby, your nOblivion guide",
   "initial_message": "If you have any questions about nOblivion or bugs to report - I am your Bot!",
   "type_message": "Type your message here...",
   "error_message": "Sorry, I encountered an error. Please try again.",
