@@ -480,9 +480,8 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
         }}
       />
 
-      <Box sx={{ mt: 2 }}>
-        <SupportBot />
-      </Box>
+      <SupportBot />
+      
     </Container>
   );
 };

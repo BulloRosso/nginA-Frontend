@@ -169,7 +169,7 @@ const SupportBot: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, mb: 2 }}>
+    <Container disableGutters sx={{ mt: 2, mb: 2 }}>
       <Paper elevation={3} sx={{ p: 3, height: '600px', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
