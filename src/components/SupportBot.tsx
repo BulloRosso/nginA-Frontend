@@ -98,6 +98,10 @@ const SupportBot: React.FC = () => {
       modules.push(<BugReport key={`bug-${Date.now()}`} />);
       cleanText = cleanText.replace('<BugReport/>', '');
     }
+    if (text.includes('<BugReport />')) {
+      modules.push(<BugReport key={`bug-${Date.now()}`} />);
+      cleanText = cleanText.replace('<BugReport />', '');
+    }
 
     // Parse TopicButton tags
     const topicButtonRegex = /<TopicButton\s+cmd="([^"]+)"(?:\s+title="([^"]+)")?\s*\/>/g;
@@ -120,6 +124,10 @@ const SupportBot: React.FC = () => {
     if (text.includes('<ProfileRating />')) {
       modules.push(<ProfileRating key={`profile-${Date.now()}`} />);
       cleanText = cleanText.replace('<ProfileRating />', '');
+    }
+    if (text.includes('<ProfileRating/>')) {
+      modules.push(<ProfileRating key={`profile-${Date.now()}`} />);
+      cleanText = cleanText.replace('<ProfileRating/>', '');
     }
 
     return [cleanText.trim(), modules];

@@ -1,6 +1,6 @@
 { "supportbot": {
   "title": "Nobby, your nOblivion guide",
-  "initial_message": "If you have any questions about nOblivion or bugs to report - I am your Bot!",
+  "initial_message": "If you have any questions about nOblivion or bugs to report - I am your Bot! I can also rate the completeness of a profile.",
   "type_message": "Type your message here...",
   "error_message": "Sorry, I encountered an error. Please try again.",
   "buttons": {
