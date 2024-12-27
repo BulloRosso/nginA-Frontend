@@ -49,11 +49,18 @@
     "confirm_password": "Confirm Password",
     "mfa": {
       "setup_title": "Set up Two-Factor Authentication",
-      "setup_instructions": "Scan this QR code with your authenticator app (e.g., Google Authenticator)",
+      "setup_instructions": "Please scan the QR code with your authenticator app",
+      "scan_qr_prompt": "Scan this QR code with your authenticator app (e.g., Google Authenticator, Microsoft Authenticator)",
       "manual_entry": "Manual entry code",
       "enter_code": "Enter 6-digit code",
-      "verify": "Verify and Enable",
-      "invalid_code": "Invalid code. Please try again."
+      "verification_title": "Verify Two-Factor Authentication",
+      "enter_code_prompt": "Enter the code from your authenticator app",
+      "verify": "Verify",
+      "invalid_code": "Invalid code (maybe it has already expired)",
+      "setup_error_title": "MFA Setup Error",
+      "setup_error_message": "Error while setting up two-factor authentication. Please try again.",
+      "verification_error": "Invalid verification code. Please try again.",
+      "success": "Two-factor authentication enabled successfully"
     }
   }
   

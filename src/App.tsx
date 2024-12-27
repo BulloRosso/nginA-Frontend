@@ -1,14 +1,16 @@
 import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import MemoryTimeline from './components/common/MemoryTimeline';
 import ProfileSetup from './pages/ProfileSetup';
 import MemoryCapture from './pages/MemoryCapture';
 import ProfileSelection from './pages/ProfileSelection';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { Login, Register, ForgotPassword } from './components/auth';
+import { Login } from './components/auth/Login';
+import { Register } from './components/auth';
+import { ForgotPassword } from './components/auth';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AuthProvider } from './contexts/auth';
+import MFAWrapper from './components/auth/MFAWrapper';  // Updated import
 import { VerifiedRoute } from './components/verification';
 import { AppLayout } from './components/layout/AppLayout';
 import LandingPage from './pages/LandingPage';  
@@ -43,69 +45,91 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <I18nextProvider i18n={i18n}>
           <BrowserRouter>
+            <MFAWrapper>
             <Routes>
-              {/* Landing page - no header */}
+              {/* Public routes - no header */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/business" element={<LandingPageBusiness />} />
               <Route path="/introduction" element={<IntroductionVideo />} />
-
-              {/* Interview token handler */}
               <Route path="/interview-token" element={<TokenHandler />} />
 
               {/* Auth routes - no header */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route 
+                path="/login" 
+                element={
+                  <Login onSuccess={() => {}} /> // Providing required prop
+                }
+              />
+              <Route 
+                path="/register" 
+                element={
+                  <Register onSuccess={() => {}} />
+                }
+              />
+              <Route 
+                path="/forgot-password" 
+                element={
+                  <ForgotPassword onSuccess={() => {}} />
+                }
+              />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
 
               {/* Protected routes - with header */}
-              <Route path="/profile-selection" element={
-                <ProtectedRoute>
-                  <VerifiedRoute>
-                    <ProfileSelection />
-                  </VerifiedRoute>
-                </ProtectedRoute>
-              } />
+              <Route 
+                path="/profile-selection" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <ProfileSelection />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
 
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <ProfileSetup />
-                </ProtectedRoute>
-              } />
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <ProfileSetup />
+                  </ProtectedRoute>
+                } 
+              />
 
-              <Route path="/invitations" element={
-                <ProtectedRoute>
-                  <VerifiedRoute>
-                    <InvitationsDashboard />
-                  </VerifiedRoute>
-                </ProtectedRoute>
-              } />
+              <Route 
+                path="/invitations" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <InvitationsDashboard />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
 
-              <Route path="/interview" element={
-                <TokenProtectedRoute>
-                  <MemoryCapture />
-                </TokenProtectedRoute>
-              } />
+              <Route 
+                path="/interview" 
+                element={
+                  <TokenProtectedRoute>
+                    <MemoryCapture />
+                  </TokenProtectedRoute>
+                } 
+              />
 
-              <Route path="/timeline" element={
-                <ProtectedRoute>
-                  <VerifiedRoute>
-                    <MemoryTimeline 
-                      memories={[]}
-                      onMemorySelect={(memory) => console.log('Selected memory:', memory)}
-                    />
-                  </VerifiedRoute>
-                </ProtectedRoute>
-              } />
+              <Route 
+                path="/chat" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <ChatRobot />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
 
-              <Route path="/chat" element={
-                <ProtectedRoute>
-                  <VerifiedRoute>
-                    <ChatRobot />
-                  </VerifiedRoute>
-                </ProtectedRoute>
-              } />
+              {/* Catch all - redirect to login */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+            </MFAWrapper>
           </BrowserRouter>
         </I18nextProvider>
       </ThemeProvider>

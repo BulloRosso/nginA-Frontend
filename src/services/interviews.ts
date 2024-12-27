@@ -1,7 +1,5 @@
 // src/services/interviews.ts
 import api from './api';
-import { Interview, InterviewResponse } from '../types';
-import { UUID } from '../types/common';
 
 interface InterviewResponse {
   text: string;

@@ -50,13 +50,20 @@
     "new_password": "Neues Password",
     "confirm_password": "Password wiederholen",
     "mfa": {
-       "setup_title": "Zwei-Faktor-Authentifizierung einrichten",
-       "setup_instructions": "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App (z.B. Google Authenticator)",
-       "manual_entry": "Code für manuelle Eingabe",
-       "enter_code": "6-stelligen Code eingeben",
-       "verify": "Überprüfen und aktivieren",
-       "invalid_code": "Ungültiger Code. Bitte versuchen Sie es erneut."
-     }
+      "setup_title": "Zwei-Faktor-Authentifizierung einrichten",
+      "setup_instructions": "Bitte scannen Sie den QR-Code mit Ihrer Authenticator-App",
+      "scan_qr_prompt": "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App (z.B. Google Authenticator, Microsoft Authenticator)",
+      "manual_entry": "Code für manuelle Eingabe",
+      "enter_code": "6-stelligen Code eingeben",
+      "verification_title": "Zwei-Faktor-Authentifizierung verifizieren",
+      "enter_code_prompt": "Geben Sie den Code aus Ihrer Authenticator-App ein",
+      "verify": "Verifizieren",
+      "invalid_code": "Ungültiger Code (evtl. der Gültigkeitszeitraum überschritten)",
+      "setup_error_title": "MFA Einrichtungsfehler",
+      "setup_error_message": "Fehler bei der Einrichtung der Zwei-Faktor-Authentifizierung. Bitte versuchen Sie es erneut.",
+      "verification_error": "Ungültiger Verifizierungscode. Bitte versuchen Sie es erneut.",
+      "success": "Zwei-Faktor-Authentifizierung erfolgreich aktiviert"
+    }
   }
   
 }}
