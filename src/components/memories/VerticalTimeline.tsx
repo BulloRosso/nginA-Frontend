@@ -160,7 +160,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
   // Updated filtering logic to include both category and year range filters
   const filteredMemories = useMemo(() => {
     if (activeFilters.size === 0 && !yearRange) 
-      return [...memories].sort((a, b) => new Date(b.time_period).getTime() - new Date(a.time_period).getTime());
+      return [...memories].sort((a, b) => new Date(b.timePeriod).getTime() - new Date(a.timePeriod).getTime());
 
 
       return memories
@@ -171,13 +171,13 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
           // Year range filter
           let passesYearRange = true;
           if (yearRange) {
-              const memoryYear = new Date(memory.time_period).getFullYear();
+              const memoryYear = new Date(memory.timePeriod).getFullYear();
               passesYearRange = memoryYear >= yearRange[0] && memoryYear <= yearRange[1];
           }
 
           return passesCategory && passesYearRange;
       })
-      .sort((a, b) => new Date(b.time_period).getTime() - new Date(a.time_period).getTime());
+      .sort((a, b) => new Date(b.timePeriod).getTime() - new Date(a.timePeriod).getTime());
     
   }, [memories, activeFilters, yearRange]);
   
@@ -330,7 +330,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                         key={memory.id}
                         className={isEven ? 'vertical-timeline-element--right' : 'vertical-timeline-element--left'}
                         position={isEven ? 'right' : 'left'}
-                        date={formatDate(memory.time_period)}
+                        date={formatDate(memory.timePeriod)}
                         iconStyle={{ 
                           background: selectedMemoryId === memory.id ? '#fff' : config.color,
                           color: selectedMemoryId === memory.id ? config.color : '#fff',

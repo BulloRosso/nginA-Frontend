@@ -46,7 +46,6 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     qrCode?: string;
     secret?: string;
     needsSetup: boolean;
-    tempToken?: string;
   } | null>(null);
 
   const [formData, setFormData] = useState({
@@ -66,6 +65,10 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
       );
 
       console.log('Full login response:', response); // Debug log
+
+      if (response.user) {
+          localStorage.setItem('user', JSON.stringify(response.user));
+      }
 
       if (response.mfa_required && response.mfa_data) {
         // Store temporary session token
@@ -93,16 +96,34 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     }
   };
 
-  const handleMFAComplete = (token: string) => {
-    // Update auth context with token
-    localStorage.setItem('token', token);
+  const handleMFAComplete = async (token: string) => {
+      try {
+          console.log('MFA verification completed with token:', token);
 
-    // Get user data from local storage (set during initial login)
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      login(JSON.parse(userData));
-      navigate('/profile-selection');
-    }
+          // Update auth context with token
+          localStorage.setItem('token', token);
+
+          // Get the user data from the initial login response
+          const userData = localStorage.getItem('user');
+          if (!userData) {
+              throw new Error('User data not found');
+          }
+
+          // Update auth context
+          login(JSON.parse(userData));
+
+          // Clear MFA data
+          setMfaData(null);
+
+          // Complete the login flow
+          onSuccess();
+
+          // Navigate to profile selection
+          navigate('/profile-selection');
+      } catch (error) {
+          console.error('Error completing MFA flow:', error);
+          setError('Failed to complete authentication');
+      }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +134,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   };
 
   return (
+  <React.Fragment>
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
@@ -216,8 +238,6 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         </Box>
       </Paper>
 
-      {mfaData && console.log('MFA Modal Data:', mfaData)} {/* Debug log */}
-
       {mfaData?.needsSetup ? (
         <MFASetupModal
           open={true}
@@ -235,9 +255,13 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           factorId={mfaData.factorId}
           challengeId={mfaData.challengeId!}
           tempToken={mfaData.tempToken}
-          onVerified={handleMFAComplete}
+          onVerified={(token) => {
+              setMfaData(null);  // Clear MFA data first
+              handleMFAComplete(token);  // Then complete the flow
+          }}
         />
       )}
     </Container>
+    </React.Fragment>
   );
 };

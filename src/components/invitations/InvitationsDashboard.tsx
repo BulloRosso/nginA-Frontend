@@ -30,7 +30,7 @@ import {
 import { format, formatDistance } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { InvitationService } from '../../services/invitations';
-import { Invitation, InvitationStatus } from '../../types/invitation';
+import { Invitation, InvitationStatus, InvitationStats } from '../../types/invitation';
 import ExtendInvitationDialog from './ExtendInvitationDialog';
 import { LoadingState } from '../common/LoadingState';
 import { ErrorState } from '../common/ErrorState';

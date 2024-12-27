@@ -51,7 +51,7 @@ export const Register = ({ onSuccess }) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match");
+      setError(() => "Passwords don't match");
       return;
     }
 

@@ -32,7 +32,7 @@ import {
   AutoFixHigh as MagicWandIcon,
   Delete as DeleteIcon,
   AccessTime as AccessTimeIcon,
-  Forum as ForumIcon,
+  ForumOutlined as ForumIcon,
   PersonAdd as PersonAddIcon,
   MailOutline as InviteIcon, 
   MoreVert as MoreVertIcon,
@@ -143,11 +143,20 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     setSelectedProfileId(null);
   };
 
-  const handleCreatePDF = async (event: React.MouseEvent<HTMLElement>, profileId: string) => {
+  const handleInterviewClick = async (event: React.MouseEvent<HTMLElement>, profileId: string) => {
     event.stopPropagation();
-    setSelectedProfileId(profileId);
-    // TODO: Implement PDF creation
-    console.log('Creating PDF for profile:', profileId);
+
+    const selectedProfile = profiles.find(p => p.id === profileId);
+
+    if (selectedProfile) {
+      localStorage.setItem('profileId', profileId);
+      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
+      window.dispatchEvent(new CustomEvent('profileSelected'));
+
+      onSelect?.(profileId);
+    
+      navigate('/interview');
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -255,7 +264,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               >
                 <Grid container spacing={2} alignItems="center">
                   {/* Profile Info (Left) */}
-                  <Grid item xs={4}>
+                  <Grid item xs={3}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Avatar
                         src={profile.profile_image_url}
@@ -304,7 +313,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                   </Grid>
 
                   {/* Actions (Right) */}
-                  <Grid item xs={5} sx={{ textAlign: 'right' }}>
+                  <Grid item xs={6} sx={{ textAlign: 'right' }}>
                     {!profile.subscribed_at && (
                       <Button
                         variant="contained"
@@ -342,11 +351,11 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                     </Button>
                     <Button
                       variant="contained"
-                      startIcon={<MagicWandIcon />}
-                      onClick={(e) => handleCreatePDF(e, profile.id)}
+                      startIcon={<ForumIcon />}
+                      onClick={(e) => handleInterviewClick(e, profile.id)}
                       sx={{ mr: 1 }}
                     >
-                      PDF
+                      Interview
                     </Button>
                     <IconButton
                       onClick={(e) => handleMenuClick(e, profile.id)}

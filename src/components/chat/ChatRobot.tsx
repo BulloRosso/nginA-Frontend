@@ -16,13 +16,50 @@ import {
   Mic as MicIcon, 
 } from '@mui/icons-material';
 
-// Add TypeScript declarations for the Web Speech API
+// Enhanced type declarations for Web Speech API
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  error?: string;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface ISpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onend: (() => void) | null;
+  onspeechend: (() => void) | null;
+  onerror: ((event: SpeechRecognitionEvent) => void) | null;
+}
+
+// Extend global window interface
 declare global {
   interface Window {
-    webkitSpeechRecognition: any;
-    SpeechRecognition: any;
+    webkitSpeechRecognition: new () => ISpeechRecognition;
+    SpeechRecognition: new () => ISpeechRecognition;
   }
 }
+
 import ReactMarkdown from 'react-markdown';
 import { ChatService } from '../../services/chat';
 import { useTranslation } from 'react-i18next';
@@ -75,7 +112,7 @@ const ChatRobot: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -84,37 +121,40 @@ const ChatRobot: React.FC = () => {
     if (!hasInitialized.current && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
       const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
 
-      recognitionRef.current.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0])
-          .map(result => result.transcript)
-          .join('');
-        setTranscript(transcript);
-        setInputMessage(transcript);
-      };
+      if (recognitionRef.current) {
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
 
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
+        recognitionRef.current.onresult = (event) => {
+          const transcript = Array.from(event.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+          setTranscript(transcript);
+          setInputMessage(transcript);
+        };
 
-      // Automatically stop after 5 seconds of silence
-      recognitionRef.current.onspeechend = () => {
-        if (recognitionRef.current) {
-          recognitionRef.current.stop();
-        }
-      };
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
 
-      // Handle errors
-      recognitionRef.current.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
+        // Automatically stop after 5 seconds of silence
+        recognitionRef.current.onspeechend = () => {
+          if (recognitionRef.current) {
+            recognitionRef.current.stop();
+          }
+        };
 
-      hasInitialized.current = true;
+        // Handle errors
+        recognitionRef.current.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+        };
+
+        hasInitialized.current = true;
+      }
     }
 
     // Cleanup

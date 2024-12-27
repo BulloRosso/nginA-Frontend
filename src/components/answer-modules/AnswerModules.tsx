@@ -81,7 +81,6 @@ export const BugReport: React.FC = () => {
         <TextField
           fullWidth
           required
-          sx={{ backgroundColor: ''}}
           label={t('supportbot.bug_report.subject')}
           value={formData.subject}
           sx={{ backgroundColor: '#fff'}}

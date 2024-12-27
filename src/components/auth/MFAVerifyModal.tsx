@@ -20,7 +20,8 @@ interface MFAVerifyModalProps {
   onClose: () => void;
   factorId: string;
   challengeId?: string;
-  onVerifyComplete: (token: string) => void;
+  tempToken: string; 
+  onVerified: (token: string) => void;
 }
 
 const MFAVerifyModal: React.FC<MFAVerifyModalProps> = ({
@@ -28,7 +29,8 @@ const MFAVerifyModal: React.FC<MFAVerifyModalProps> = ({
   onClose,
   factorId,
   challengeId,
-  onVerifyComplete
+  tempToken,
+  onVerified
 }) => {
   const { t } = useTranslation(['common']);
   const [code, setCode] = useState('');
@@ -36,18 +38,42 @@ const MFAVerifyModal: React.FC<MFAVerifyModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   const handleVerify = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+      try {
+          setLoading(true);
+          setError(null);
 
-      const response = await AuthService.verifyMFA(factorId, code, challengeId);
-      onVerifyComplete(response.access_token);
-      onClose();
-    } catch (err) {
-      setError(t('common.auth.mfa.invalid_code'));
-    } finally {
-      setLoading(false);
-    }
+          console.log('Starting MFA verification:', {
+              factorId,
+              challengeId,
+              hasToken: !!tempToken,
+              codeLength: code.length
+          });
+
+          const response = await AuthService.verifyMFA(
+              factorId,
+              code,
+              challengeId,
+              tempToken  // Add the tempToken here
+          );
+
+          if (response.access_token) {
+              // Store the new tokens
+              localStorage.setItem('token', response.access_token);
+              if (response.refresh_token) {
+                  localStorage.setItem('refresh_token', response.refresh_token);
+              }
+
+              onVerified(response.access_token);
+              onClose();
+          } else {
+              throw new Error('No access token in response');
+          }
+      } catch (err: any) {
+          console.error('MFA verification error:', err);
+          setError(t('common.auth.mfa.invalid_code'));
+      } finally {
+          setLoading(false);
+      }
   };
 
   return (
@@ -55,6 +81,9 @@ const MFAVerifyModal: React.FC<MFAVerifyModalProps> = ({
       <DialogTitle>{t('common.auth.mfa.verification_title')}</DialogTitle>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, py: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignContent: 'center' }}>
+          <img src="/img/auth-icons.jpg" style={{ alignSelf: 'center', maxWidth: '140px'}} alt="MFA verification" />
+          </Box>
           <Typography>
             {t('common.auth.mfa.enter_code_prompt')}
           </Typography>

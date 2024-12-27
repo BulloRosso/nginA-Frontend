@@ -67,7 +67,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
         id: memory.id,
         category,
         description,
-        time_period: date?.toISOString(),
+        timePeriod: date?.toISOString(),
         location: {
           name: location.name || '',
           city: location.city || '',

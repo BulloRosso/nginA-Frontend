@@ -66,8 +66,15 @@ export interface AuthResponse {
 }
 
 export interface MFAVerificationResponse {
-  access_token: string;
-  message: string;
+    access_token: string;
+    refresh_token: string;
+    message?: string;
+    token_type?: string;
+    expires_in?: number;
+    expires_at?: number;
+    user?: {
+        id: string;
+    };
 }
 
 export const AuthService = {
@@ -132,47 +139,57 @@ export const AuthService = {
     factorId: string, 
     code: string, 
     challengeId: string | null,
-    accessToken?: string
-  ): Promise<{ access_token: string; refresh_token: string }> {
+    accessToken?: string,
+    tempToken?: string
+  ): Promise<{ access_token: string; refresh_token: string; message?: string }> {
     try {
-      console.log('Starting MFA verification with:', {
-        factorId,
-        code,
-        hasAccessToken: !!accessToken
-      });
+        console.log('Starting MFA verification with:', {
+            factorId,
+            code,
+            hasAccessToken: !!accessToken
+        });
 
-      const token = accessToken || localStorage.getItem('token');
-      const password = sessionStorage.getItem('temp_password');
+        const token = accessToken || localStorage.getItem('token');
+        const password = sessionStorage.getItem('temp_password');
 
-      if (!token) {
-        throw new Error('No access token available for MFA verification');
-      }
+        if (!token) {
+            throw new Error('No access token available for MFA verification');
+        }
 
-      const payload = {
-        factor_id: factorId,
-        code: code,
-        challenge_id: challengeId,
-        access_token: token,
-        password: password  // Pass the password for re-authentication
-      };
+        const payload = {
+            factor_id: factorId,
+            code: code,
+            challenge_id: challengeId,
+            access_token: token,
+            password: password
+        };
 
-      const response = await api.post('/api/v1/auth/verify-mfa', payload);
+        const response = await api.post('/api/v1/auth/verify-mfa', payload);
+        console.log('MFA verification response:', response.data);  // Add this for debugging
 
-      // Clear temporary password
-      sessionStorage.removeItem('temp_password');
+        // Clear temporary password
+        sessionStorage.removeItem('temp_password');
 
-      // Store new tokens
-      if (response.data.access_token) {
+        // Validate response structure
+        if (!response.data.access_token || !response.data.refresh_token) {
+            throw new Error('Invalid MFA verification response structure');
+        }
+
+        // Store new tokens
         localStorage.setItem('token', response.data.access_token);
-      }
-      if (response.data.refresh_token) {
         localStorage.setItem('refresh_token', response.data.refresh_token);
-      }
 
-      return response.data;
+        return {
+            access_token: response.data.access_token,
+            refresh_token: response.data.refresh_token,
+            message: response.data.message
+        };
     } catch (error: any) {
-      console.error('MFA verification error details:', error);
-      throw error;
+        console.error('MFA verification error:', error);
+        if (error.response?.data?.detail) {
+            throw new Error(error.response.data.detail);
+        }
+        throw error;
     }
   },
 

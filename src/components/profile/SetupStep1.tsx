@@ -1,6 +1,5 @@
 // src/components/profile/SetupStep1.tsx
 import React, { useState, useEffect } from 'react';
-import { SetupStepProps } from '../../types/profile-setup';
 import { 
   Box, 
   Button,
@@ -26,6 +25,28 @@ import {
 import { useTranslation } from 'react-i18next';
 import { styled } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+
+// Define the Profile type explicitly
+interface Profile {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Dayjs | null;
+  placeOfBirth: string;
+  gender: 'male' | 'female' | 'other' | '';
+  children: string[];
+  spokenLanguages: string[];
+  profileImage?: File | null;
+  imageUrl?: string;
+}
+
+// Define the SetupStepProps type
+interface SetupStepProps {
+  profile: Profile;
+  setProfile: React.Dispatch<React.SetStateAction<Profile>>;
+  errors: Partial<Record<keyof Profile, string>>;
+  setErrors: React.Dispatch<React.SetStateAction<Partial<Record<keyof Profile, string>>>>;
+}
 
 const Input = styled('input')({
   display: 'none',
@@ -66,15 +87,16 @@ export const SetupStep1: React.FC<SetupStepProps> = ({
       }));
     }
   }, []); // Empty dependency array means this runs once on mount
-  
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       if (file.type.startsWith('image/')) {
+        const imageUrl = URL.createObjectURL(file);
         setProfile(prev => ({
           ...prev,
           profileImage: file,
-          imageUrl: URL.createObjectURL(file),
+          imageUrl: imageUrl,
         }));
         setErrors(prev => ({ ...prev, profileImage: undefined }));
       } else {
@@ -130,92 +152,90 @@ export const SetupStep1: React.FC<SetupStepProps> = ({
           mb: 4 
         }}
       >
-        
-      <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <input
-          accept="image/*"
-          id="profile-image-upload"
-          type="file"
-          onChange={handleImageChange}
-          style={{ display: 'none' }}  // Use style instead of className
-        />
-        <label htmlFor="profile-image-upload">
-          <Box sx={{ textAlign: 'center' }}>
-            <ProfileImage
-              src={profile.imageUrl}
-              variant="rounded"
-              sx={{ 
-                borderColor: '#777', 
-                backgroundColor: '#dfd9c6',
-                mb: 2,  // Add margin bottom
-                cursor: 'pointer',
-                '&:hover': {
-                  opacity: 0.9,
-                  boxShadow: theme => theme.shadows[4]  // Add hover effect
-                },
-                transition: 'all 0.2s'  // Smooth transition
+        <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <input
+            accept="image/*"
+            id="profile-image-upload"
+            type="file"
+            onChange={handleImageChange}
+            style={{ display: 'none' }}  // Use style instead of className
+          />
+          <label htmlFor="profile-image-upload">
+            <Box sx={{ textAlign: 'center' }}>
+              <ProfileImage
+                src={profile.imageUrl}
+                variant="rounded"
+                sx={{ 
+                  borderColor: '#777', 
+                  backgroundColor: '#dfd9c6',
+                  mb: 2,  // Add margin bottom
+                  cursor: 'pointer',
+                  '&:hover': {
+                    opacity: 0.9,
+                    boxShadow: theme => theme.shadows[4]  // Add hover effect
+                  },
+                  transition: 'all 0.2s'  // Smooth transition
+                }}
+              >
+                {!profile.imageUrl && <AccountCircleIcon sx={{ width: 40, height: 40 }} />}
+              </ProfileImage>
+
+              {/* Add Material Button below the image */}
+              <Button
+                component="span"  // Important to make the button work with label
+                variant="outlined"
+                startIcon={<PhotoCameraIcon />}
+                size="small"
+              >
+                {profile.imageUrl ? t('profile.change_photo') : t('profile.upload_photo')}
+              </Button>
+            </Box>
+          </label>
+
+          {errors.profileImage && (
+            <Typography 
+              color="error" 
+              variant="caption" 
+              sx={{ mt: 1 }}  // Add margin top
+            >
+              {errors.profileImage}
+            </Typography>
+          )}
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Stack spacing={3}>
+            <TextField
+              fullWidth
+              label={t('profile.fields.first_name')}
+              value={profile.firstName}
+              onChange={(e) => {
+                setProfile(prev => ({ ...prev, firstName: e.target.value }));
+                if (e.target.value) { // Clear error when value is entered
+                  setErrors(prev => ({ ...prev, firstName: undefined }));
+                }
               }}
-            >
-              {!profile.imageUrl && <AccountCircleIcon sx={{ width: 40, height: 40 }} />}
-            </ProfileImage>
+              error={!!errors.firstName}
+              helperText={errors.firstName}
+            />
 
-            {/* Add Material Button below the image */}
-            <Button
-              component="span"  // Important to make the button work with label
-              variant="outlined"
-              startIcon={<PhotoCameraIcon />}
-              size="small"
-            >
-              {profile.imageUrl ? t('profile.change_photo') : t('profile.upload_photo')}
-            </Button>
-          </Box>
-        </label>
-
-        {errors.profileImage && (
-          <Typography 
-            color="error" 
-            variant="caption" 
-            sx={{ mt: 1 }}  // Add margin top
-          >
-            {errors.profileImage}
-          </Typography>
-        )}
-      </Box>
-         <Box sx={{ flex: 1 }}>
-        <Stack spacing={3}>
-          <TextField
-            fullWidth
-            label={t('profile.fields.first_name')}
-            value={profile.firstName}
-            onChange={(e) => {
-              setProfile(prev => ({ ...prev, firstName: e.target.value }));
-              if (e.target.value) { // Clear error when value is entered
-                setErrors(prev => ({ ...prev, firstName: undefined }));
-              }
-            }}
-            error={!!errors.firstName}
-            helperText={errors.firstName}
-          />
-
-          <TextField
-            fullWidth
-            label={t('profile.fields.last_name')}
-            value={profile.lastName}
-            onChange={(e) => {
-              setProfile(prev => ({ ...prev, lastName: e.target.value }));
-              if (e.target.value) {
-                setErrors(prev => ({ ...prev, lastName: undefined }));
-              }
-            }}
-            error={!!errors.lastName}
-            helperText={errors.lastName}
-          />
-        </Stack></Box>
+            <TextField
+              fullWidth
+              label={t('profile.fields.last_name')}
+              value={profile.lastName}
+              onChange={(e) => {
+                setProfile(prev => ({ ...prev, lastName: e.target.value }));
+                if (e.target.value) {
+                  setErrors(prev => ({ ...prev, lastName: undefined }));
+                }
+              }}
+              error={!!errors.lastName}
+              helperText={errors.lastName}
+            />
+          </Stack>
+        </Box>
       </Box>
 
       <Stack spacing={3}>
-        
-
         <Box sx={{ display: 'flex', gap: 2 }}>
           <DatePicker
             label={t('profile.fields.dob')}
@@ -252,14 +272,14 @@ export const SetupStep1: React.FC<SetupStepProps> = ({
 
         <FormControl error={!!errors.gender}>
           <FormLabel>{t('profile.fields.gender')}</FormLabel>
-            <RadioGroup
-              row
-              value={profile.gender}
-              onChange={(e) => {
-                setProfile(prev => ({ ...prev, gender: e.target.value }));
-                setErrors(prev => ({ ...prev, gender: undefined }));
-              }}
-            >
+          <RadioGroup
+            row
+            value={profile.gender}
+            onChange={(e) => {
+              setProfile(prev => ({ ...prev, gender: e.target.value as 'male' | 'female' | 'other' }));
+              setErrors(prev => ({ ...prev, gender: undefined }));
+            }}
+          >
             <FormControlLabel value="female" control={<Radio />} label={t('profile.gender.female')} />
             <FormControlLabel value="male" control={<Radio />} label={t('profile.gender.male')} />
             <FormControlLabel value="other" control={<Radio />} label={t('profile.gender.other')} />
