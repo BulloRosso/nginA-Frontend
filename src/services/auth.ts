@@ -107,6 +107,18 @@ export const AuthService = {
     }
   },
 
+  async resendConfirmationEmail(email: string): Promise<{ message: string }> {
+      try {
+          const response = await api.post('/api/v1/auth/resend-confirmation', {
+              email: email
+          });
+          return response.data;
+      } catch (error: any) {
+          console.error('Error resending confirmation email:', error);
+          throw new Error(error.response?.data?.detail || 'Failed to resend confirmation email');
+      }
+  },
+
   async login(email: string, password: string): Promise<AuthResponse> {
     try {
       const response = await api.post('/api/v1/auth/login', {
@@ -130,8 +142,29 @@ export const AuthService = {
 
       return response.data;
     } catch (error: any) {
-      console.error('Login error:', error.response?.data);
-      throw new Error(error.response?.data?.detail || 'Login failed');
+      // Detailed error logging
+      console.error('Login error details:', {
+          error: error,
+          response: error.response,
+          data: error.response?.data,
+          detail: error.response?.data?.detail
+      });
+
+      if (error.response?.data?.detail?.code === 'email_not_confirmed') {
+          // Create a proper error object with all necessary information
+          const authError = new Error(error.response.data.detail.message || 'Email not confirmed');
+          authError.name = 'EmailNotConfirmedError';
+          (authError as any).response = error.response;
+          (authError as any).code = error.response.data.detail.code;
+          throw authError;
+      }
+
+      // For any other error, throw with proper message
+      const errorMessage = error.response?.data?.detail?.message 
+          || error.response?.data?.detail 
+          || error.message 
+          || 'Login failed';
+      throw new Error(errorMessage);
     }
   },
 

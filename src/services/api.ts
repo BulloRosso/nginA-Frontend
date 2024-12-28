@@ -40,18 +40,26 @@ api.interceptors.response.use(
       // Handle specific error cases
       switch (error.response.status) {
         case 401:
-          // Only logout if it's a token-related error
-          const errorDetail = error.response.data?.detail || '';
-          if (
+
+          const errorDetail = error.response.data?.detail;
+
+          // Skip token removal for structured error responses (like email confirmation)
+          if (typeof errorDetail === 'object') {
+            break;
+          }
+          
+          // Handle string error details for token validation
+          if (typeof errorDetail === 'string' && (
             errorDetail.includes('Invalid token') || 
             errorDetail.includes('Token has expired') ||
             errorDetail.includes('Could not validate credentials')
-          ) {
+          )) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';
           }
           break;
+
 
         case 403:
           console.warn('Forbidden access:', error.response.data);

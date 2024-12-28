@@ -27,6 +27,8 @@ import { useAuth } from '../../contexts/auth';
 import { useTranslation } from 'react-i18next';
 import MFASetupModal from './MFASetupModal';
 import MFAVerifyModal from './MFAVerifyModal';
+import ResendConfirmation from './ResendConfirmation';
+import { AuthError } from '../../types/auth';
 
 interface LoginProps {
   onSuccess: () => void;
@@ -36,7 +38,8 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   const { t } = useTranslation(['common']);
   const { login } = useAuth();
   const navigate = useNavigate();
-
+  const [showResendConfirmation, setShowResendConfirmation] = useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -88,9 +91,35 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
       login(response.user);
       navigate('/profile-selection');
-    } catch (error: any) {
-      console.error('Login error:', error);
-      setError(error.message);
+    } catch (error: AuthError | any) {
+      // Detailed error logging
+      console.error('Login error details:', {
+          error: error,
+          name: error.name,
+          message: error.message,
+          code: error.code
+      });
+
+      if (error.name === 'EmailNotConfirmedError' || error.code === 'email_not_confirmed') {
+          setUnconfirmedEmail(formData.email);
+          setError(
+              <div>
+                  {t('common.auth.email_not_confirmed')}
+                  <Button
+                      sx={{ ml: 2, marginTop: '10px', backgroundColor: '#fff',
+                        border: '1px solid rgb(21,128,131)' }} 
+                      onClick={() => setShowResendConfirmation(true)}
+                  >
+                      {t('common.auth.resend_confirmation_link')}
+                  </Button>
+              </div>
+          );
+      } else {
+          const errorMessage = error.message && error.message !== 'Login failed' 
+              ? error.message 
+              : t('common.auth.invalid_credentials');
+          setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -261,7 +290,12 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           }}
         />
       )}
-    </Container>
+      </Container>
+      <ResendConfirmation
+          open={showResendConfirmation}
+          email={unconfirmedEmail}
+          onClose={() => setShowResendConfirmation(false)}
+      />
     </React.Fragment>
   );
 };
