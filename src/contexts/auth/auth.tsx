@@ -1,19 +1,6 @@
 // src/contexts/auth.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Define AuthService interface first
-interface AuthService {
-  logout: () => void;
-}
-
-// Create a basic AuthService implementation
-const AuthService: AuthService = {
-  logout: () => {
-    // Basic logout functionality
-    localStorage.removeItem('token');
-  }
-};
-
 interface User {
   id: string;
   email: string;
@@ -30,45 +17,73 @@ interface AuthContextType {
   logout: () => void;
 }
 
-// Create the context with undefined as initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Export the provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          // Get user data from localStorage
-          const userData = localStorage.getItem('user');
-          if (userData) {
-            const parsedUser = JSON.parse(userData);
-            setUser(parsedUser);
+  const initializeAuth = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const userData = JSON.parse(userStr);
+            setUser(userData);
             setIsAuthenticated(true);
+          } catch (parseError) {
+            console.error('Error parsing user data:', parseError);
+            // Clear potentially corrupted data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+            setIsAuthenticated(false);
           }
         }
-      } catch (error) {
-        console.error('Auth initialization error:', error);
-        // Clear potentially corrupted data
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      } finally {
-        setIsLoading(false);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
       }
-    };
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+      // Clear potentially corrupted data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     initializeAuth();
 
     // Add storage event listener
     const handleStorageChange = (e: StorageEvent) => {
-      console.log('Storage changed:', e.key, e.oldValue, e.newValue);
-      if (e.key === 'token' || e.key === 'user') {
-        initializeAuth();
+      if (e.key === 'token') {
+        if (!e.newValue) {
+          // Token removed
+          setUser(null);
+          setIsAuthenticated(false);
+        } else {
+          // Token added/changed - recheck user data
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            try {
+              const userData = JSON.parse(userStr);
+              setUser(userData);
+              setIsAuthenticated(true);
+            } catch (error) {
+              console.error('Error parsing user data:', error);
+              setUser(null);
+              setIsAuthenticated(false);
+            }
+          }
+        }
       }
     };
 
@@ -89,9 +104,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     localStorage.removeItem('profileId');
-    AuthService.logout();
   };
 
   const value = {
@@ -109,7 +124,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Export the useAuth hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

@@ -6,6 +6,7 @@ export interface SignupData {
   lastName: string;
   email: string;
   password: string;
+  enableMFA?: boolean; 
 }
 
 export interface MFAFactors {
@@ -80,11 +81,19 @@ export interface MFAVerificationResponse {
 export const AuthService = {
   
   async signup(data: SignupData): Promise<AuthResponse> {
+    console.log('Signup API request data:', {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        email: data.email,
+        enable_mfa: data.enableMFA  // Log this specifically
+    });
+    
     const response = await api.post('/api/v1/auth/signup', {
       first_name: data.firstName,
       last_name: data.lastName,
       email: data.email,
-      password: data.password
+      password: data.password,
+      enable_mfa: data.enableMFA
     });
 
     if (response.data.access_token) {

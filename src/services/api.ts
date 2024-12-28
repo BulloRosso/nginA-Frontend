@@ -27,55 +27,43 @@ api.interceptors.request.use((config) => {
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response) {
-      // Log the error for debugging
-      console.error('API Error:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config.url
-      });
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
 
-      // Handle specific error cases
-      switch (error.response.status) {
-        case 401:
+        // If the error is 401 and we have a refresh token
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const refreshToken = localStorage.getItem('refresh_token');
 
-          const errorDetail = error.response.data?.detail;
+            if (refreshToken) {
+                try {
+                    const response = await api.post('/api/v1/auth/refresh', {
+                        refresh_token: refreshToken
+                    });
 
-          // Skip token removal for structured error responses (like email confirmation)
-          if (typeof errorDetail === 'object') {
-            break;
-          }
-          
-          // Handle string error details for token validation
-          if (typeof errorDetail === 'string' && (
-            errorDetail.includes('Invalid token') || 
-            errorDetail.includes('Token has expired') ||
-            errorDetail.includes('Could not validate credentials')
-          )) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-          }
-          break;
+                    // Store new tokens
+                    localStorage.setItem('token', response.data.access_token);
+                    if (response.data.refresh_token) {
+                        localStorage.setItem('refresh_token', response.data.refresh_token);
+                    }
 
+                    // Retry the original request with the new token
+                    originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
+                    return api(originalRequest);
+                } catch (refreshError) {
+                    // If refresh fails, logout
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refresh_token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                    return Promise.reject(refreshError);
+                }
+            }
+        }
 
-        case 403:
-          console.warn('Forbidden access:', error.response.data);
-          break;
-
-        case 404:
-          console.warn('Resource not found:', error.response.data);
-          break;
-
-        case 500:
-          console.error('Server error:', error.response.data);
-          break;
-      }
+        return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
 );
 
 export default api;

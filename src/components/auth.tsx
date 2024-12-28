@@ -12,13 +12,17 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  Grid
+  Grid,
+  FormControlLabel,
+  Switch,
+  Tooltip
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
   Google as GoogleIcon,
-  GitHub as GitHubIcon
+  GitHub as GitHubIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { AuthService, SignupData } from '../services/auth';
@@ -27,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 
 // Register Component
 export const Register = ({ onSuccess }) => {
+  const { t } = useTranslation(['common']);  // Add namespace
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -37,21 +42,29 @@ export const Register = ({ onSuccess }) => {
     email: '',
     password: '',
     confirmPassword: '',
+    enableMFA: true,
   });
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
 
+  const handleMFAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      enableMFA: e.target.checked
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    console.log('Submit formData:', formData); // Add this line
     if (formData.password !== formData.confirmPassword) {
-      setError(() => "Passwords don't match");
+      setError(t('common.auth.passwords_dont_match'));
       return;
     }
 
@@ -63,16 +76,15 @@ export const Register = ({ onSuccess }) => {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        enableMFA: formData.enableMFA
       });
 
-      // Update auth context
       login(response.user);
-
       onSuccess?.();
       navigate('/profile-selection');
     } catch (error: any) {
-      setError(error.response?.data?.detail || 'Failed to create account');
+      setError(error.response?.data?.detail || t('common.auth.signup_failed'));
     } finally {
       setLoading(false);
     }
@@ -81,8 +93,12 @@ export const Register = ({ onSuccess }) => {
   return (
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <img src="/public/conch-logo.png" alt={t('common.logo_alt')} width="80px" />
+        </Box>
+
         <Typography variant="h5" component="h1" gutterBottom align="center">
-          Create Account
+          {t('common.auth.create_account')}
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -92,20 +108,20 @@ export const Register = ({ onSuccess }) => {
             <Grid item xs={6}>
               <TextField
                 fullWidth
-                label="First Name"
+                label={t('common.auth.first_name')}
                 name="firstName"
                 value={formData.firstName}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
               />
             </Grid>
             <Grid item xs={6}>
               <TextField
                 fullWidth
-                label="Last Name"
+                label={t('common.auth.last_name')}
                 name="lastName"
                 value={formData.lastName}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
               />
             </Grid>
@@ -113,24 +129,26 @@ export const Register = ({ onSuccess }) => {
 
           <TextField
             fullWidth
-            label="Email"
+            label={t('common.auth.email')}
             name="email"
             type="email"
             value={formData.email}
-            onChange={handleChange}
+            onChange={handleInputChange}
             margin="normal"
             required
+            InputLabelProps={{ shrink: true }}
           />
 
           <TextField
             fullWidth
-            label="Password"
+            label={t('common.auth.password')}
             name="password"
             type={showPassword ? 'text' : 'password'}
             value={formData.password}
-            onChange={handleChange}
+            onChange={handleInputChange}
             margin="normal"
             required
+            InputLabelProps={{ shrink: true }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -147,14 +165,35 @@ export const Register = ({ onSuccess }) => {
 
           <TextField
             fullWidth
-            label="Confirm Password"
+            label={t('common.auth.confirm_password')}
             name="confirmPassword"
             type={showPassword ? 'text' : 'password'}
             value={formData.confirmPassword}
-            onChange={handleChange}
+            onChange={handleInputChange}
             margin="normal"
             required
           />
+
+          <Box sx={{ mt: 2 }}>
+            <Tooltip title={t('common.auth.mfa.tooltip')}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={formData.enableMFA}
+                    onChange={(e) => handleMFAChange(e)}
+                    name="enableMFA"
+                    color="primary"
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SecurityIcon color={formData.enableMFA ? "primary" : "action"} />
+                    {t('common.auth.enable_mfa')}
+                  </Box>
+                }
+              />
+            </Tooltip>
+          </Box>
 
           <Button
             fullWidth
@@ -163,10 +202,10 @@ export const Register = ({ onSuccess }) => {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : 'Create Account'}
+            {loading ? <CircularProgress size={24} /> : t('common.auth.create_account')}
           </Button>
 
-          <Divider sx={{ my: 3 }}>OR</Divider>
+          <Divider sx={{ my: 3 }}>{t('common.auth.or')}</Divider>
 
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -174,7 +213,7 @@ export const Register = ({ onSuccess }) => {
                 fullWidth
                 variant="outlined"
                 startIcon={<GoogleIcon />}
-                onClick={() => {/* Implement Google signup */}}
+                disabled
               >
                 Google
               </Button>
@@ -184,7 +223,7 @@ export const Register = ({ onSuccess }) => {
                 fullWidth
                 variant="outlined"
                 startIcon={<GitHubIcon />}
-                onClick={() => {/* Implement GitHub signup */}}
+                disabled
               >
                 GitHub
               </Button>
@@ -193,9 +232,9 @@ export const Register = ({ onSuccess }) => {
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="body2">
-              Already have an account?{' '}
+              {t('common.auth.already_have_account')}{' '}
               <Link href="/login" variant="body2">
-                Sign In
+                {t('common.auth.sign_in')}
               </Link>
             </Typography>
           </Box>

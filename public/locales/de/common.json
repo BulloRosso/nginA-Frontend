@@ -66,8 +66,12 @@
     "back_to_login": "Back to Sign In",
     "email": "Email",
     "new_password": "Neues Password",
+    "password": "Passwort",
     "confirm_password": "Password wiederholen",
+    "first_name": "Vorname",
+    "last_name": "Nachname",
     "mfa": {
+      "tooltip": "Die Zwei-Faktor-Authentifizierung fügt Ihrem Konto eine zusätzliche Sicherheitsebene hinzu, indem bei der Anmeldung ein Code aus Ihrer Authenticator-App erforderlich ist",
       "setup_title": "Zwei-Faktor-Authentifizierung einrichten",
       "setup_instructions": "Bitte scannen Sie den QR-Code mit Ihrer Authenticator-App",
       "scan_qr_prompt": "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App (z.B. Google Authenticator, Microsoft Authenticator)",
