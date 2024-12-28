@@ -43,9 +43,13 @@ export const ProfileService = {
       return response.data;
   },
 
-  getProfileRating: async (profileId: string): Promise<ProfileRatingData> => {
-    console.log('getProfileRating', profileId);
-    const response = await api.get(`/api/v1/profiles/rating/${profileId}`);
+  getProfileRating: async (profileId: string, language: string = 'en'): Promise<ProfileRatingData> => {
+    console.log('getProfileRating', profileId, language);
+    const response = await api.get(`/api/v1/profiles/rating/${profileId}`, {
+      params: {
+        language: language
+      }
+    });
     return response.data;
   },
   

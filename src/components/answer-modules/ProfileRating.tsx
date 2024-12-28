@@ -90,7 +90,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ value, maxValue = 1, label, sub
 };
 
 export const ProfileRating: React.FC = () => {
-  const { t } = useTranslation('supportbot');
+  const { t, i18n } = useTranslation('supportbot');
   const [ratingData, setRatingData] = useState<ProfileRatingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +111,7 @@ export const ProfileRating: React.FC = () => {
       }
 
       try {
-        const data = await ProfileService.getProfileRating(profileId);
+        const data = await ProfileService.getProfileRating(profileId, i18n.language);
         setRatingData(data);
       } catch (err) {
         console.error('Error fetching profile rating:', err);

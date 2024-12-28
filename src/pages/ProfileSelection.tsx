@@ -101,6 +101,15 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               const userProfiles = await ProfileService.getProfilesForUser(user.id);
               setProfiles(userProfiles);
 
+              // If there are profiles, select the first one by default
+              if (userProfiles.length > 0) {
+                  const firstProfile = userProfiles[0];
+                  localStorage.setItem('profileId', firstProfile.id);
+                  localStorage.setItem('profiles', JSON.stringify(firstProfile));
+                  setSelectedProfileId(firstProfile.id);
+                  window.dispatchEvent(new CustomEvent('profileSelected'));
+              }
+
           } catch (error) {
               console.error('Error fetching profiles:', error);
               setError('Failed to load profiles. Please try again.');
