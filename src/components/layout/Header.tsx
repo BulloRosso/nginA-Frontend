@@ -166,7 +166,6 @@ export const Header = () => {
         </Typography>
 
         <Stack direction="row" spacing={1} alignItems="center">
-          {isAuthenticated && <Settings sx={{ color: 'white' }} />}
           <LanguageSwitch />
         </Stack>
 
