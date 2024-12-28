@@ -57,7 +57,9 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
+    localStorage.getItem('profileId')
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [buyModalOpen, setBuyModalOpen] = useState(false);
@@ -110,7 +112,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       initializeProfileSelection();
   }, []);
 
-  const handleProfileSelect = (profileId: string, route: string) => {
+  const handleProfileSelect = (profileId: string) => {
     const selectedProfile = profiles.find(p => p.id === profileId);
 
     if (selectedProfile) {
@@ -118,12 +120,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       localStorage.setItem('profiles', JSON.stringify(selectedProfile));
       window.dispatchEvent(new CustomEvent('profileSelected'));
 
-      onSelect?.(profileId);
-      if (!route) {
-        navigate('/interview');
-      } else {
-        navigate(route);
-      }
+      setSelectedProfileId(profileId)
      
     }
   };
@@ -254,11 +251,12 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                 sx={{
                   mb: 1,
                   border: '1px solid',
-                  borderColor: 'divider',
+                  borderColor: profile.id === selectedProfileId ? 'primary.main' : 'divider',
                   borderRadius: 1,
                   cursor: 'pointer',
+                  backgroundColor: profile.id === selectedProfileId ? 'action.selected' : 'inherit',
                   '&:hover': {
-                    backgroundColor: 'action.hover',
+                    backgroundColor: profile.id === selectedProfileId ? 'action.selected' : 'action.hover',
                   },
                 }}
               >

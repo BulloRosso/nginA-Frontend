@@ -2,6 +2,13 @@
 import api from './api';
 import { Profile  } from '../types/profile';
 
+export interface ProfileRatingData {
+  completeness: number;
+  memories_count: number;
+  memories_with_images: number;
+  rating: string;
+}
+
 export const ProfileService = {
   getAllProfiles: async (): Promise<Profile[]> => {
     const response = await api.get('/api/v1/profiles');  // No need to add /api/v1 here
@@ -36,12 +43,8 @@ export const ProfileService = {
       return response.data;
   },
 
-  getProfileRating: async (profileId: string): Promise<{
-    completeness: number;
-    memories_count: number;
-    memories_with_images: number;
-    rating: string;
-  }> => {
+  getProfileRating: async (profileId: string): Promise<ProfileRatingData> => {
+    console.log('getProfileRating', profileId);
     const response = await api.get(`/api/v1/profiles/rating/${profileId}`);
     return response.data;
   },

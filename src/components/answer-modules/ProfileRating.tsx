@@ -1,13 +1,15 @@
 // src/components/answer-modules/ProfileRating.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Paper, 
   Grid, 
   Typography, 
-  Box 
+  Box,
+  CircularProgress
 } from '@mui/material';
 import { PieChart, Pie, Cell } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { ProfileService } from '../../services/profiles'
 
 interface ProfileRatingData {
   completeness: number;
@@ -89,19 +91,66 @@ const DonutChart: React.FC<DonutChartProps> = ({ value, maxValue = 1, label, sub
 
 export const ProfileRating: React.FC = () => {
   const { t } = useTranslation('supportbot');
-
+  const [ratingData, setRatingData] = useState<ProfileRatingData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const calculateImagePercentage = (total: number, withImages: number): number => {
     if (total === 0) return 0;
     return (withImages / total) * 100;
   };
 
+  useEffect(() => {
+    const fetchRatingData = async () => {
+      const profileId = localStorage.getItem('profileId');
+
+      if (!profileId) {
+        setError('No profile selected');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await ProfileService.getProfileRating(profileId);
+        setRatingData(data);
+      } catch (err) {
+        console.error('Error fetching profile rating:', err);
+        setError('Failed to load profile rating');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRatingData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Paper sx={{ p: 3, mt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+          <CircularProgress />
+        </Box>
+      </Paper>
+    );
+  }
+
+  if (error || !ratingData) {
+    return (
+        <Paper sx={{ p: 3, mt: 2 }}>
+          <Typography color="error" align="center">
+            {error || 'No rating data available'}
+          </Typography>
+        </Paper>
+      );
+    }
+  
   return (
     <Paper sx={{ p: 3, mt: 2 }}>
       <Grid container spacing={3}>
         {/* First row with donut charts */}
         <Grid item xs={12} md={4}>
           <DonutChart
-            value={mockData.completeness}
+            value={ratingData.completeness}
             label="45%"
             sublabel={t('supportbot.profile_rating.completeness')}
             color="#1eb3b7"  // Your app's primary color
@@ -109,19 +158,19 @@ export const ProfileRating: React.FC = () => {
         </Grid>
         <Grid item xs={12} md={4}>
           <DonutChart
-            value={mockData.memories_count}
+            value={ratingData.memories_count}
             maxValue={30}
-            label={`${mockData.memories_count}`}
-            sublabel={t('supportbot.profile_rating.memories_stored') +` ${mockData.memories_count}`}
+            label={`${ratingData.memories_count}`}
+            sublabel={t('supportbot.profile_rating.memories_stored') +` ${ratingData.memories_count}`}
             color="#ffd700"  // Gold color
           />
         </Grid>
         <Grid item xs={12} md={4}>
           <DonutChart
-            value={mockData.memories_with_images}
-            maxValue={mockData.memories_count}
-            label={`${calculateImagePercentage(mockData.memories_count, mockData.memories_with_images)}%`}
-            sublabel={t('supportbot.profile_rating.memories_with_images') + ` ${mockData.memories_with_images}`}
+            value={ratingData.memories_with_images}
+            maxValue={ratingData.memories_count}
+            label={`${calculateImagePercentage(ratingData.memories_count, ratingData.memories_with_images)}%`}
+            sublabel={t('supportbot.profile_rating.memories_with_images') + ` ${ratingData.memories_with_images}`}
             color="#82ca9d"  // A nice green
           />
         </Grid>
@@ -133,7 +182,7 @@ export const ProfileRating: React.FC = () => {
             color="text.secondary"
             sx={{ mt: 2, textAlign: 'center' }}
           >
-            {mockData.rating}
+            {ratingData.rating}
           </Typography>
         </Grid>
       </Grid>
