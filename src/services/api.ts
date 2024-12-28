@@ -27,43 +27,42 @@ api.interceptors.request.use((config) => {
 
 // Response interceptor
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-        // If the error is 401 and we have a refresh token
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-            const refreshToken = localStorage.getItem('refresh_token');
+    // If the error is 401 and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-            if (refreshToken) {
-                try {
-                    const response = await api.post('/api/v1/auth/refresh', {
-                        refresh_token: refreshToken
-                    });
+      try {
+        // The refresh token is automatically included in the request via cookie
+        const response = await api.post('/api/v1/auth/refresh');
 
-                    // Store new tokens
-                    localStorage.setItem('token', response.data.access_token);
-                    if (response.data.refresh_token) {
-                        localStorage.setItem('refresh_token', response.data.refresh_token);
-                    }
+        // Store new access token
+        const newAccessToken = response.data.access_token;
+        localStorage.setItem('token', newAccessToken);
 
-                    // Retry the original request with the new token
-                    originalRequest.headers.Authorization = `Bearer ${response.data.access_token}`;
-                    return api(originalRequest);
-                } catch (refreshError) {
-                    // If refresh fails, logout
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('refresh_token');
-                    localStorage.removeItem('user');
-                    window.location.href = '/login';
-                    return Promise.reject(refreshError);
-                }
-            }
-        }
+        // Update the failed request with new token and retry
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        // If refresh fails, clear everything and redirect to login
+        console.error('Token refresh failed:', refreshError);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
 
-        return Promise.reject(error);
+        // Optional: Emit an event that auth context can listen to
+        window.dispatchEvent(new Event('auth-error'));
+
+        // Redirect to login
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
     }
+
+    return Promise.reject(error);
+  }
 );
 
 export default api;

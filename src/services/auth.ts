@@ -141,9 +141,7 @@ export const AuthService = {
       if (response.data.access_token) {
         localStorage.setItem('token', response.data.access_token);
       }
-      if (response.data.refresh_token) {
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-      }
+      
       // Store password temporarily if MFA is required
       if (response.data.mfa_required) {
         sessionStorage.setItem('temp_password', password);
