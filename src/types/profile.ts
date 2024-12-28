@@ -1,19 +1,28 @@
 // types/profile.ts
 import { UUID } from './common';
 
+export interface ProfileMetadata {
+  backstory?: string;
+  narrator_style?: 'neutral' | 'professional' | 'romantic' | 'optimistic';
+  narrator_perspective?: 'ego' | 'third';
+  narrator_verbosity?: 'verbose' | 'normal' | 'brief';
+}
+
 export interface Profile {
   id: UUID;
-  first_name: string;  // Changed from firstName to match backend
-  last_name: string;   // Changed from lastName to match backend
+  user_id: UUID;  // Added user_id field
+  first_name: string;
+  last_name: string;
   date_of_birth: string;
   place_of_birth: string;
   gender: string;
   children: string[];
   spoken_languages: string[];
-  profile_image_url?: string;  // Changed from profileImageUrl to match backend
+  profile_image_url?: string;
   created_at: string;
   updated_at: string;
   subscribed_at: string | null;
+  metadata?: ProfileMetadata;
 }
 
 // Helper function to calculate age

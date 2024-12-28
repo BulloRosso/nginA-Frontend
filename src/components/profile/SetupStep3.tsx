@@ -1,9 +1,8 @@
 // src/components/profile/SetupStep3.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { SetupStepProps } from '../../types/profile-setup';
 import { Box } from '@mui/material';
 import { NarratorSettings } from '../modals/NarratorSettings';
-import api from '../../services/api';
 import { useTranslation } from 'react-i18next';
 
 export const SetupStep3: React.FC<SetupStepProps> = ({ 
@@ -11,32 +10,26 @@ export const SetupStep3: React.FC<SetupStepProps> = ({
   setProfile 
 }) => {
   const { t } = useTranslation(["profile","common"]);
-  const [settings, setSettings] = useState({
-    narrator_perspective: 'ego',
-    narrator_verbosity: 'normal',
-    narrator_style: 'neutral'
-  });
 
-  const handleSettingChange = async (key: string, value: string) => {
-    try {
-      const newSettings = {
-        ...settings,
-        [key]: value
-      };
-      setSettings(newSettings);
+  const handleSettingChange = (key: string, value: string) => {
+    console.log('Setting change in SetupStep3:', key, value);
 
-      // Update form state
-      const formKey = key.replace('narrator_', 'narrator');
-      setProfile(prev => ({
+    // Convert snake_case to camelCase with proper capitalization
+    const formKey = key === 'narrator_perspective' ? 'narratorPerspective' :
+                   key === 'narrator_style' ? 'narratorStyle' :
+                   key === 'narrator_verbosity' ? 'narratorVerbosity' :
+                   key;
+
+    console.log('Updating profile with key:', formKey, 'value:', value);
+
+    setProfile(prev => {
+      const newProfile = {
         ...prev,
         [formKey]: value
-      }));
-
-      // Optional: Update backend only after form submission
-      // Remove immediate API call that causes reload
-    } catch (err) {
-      console.error('Settings update error:', err);
-    }
+      };
+      console.log('New profile state:', newProfile);
+      return newProfile;
+    });
   };
 
   return (
@@ -45,7 +38,11 @@ export const SetupStep3: React.FC<SetupStepProps> = ({
           {t('profile.step3_description')}
       </Box>
       <NarratorSettings 
-        settings={settings}
+        settings={{
+          narrator_style: profile.narratorStyle,
+          narrator_perspective: profile.narratorPerspective,
+          narrator_verbosity: profile.narratorVerbosity
+        }}
         onSettingChange={handleSettingChange}
       />
     </Box>

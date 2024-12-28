@@ -6,7 +6,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Box
+  Box,
+  SelectChangeEvent
 } from '@mui/material';
 import { 
   PsychologyAlt as PsychologyIcon,
@@ -30,8 +31,13 @@ export const NarratorSettings: React.FC<NarratorSettingsProps> = ({
 }) => {
   const { t } = useTranslation(['settings','common']);
 
+  console.log('Current settings:', settings);
 
-  
+  const handleChange = (key: string) => (event: SelectChangeEvent<string>) => {
+    console.log('Select changed:', key, event.target.value);
+    onSettingChange(key, event.target.value as string);
+  };
+
   return (
     <Box sx={{ mt: 2 }}>
       {/* Perspective Setting */}
@@ -47,10 +53,10 @@ export const NarratorSettings: React.FC<NarratorSettingsProps> = ({
             <Select
               value={settings.narrator_perspective}
               label={t('settings.narrator_perspective')}
-              onChange={(e) => onSettingChange('narrator_perspective', e.target.value)}
+              onChange={handleChange('narrator_perspective')}
             >
               <MenuItem value="ego">{t('settings.perspective.ego')}</MenuItem>
-              <MenuItem value="3rd-person">{t('settings.perspective.third_person')}</MenuItem>
+              <MenuItem value="third">{t('settings.perspective.third_person')}</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -69,7 +75,7 @@ export const NarratorSettings: React.FC<NarratorSettingsProps> = ({
             <Select
               value={settings.narrator_verbosity}
               label={t('settings.narrator_verbosity')}
-              onChange={(e) => onSettingChange('narrator_verbosity', e.target.value)}
+              onChange={handleChange('narrator_verbosity')}
             >
               <MenuItem value="verbose">{t('settings.verbosity.verbose')}</MenuItem>
               <MenuItem value="normal">{t('settings.verbosity.normal')}</MenuItem>
@@ -92,7 +98,7 @@ export const NarratorSettings: React.FC<NarratorSettingsProps> = ({
             <Select
               value={settings.narrator_style}
               label={t('settings.narrator_style')}
-              onChange={(e) => onSettingChange('narrator_style', e.target.value)}
+              onChange={handleChange('narrator_style')}
             >
               <MenuItem value="professional">{t('settings.style.professional')}</MenuItem>
               <MenuItem value="romantic">{t('settings.style.romantic')}</MenuItem>
