@@ -181,7 +181,7 @@ const SelectedMemoryDisplay = ({ memory, onClose }) => {
             color="text.secondary"
             sx={{ fontStyle: 'italic' }}
           >
-            {t('memory.selection_hint', 'Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button.')}
+            {t('memory.selection_hint',  { ns: 'memory' })}
           </Typography>
         </CardContent>
       </Card>
@@ -825,7 +825,7 @@ return (
                           sx={{ color: '#1eb3b7' }}
                         />
                         <Typography variant="body1" color="textSecondary">
-                          {t('memory.loading_timeline')}
+                          {t('memory.loading_timeline',  { ns: 'memory' })}
                         </Typography>
                       </Box>
                     ) : (
