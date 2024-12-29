@@ -36,6 +36,7 @@ import {
   PersonAdd as PersonAddIcon,
   MailOutline as InviteIcon, 
   MoreVert as MoreVertIcon,
+  Print as PrintIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Profile, calculateAge } from '../types/profile';
@@ -399,7 +400,18 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               <InviteIcon sx={{ mr: 1 }} />
               {t('profile.invite_interview')}
             </MenuItem>
-            
+
+            <MenuItem 
+              onClick={() => {
+                const profileToPrint = selectedProfileId;
+                handleMenuClose();
+                navigate('/print');
+              }}
+            >
+              <PrintIcon sx={{ mr: 1 }} />
+              {t('profile.print_profile')}
+            </MenuItem>
+             
             <MenuItem 
               onClick={() => {
                 const profileToDelete = selectedProfileId;

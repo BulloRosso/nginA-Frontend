@@ -1,0 +1,15 @@
+{
+  "print": {
+    "settings": "Create a PDF file from memories",
+    "template": "Select Template",
+    "professional": "Professional",
+    "warm": "Warm",
+    "romantic": "Romantic",
+    "sort_order": "Sort Order",
+    "back_to_profiles": "Back to profile selection",
+    "by_category": "By Category",
+    "by_timestamp": "By Date",
+    "generate": "Generate PDF",
+    "request_received": "Your print request has been received. You will receive an email with the download link shortly."
+  }
+}

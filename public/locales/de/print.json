@@ -1,0 +1,15 @@
+{
+  "print": {
+    "settings": "PDF-Datei aus den Erinnerungen erzeugen",
+    "template": "Vorlage auswählen",
+    "professional": "Professionell",
+    "warm": "Warm",
+    "romantic": "Romantisch",
+    "sort_order": "Sortierung",
+    "by_category": "Nach Kategorie",
+    "back_to_profiles": "Zurück zur Profilauswahl",
+    "by_timestamp": "Nach Datum",
+    "generate": "PDF erstellen",
+    "request_received": "Ihre Druckanfrage wurde empfangen. Sie erhalten in Kürze eine E-Mail mit dem Download-Link."
+  }
+}

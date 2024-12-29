@@ -23,6 +23,7 @@ import { TokenProtectedRoute } from './hoc/withTokenProtection';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import Checkout from './pages/Checkout';
+import PrintSettings from './pages/PrintSettings';
 
 const theme = createTheme({
   palette: {
@@ -104,6 +105,17 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <ProfileSetup />
+                  </ProtectedRoute>
+                } 
+              />
+
+              <Route 
+                path="/print" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <PrintSettings />
+                    </VerifiedRoute>
                   </ProtectedRoute>
                 } 
               />
