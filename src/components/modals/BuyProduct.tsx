@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import '../../pages/styles/GoldButton.css';
+import { useNavigate } from 'react-router-dom';
 
 interface BuyProductProps {
   open: boolean;
@@ -31,8 +32,9 @@ interface BuyProductProps {
 }
 
 const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profileName }) => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['buy', 'common']);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
   
   const benefits = useMemo(() => [
     {
@@ -64,12 +66,12 @@ const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profi
   const handleCheckout = async () => {
     try {
       setIsSubmitting(true);
-      await ProfileService.subscribeProfile(profileId);
+      // Close the modal
       onClose();
-      // Optionally refresh the profiles list or show success message
+      // Navigate to checkout page
+      navigate('/checkout', { state: { profileId } });
     } catch (error) {
-      console.error('Failed to process subscription:', error);
-      // Show error message to user
+      console.error('Failed to start checkout:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,7 +110,7 @@ const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profi
         >
           <PriceIcon sx={{ fontSize: 40, color: 'black', mb: 1 }} />
           <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'black', }}>
-            {t('profile.currency')}299
+            {t('buy.currency')}299
           </Typography>
           <Typography variant="subtitle1" sx={{ color: '#000' }}>
             {t('buy.one_time_payment')}

@@ -16,6 +16,18 @@
   "premium_storage": "10 per memory",
   "basic_retention": "3 months",
   "premium_retention": "unlimited",
+  "currency": "US$", 
   "title": "Start saving memories now!",
-  "one_time_payment": "One-time payment"
+  "one_time_payment": "One-time payment",
+  "checkout_title": "Checkout",
+  "terms1": "This service is an technical demo.",
+  "terms2": "If enough persons are interested we will offer the service",
+  "terms3": "...",
+  "terms4": "...",
+  "terms5": "...",
+  "waitlist_title": "Join Our Waitlist",
+  "email_label": "Email Address",
+  "waitlist_button": "Put me on the waitlist",
+  "waitlist_success": "Successfully added to waitlist! We'll contact you soon.",
+  "waitlist_error": "Failed to join waitlist. Please try again."
 }}

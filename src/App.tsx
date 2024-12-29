@@ -22,6 +22,7 @@ import TokenHandler from './components/interview/TokenHandler';
 import { TokenProtectedRoute } from './hoc/withTokenProtection';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
+import Checkout from './pages/Checkout';
 
 const theme = createTheme({
   palette: {
@@ -52,7 +53,8 @@ const App = () => {
               <Route path="/business" element={<LandingPageBusiness />} />
               <Route path="/introduction" element={<IntroductionVideo />} />
               <Route path="/interview-token" element={<TokenHandler />} />
-
+              
+              
               {/* Auth routes - no header */}
               <Route 
                 path="/login" 
@@ -81,6 +83,17 @@ const App = () => {
                   <ProtectedRoute>
                     <VerifiedRoute>
                       <ProfileSelection />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
+
+              <Route 
+                path="/checkout" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <Checkout />
                     </VerifiedRoute>
                   </ProtectedRoute>
                 } 
