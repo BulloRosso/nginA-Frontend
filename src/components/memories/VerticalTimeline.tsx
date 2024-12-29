@@ -78,6 +78,14 @@ const categoryConfig = {
     background: '#EFEBE9'
   }
 };
+
+const MemoryCaption: React.FC<{description: string}> = ({description}) => {
+
+   return (
+     <div style={{ marginTop: '8px',}}>{description}</div>
+   )
+};
+
 const MemoryDescription: React.FC<{ description: string }> = ({ description }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -391,6 +399,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                           ))}
                         </div>
                       )}
+                      <MemoryCaption description={memory.caption} />
                       <MemoryDescription description={memory.description} />
                       {memory.location?.name && (
                         <p className="text-sm text-gray-500 mt-2" style={{ position: 'relative', top: '-10px' }}>

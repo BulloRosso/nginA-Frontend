@@ -34,7 +34,9 @@ export interface Memory {
   profileId: UUID;
   sessionId: UUID;
   category: Category;
+  caption: string;
   description: string;
+  original_description: string;
   timePeriod: Date;
   location?: Location;
   people: Person[];
