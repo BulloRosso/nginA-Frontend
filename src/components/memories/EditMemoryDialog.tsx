@@ -1,5 +1,5 @@
 // src/components/memories/EditMemoryDialog.tsx
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -17,6 +17,9 @@ import {
 import { Memory, Category, Location } from '../../types/memory';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { useTranslation } from 'react-i18next';
+// Import date locale adapters for each supported language
+import { de, enUS } from 'date-fns/locale';
 
 interface EditMemoryDialogProps {
   open: boolean;
@@ -25,17 +28,38 @@ interface EditMemoryDialogProps {
   onSave: (updatedMemory: Partial<Memory>) => Promise<void>;
 }
 
+const localeMap = {
+  'de': de,
+  'en': enUS,
+};
+
 const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
   open,
   memory,
   onClose,
   onSave
 }) => {
+  const { t, i18n } = useTranslation(['memory', 'common']);
+
+  // Get the appropriate locale based on current language
+  const dateLocale = React.useMemo(() => {
+    console.log("Current language:", i18n.language);
+    return localeMap[i18n.language as keyof typeof localeMap] || enUS;
+  }, [i18n.language]);
+
+  // Add debug logging
+  React.useEffect(() => {
+    console.log("Current language:", i18n.language);
+    console.log("Memory namespace:", t('memory:edit_dialog', { returnObjects: true }));
+    console.log("Test translation:", t('memory:edit_dialog.title'));
+  }, [i18n.language, t]);
+
   // Initialize state with default values
   const [category, setCategory] = React.useState<Category>(Category.CHILDHOOD);
   const [description, setDescription] = React.useState('');
   const [date, setDate] = React.useState<Date>(new Date());
   const [loading, setLoading] = React.useState(false);
+  const [caption, setCaption] = React.useState(''); 
   const [location, setLocation] = React.useState<Location>({
     name: '',
     city: '',
@@ -47,6 +71,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
   React.useEffect(() => {
     if (memory) {
       setCategory(memory.category);
+      setCaption(memory.caption || ''); 
       setDescription(memory.description || '');
       setDate(new Date(memory.timePeriod));
       setLocation({
@@ -66,6 +91,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
       await onSave({
         id: memory.id,
         category,
+        caption,
         description,
         timePeriod: date?.toISOString(),
         location: {
@@ -87,6 +113,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
     // Reset form when closing
     if (memory) {
       setCategory(memory.category);
+      setCaption(memory.caption || '');
       setDescription(memory.description || '');
       setDate(new Date(memory.timePeriod));
       setLocation({
@@ -106,19 +133,19 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
       maxWidth="sm" 
       fullWidth
     >
-      <DialogTitle>Edit Memory</DialogTitle>
+      <DialogTitle>{t('memory.edit_dialog.title')}</DialogTitle>
       <DialogContent>
         <div className="space-y-4 mt-4">
           <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
+            <InputLabel>{t('memory.edit_dialog.category')}</InputLabel>
             <Select
               value={category}
-              label="Category"
+              label={t('memory.edit_dialog.category')}
               onChange={(e) => setCategory(e.target.value as Category)}
             >
               {Object.values(Category).map((cat) => (
                 <MenuItem key={cat} value={cat}>
-                  {cat}
+                  {t(`common.categories.${cat.toLowerCase()}`)}
                 </MenuItem>
               ))}
             </Select>
@@ -126,16 +153,24 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
 
           <TextField
             fullWidth
+            label={t('memory.edit_dialog.caption')}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+          />
+          
+          <TextField
+            fullWidth
             multiline
             rows={4}
-            label="Description"
+            label={t('memory.edit_dialog.description')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider 
+            dateAdapter={AdapterDateFns} adapterLocale={dateLocale}>
             <DatePicker
-              label="Date"
+              label={t('memory.edit_dialog.date')}
               value={date}
               onChange={(newDate) => setDate(newDate || new Date())}
               slotProps={{ textField: { fullWidth: true } }}
@@ -143,14 +178,14 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
           </LocalizationProvider>
 
           <Typography variant="h6" className="mt-4 mb-2">
-            Location Details
+            {t('memory.edit_dialog.location.title')}
           </Typography>
 
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Location Name"
+                label={t('memory.edit_dialog.location.name')}
                 value={location.name}
                 onChange={(e) => setLocation({ ...location, name: e.target.value })}
               />
@@ -158,7 +193,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
             <Grid item xs={6}>
               <TextField
                 fullWidth
-                label="City"
+                label={t('memory.edit_dialog.location.city')}
                 value={location.city}
                 onChange={(e) => setLocation({ ...location, city: e.target.value })}
               />
@@ -166,7 +201,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
             <Grid item xs={6}>
               <TextField
                 fullWidth
-                label="Country"
+                label={t('memory.edit_dialog.location.country')}
                 value={location.country}
                 onChange={(e) => setLocation({ ...location, country: e.target.value })}
               />
@@ -174,7 +209,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Location Description"
+                label={t('memory.edit_dialog.location.description')}
                 value={location.description}
                 onChange={(e) => setLocation({ ...location, description: e.target.value })}
                 multiline
@@ -185,13 +220,15 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose}>
+          {t('memory.edit_dialog.buttons.cancel')}
+        </Button>
         <Button 
           onClick={handleSave} 
           variant="contained" 
           disabled={loading}
         >
-          Save
+          {t('memory.edit_dialog.buttons.save')}
         </Button>
       </DialogActions>
     </Dialog>

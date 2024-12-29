@@ -3,5 +3,23 @@
   "drag_drop": "Drag 'n' drop some images here, or click to select files",
   "selected_memory": "Add details to this memory",
   "loading_timeline": "Preparing timeline...",
-  "selection_hint": "Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button."
+  "selection_hint": "Tip: You can select a memory in the timeline to add further details to it. Just click the round icon button.",
+  "edit_dialog": {
+    "title": "Edit Memory",
+    "category": "Category",
+    "description": "Description",
+    "date": "Date",
+    "caption": "Caption",
+    "location": {
+      "title": "Location Details",
+      "name": "Location Name",
+      "city": "City",
+      "country": "Country",
+      "description": "Location Description"
+    },
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  }
 }}

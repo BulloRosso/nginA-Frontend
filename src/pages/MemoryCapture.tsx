@@ -200,7 +200,7 @@ const SelectedMemoryDisplay = ({ memory, onClose }) => {
         </IconButton>
 
         <Typography variant="h6" gutterBottom sx={{ color: 'rgb(252, 156, 43)' }}>
-          <AddMemoryIcon /> {t('memory.selected_memory')} 
+          <AddMemoryIcon /> {t('memory.selected_memory', { ns: 'memory' })} 
         </Typography>
 
         <Grid container spacing={2}>

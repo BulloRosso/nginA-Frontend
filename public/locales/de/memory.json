@@ -2,5 +2,25 @@
   "drag_drop": "Bitte ziehen Sie ein JPG Bild hierher, oder klicken Sie um eine Datei auszuwählen",
   "selected_memory": "Diese Erinnerung vertiefen",
   "loading_timeline": "Bereite Zeitleiste vor...",
-  "selection_hint": "Tipp: Sie können eine Erinnerung vertiefen, indem Sie einfach auf den bunten Button in der Zeitleiste klicken."
-}}
+  "selection_hint": "Tipp: Sie können eine Erinnerung vertiefen, indem Sie einfach auf den bunten Button in der Zeitleiste klicken.",
+  "edit_dialog": {
+      "title": "Erinnerung bearbeiten",
+      "category": "Kategorie",
+      "description": "Beschreibung",
+      "date": "Datum",
+    
+      "location": {
+        "title": "Standort Details",
+        "name": "Standortname",
+        "city": "Stadt",
+        "country": "Land",
+        "caption": "Überschrift",
+        "description": "Standortbeschreibung"
+      },
+      "buttons": {
+        "save": "Speichern",
+        "cancel": "Abbrechen"
+      }
+    }
+  }
+}
