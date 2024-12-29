@@ -20,14 +20,28 @@
   "title": "Start saving memories now!",
   "one_time_payment": "One-time payment",
   "checkout_title": "Checkout",
-  "terms1": "This service is an technical demo.",
-  "terms2": "If enough persons are interested we will offer the service",
-  "terms3": "...",
-  "terms4": "...",
-  "terms5": "...",
-  "waitlist_title": "Join Our Waitlist",
-  "email_label": "Email Address",
-  "waitlist_button": "Put me on the waitlist",
-  "waitlist_success": "Successfully added to waitlist! We'll contact you soon.",
+  "join_waitlist": "Join the Waitlist",
+  "waitlist_title": "Waitlist",
+  "waitlist_subtitle": "Be Part of Our Memory Preservation Revolution",
+  "why_join_title": "Why Join Our Waitlist?",
+  "why_join_description": "We're developing a groundbreaking memory preservation service that will revolutionize how we capture and share life stories. Join our waitlist to be among the first to experience this innovative platform when we launch.",
+
+  "feature_memory_title": "Preserve Precious Memories",
+  "feature_memory_desc": "Advanced AI technology to capture and preserve your life stories in stunning detail",
+
+  "feature_security_title": "Secure for Generations",
+  "feature_security_desc": "Bank-level encryption ensures your memories are safe for future generations",
+
+  "feature_books_title": "Beautiful Memory Books",
+  "feature_books_desc": "Transform your digital memories into elegantly crafted physical books",
+
+  "feature_digital_title": "Digital Time Capsule",
+  "feature_digital_desc": "Create a lasting digital legacy for your family and loved ones",
+
+  "limited_spots": "Limited Spots Available",
+  "early_access": "Join the waitlist today to secure your early access",
+  "email_label": "Your Email Address",
+  "notification_text": "We'll notify you when we're ready to launch",
+  "waitlist_success": "Thank you for joining our waitlist! We'll be in touch soon.",
   "waitlist_error": "Failed to join waitlist. Please try again."
 }}

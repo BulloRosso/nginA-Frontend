@@ -21,14 +21,28 @@
   "title": "Beginnen Sie jetzt, Erinnerungen zu speichern!",
   "one_time_payment": "Einmalzahlung",
   "checkout_title": "Checkout",
-  "terms1": "Dieser Service ist ein technisches Demo",
-  "terms2": "Wenn genügend Personen Interesse zeigen, werden wir den Service anbieten",
-  "terms3": "...",
-  "terms4": "...",
-  "terms5": "...",
-  "waitlist_title": "Unsere Warteliste",
-  "email_label": "Email Adresse",
-  "waitlist_button": "In Warteliste eintragen",
-  "waitlist_success": "Sie wurden in die Warteliste eingetragen! Wir melden uns bald bei Ihnen.",
-  "waitlist_error": "Failed to join waitlist. Please try again."
+  "join_waitlist": "Auf die Warteliste",
+  "waitlist_title": "Warteliste",
+  "waitlist_subtitle": "für eine neue Generation der Erinnerungskultur!",
+  "why_join_title": "Warum der Warteliste beitreten?",
+  "why_join_description": "Wir entwickeln einen bahnbrechenden Erinnerungsbewahrungsdienst, der die Art und Weise revolutionieren wird, wie wir Lebensgeschichten festhalten und teilen. Treten Sie unserer Warteliste bei, um zu den Ersten zu gehören, die diese innovative Plattform bei der Markteinführung erleben.",
+
+  "feature_memory_title": "Bewahren Sie wertvolle Erinnerungen",
+  "feature_memory_desc": "Fortschrittliche KI-Technologie zur detailgetreuen Erfassung und Bewahrung Ihrer Lebensgeschichten",
+
+  "feature_security_title": "Sicher für Generationen",
+  "feature_security_desc": "Bankenstandard-Verschlüsselung sorgt für die sichere Aufbewahrung Ihrer Erinnerungen für zukünftige Generationen",
+
+  "feature_books_title": "Schöne Erinnerungsbücher",
+  "feature_books_desc": "Verwandeln Sie Ihre digitalen Erinnerungen in elegant gestaltete physische Bücher",
+
+  "feature_digital_title": "Digitale Zeitkapsel",
+  "feature_digital_desc": "Schaffen Sie ein bleibendes digitales Vermächtnis für Ihre Familie und Ihre Lieben",
+
+  "limited_spots": "Begrenzte Plätze verfügbar",
+  "early_access": "Treten Sie jetzt der Warteliste bei, um sich Ihren frühen Zugang zu sichern",
+  "email_label": "Ihre E-Mail-Adresse",
+  "notification_text": "Wir benachrichtigen Sie, wenn wir startklar sind",
+  "waitlist_success": "Vielen Dank für Ihre Anmeldung auf der Warteliste! Wir melden uns bald bei Ihnen.",
+  "waitlist_error": "Fehler beim Beitritt zur Warteliste. Bitte versuchen Sie es erneut."
 }}
