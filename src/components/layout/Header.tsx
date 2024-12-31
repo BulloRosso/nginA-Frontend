@@ -142,6 +142,11 @@ export const Header = () => {
   const user = localStorage.getItem('user');
   const isAuthenticated = !!(token || user);
 
+  let pn = t('common.sessionwith') + ' ' + profileName;
+  if ( t('common.sessionwith').indexOf('{{person}}') > -1  ) {
+    pn = t('common.sessionwith').replace('{{person}}', profileName)
+  }
+
   return (
     <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
       <Toolbar variant="dense">
@@ -160,7 +165,7 @@ export const Header = () => {
               color: '#fff',
               opacity: 0.9 
             }}>
-              {t('common.sessionwith')} {profileName}
+              {pn}
             </span>
           )}
         </Typography>
