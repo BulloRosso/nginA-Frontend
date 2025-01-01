@@ -56,7 +56,9 @@ export default function InterviewWelcome() {
          onTimeUpdate={handleTimeUpdate}
          onLoadedData={handleLoadedData}
          style={{ width: '100%', borderRadius: '8px' }}
-         controls={false}
+         controls={true}
+         playsInline
+         autoPlay
        >
          <source src={videoSrc} type="video/mp4" />
          {t('interview.video_not_supported')}

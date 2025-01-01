@@ -91,27 +91,68 @@ const CameraPreview = styled('video')({
   marginBottom: '16px'
 });
 
-const AudioWaveform = styled(Box)<AudioWaveformProps>(({ theme, isRecording }) => ({
+const AudioWaveform = styled('canvas')({
   width: '100%',
   height: '60px',
-  backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    right: 0,
-    bottom: 0,
-    background: isRecording
-      ? 'linear-gradient(90deg, gold 50%, transparent 50%)'
-      : 'none',
-    backgroundSize: '200% 100%',
-    animation: isRecording ? 'wave 1s linear infinite' : 'none',
-  },
-}));
+  backgroundColor: '#f5f5f5',
+  borderRadius: '4px'
+});
+
+const AudioVisualizer = ({ isRecording, mediaRecorder }) => {
+  const canvasRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const analyserRef = useRef(null);
+  const dataArrayRef = useRef(null);
+
+  useEffect(() => {
+    if (isRecording && mediaRecorder) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyserRef.current = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(mediaRecorder.stream);
+      source.connect(analyserRef.current);
+
+      analyserRef.current.fftSize = 256;
+      const bufferLength = analyserRef.current.frequencyBinCount;
+      dataArrayRef.current = new Uint8Array(bufferLength);
+
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+
+      const draw = () => {
+        if (!isRecording) return;
+
+        animationFrameRef.current = requestAnimationFrame(draw);
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+
+        ctx.fillStyle = '#f5f5f5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const barWidth = canvas.width / dataArrayRef.current.length;
+        let x = 0;
+
+        dataArrayRef.current.forEach(value => {
+          const barHeight = (value / 255) * canvas.height;
+          ctx.fillStyle = `rgb(30, 179, 183, ${value / 255})`;
+          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          x += barWidth;
+        });
+      };
+
+      draw();
+
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+        audioContext.close();
+      };
+    }
+  }, [isRecording]);
+
+  return (
+    <AudioWaveform ref={canvasRef} />
+  );
+};
 
 const AnimatedMicIcon = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -457,17 +498,25 @@ const MemoryCapture = () => {
     };
   }, []);
 
-  // Audio recording handling
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
 
       if (recognitionRef.current) {
+        setTranscript('');
+        let silenceTimeout;
+
         recognitionRef.current.onresult = (event) => {
+          if (silenceTimeout) clearTimeout(silenceTimeout);
+
           const current = event.resultIndex;
-          const transcript = event.results[current][0].transcript;
-          setTranscript(prev => prev + ' ' + transcript);
+          const latestTranscript = event.results[current][0].transcript;
+          setTranscript(latestTranscript);
+
+          silenceTimeout = setTimeout(() => {
+            stopRecording();
+          }, 2000);
         };
         recognitionRef.current.start();
       }
@@ -489,8 +538,11 @@ const MemoryCapture = () => {
       }
       setIsRecording(false);
       setMediaMode(null);
-      setResponse(prev => prev + ' ' + transcript);
-      setTranscript('');
+
+      if (transcript) {
+        setResponse(prev => (prev + ' ' + transcript).trim());
+        setTranscript('');
+      }
     }
   };
 
@@ -656,7 +708,7 @@ return (
                   />
     
                   {/* Live Transcript */}
-                  {transcript && (
+                  {isRecording && transcript && (
                     <Typography variant="body2" color="textSecondary">
                       {t('interview.transcribing')}: {transcript}
                     </Typography>
@@ -665,7 +717,7 @@ return (
                   {/* Audio UI */}
                   {mediaMode === 'audio' && (
                     <Box sx={{ textAlign: 'center' }}>
-                      <AudioWaveform isRecording={isRecording} />
+                      <AudioVisualizer isRecording={isRecording} mediaRecorder={mediaRecorderRef.current} />
                       <Button
                         variant="contained"
                         color="error"
@@ -735,7 +787,10 @@ return (
                         <Button
                           variant="outlined"
                           startIcon={<MicIcon />}
-                          onClick={startRecording}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            startRecording();
+                          }}
                           disabled={mediaMode !== null}
                         >
                           {t('interview.start_recording')}
