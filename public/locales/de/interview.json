@@ -1,5 +1,9 @@
 { "interview": {
     "interview": "Interview",
+    "welcome_title": "Willkommen zu Ihrem Interview",
+   "video_not_supported": "Ihr Browser unterstützt keine Videowiedergabe",
+   "remaining_time": "Verbleibende Zeit", 
+   "skip_welcome": "Einführung überspringen",
     "loading_question": "Lade Frage...",
     "take_photo": "Einen Schnappschuss aufnehmen",
     "share_memory": "Teilen Sie Ihre Erinnerung...",

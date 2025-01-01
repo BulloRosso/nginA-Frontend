@@ -1,5 +1,9 @@
 { "interview": {
   "interview": "Interview",
+  "welcome_title": "Welcome to your interview",
+   "video_not_supported": "Your browser does not support video playback",
+   "remaining_time": "Time remaining",
+   "skip_welcome": "Skip introduction",
   "loading_question": "Loading question...",
   "add_images": "Upload",
   "use_camera": "Snapshot",

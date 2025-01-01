@@ -1,6 +1,10 @@
 {
   "interview": {
     "interview": "Entretien",
+    "welcome_title": "Bienvenue à votre entretien",
+     "video_not_supported": "Votre navigateur ne prend pas en charge la lecture vidéo",
+     "remaining_time": "Temps restant",
+     "skip_welcome": "Passer l'introduction",
     "loading_question": "Chargement de la question...",
     "add_images": "Télécharger",
     "use_camera": "Prendre une photo",

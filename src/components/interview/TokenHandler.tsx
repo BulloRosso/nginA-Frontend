@@ -40,7 +40,7 @@ const TokenHandler: React.FC = () => {
         sessionStorage.setItem('profile_id', validationResult.profile_id);
 
         // Redirect to interview page without token in URL
-        navigate('/interview', { replace: true });
+        navigate('/interview-welcome', { replace: true });
       } else {
         setError(validationResult.error || 'Invalid or expired token');
       }

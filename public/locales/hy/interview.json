@@ -1,6 +1,10 @@
 {
   "interview": {
     "interview": "Հարցազրույց",
+    "welcome_title": "Բարի գալուստ ձեր հարցազրույցին",
+     "video_not_supported": "Ձեր բրաուզերը չի աջակցում տեսանյութի նվագարկումը",
+     "remaining_time": "Մնացած ժամանակ",
+     "skip_welcome": "Բաց թողնել ներածությունը",
     "loading_question": "Հարցի բեռնում...",
     "add_images": "Ներբեռնել",
     "use_camera": "Լուսանկարել",

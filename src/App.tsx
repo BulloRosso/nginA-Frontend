@@ -26,6 +26,7 @@ import Checkout from './pages/Checkout';
 import PrintSettings from './pages/PrintSettings';
 import { DisclaimerProvider } from './contexts/disclaimer';
 import { Disclaimer } from './components/modals/Disclaimer';
+import InterviewWelcome from './pages/InterviewWelcome';
 
 const theme = createTheme({
   palette: {
@@ -56,6 +57,7 @@ const App = () => {
               <Route path="/" element={<LandingPage />} />
               <Route path="/business" element={<LandingPageBusiness />} />
               <Route path="/introduction" element={<IntroductionVideo />} />
+              <Route path="/interview-welcome" element={<InterviewWelcome />} />
               <Route path="/interview-token" element={<TokenHandler />} />
               
               

@@ -74,6 +74,9 @@ export const withTokenProtection = <P extends object>(
             isLoading: false,
             profileId: storedProfileId
           });
+
+          navigate('/interview-welcome');
+          
         } catch (error) {
           console.error('Token validation error:', error);
           setValidationState({
