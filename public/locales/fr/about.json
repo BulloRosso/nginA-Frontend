@@ -1,0 +1,10 @@
+{
+  "about": {
+    "title": "À propos de cette application",
+    "company": "Cette application est fournie par e-ntegration GmbH, Weinbergstr. 29, 90607 Rückersdorf, Allemagne.",
+    "contact": "Contact : ralph.goellner@e-ntegration.de",
+    "status": "Cette application est actuellement au stade d'étude de faisabilité et a été entièrement créée à l'aide de l'intelligence artificielle.",
+    "close": "Fermer",
+    "menuItem": "À propos de l'app"
+  }
+}

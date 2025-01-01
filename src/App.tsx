@@ -24,6 +24,8 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import Checkout from './pages/Checkout';
 import PrintSettings from './pages/PrintSettings';
+import { DisclaimerProvider } from './contexts/disclaimer';
+import { Disclaimer } from './components/modals/Disclaimer';
 
 const theme = createTheme({
   palette: {
@@ -44,6 +46,7 @@ const ProtectedRoute = ({ children }) => {
 const App = () => {
   return (
     <AuthProvider>
+      <DisclaimerProvider>
       <ThemeProvider theme={theme}>
         <I18nextProvider i18n={i18n}>
           <BrowserRouter>
@@ -119,7 +122,7 @@ const App = () => {
                   </ProtectedRoute>
                 } 
               />
-
+              
               <Route 
                 path="/invitations" 
                 element={
@@ -154,10 +157,14 @@ const App = () => {
               {/* Catch all - redirect to login */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+            
+              <Disclaimer /> 
+            
             </MFAWrapper>
           </BrowserRouter>
         </I18nextProvider>
       </ThemeProvider>
+      </DisclaimerProvider>
     </AuthProvider>
   );
 };

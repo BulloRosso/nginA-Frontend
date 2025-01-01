@@ -7,18 +7,26 @@ import {
   Menu as MenuIcon,
   Home as HomeIcon,
   People as PeopleIcon,
-  MailOutline as InviteIcon
+  MailOutline as InviteIcon,
+  InfoOutlined as InfoIcon,
 } from '@mui/icons-material';
 import { LanguageSwitch } from '../common/LanguageSwitch';
 import Settings from '../modals/Settings';
 import { useAuth } from '../../contexts/auth';
 import { useTranslation } from 'react-i18next';
+import { useDisclaimer } from '../../contexts/disclaimer';
 
 const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
-  const { t } = useTranslation(['common']);
+  const { t } = useTranslation(['common', 'about']);
+  const { openDisclaimer } = useDisclaimer();
   const navigate = useNavigate();
   const { logout } = useAuth();
 
+  const handleAboutClick = () => {
+    onClose();
+    openDisclaimer();
+  };
+  
   const handleNavigation = (path: string) => {
     onClose();
     navigate(path);
@@ -36,6 +44,13 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
         <HomeIcon fontSize="small" />
       </ListItemIcon>
       <ListItemText primary={t('common.menu.home')} />
+    </MenuItem>,
+
+    <MenuItem key="about" onClick={handleAboutClick}>
+      <ListItemIcon>
+        <InfoIcon fontSize="small" />
+      </ListItemIcon>
+      <ListItemText primary={t('about:about.menuItem')} />
     </MenuItem>,
 
     <MenuItem key="profiles" onClick={() => handleNavigation('/profile-selection')}>
