@@ -1,5 +1,6 @@
 // types/profile.ts
 import { UUID } from './common';
+import { Dayjs } from 'dayjs';
 
 export interface ProfileMetadata {
   backstory?: string;
@@ -9,22 +10,22 @@ export interface ProfileMetadata {
 }
 
 export interface Profile {
-  id: UUID;
-  user_id: UUID;  // Added user_id field
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  place_of_birth: string;
-  gender: string;
-  children: string[];
-  spoken_languages: string[];
-  profile_image_url?: string;
-  created_at: string;
-  updated_at: string;
-  subscribed_at: string | null;
+  id: string;
+  userId: string;
+  name: string;
+  dateOfBirth: Dayjs;
+  backstory?: string;
   metadata?: ProfileMetadata;
 }
 
+export interface ProfileMetadata {
+  sessionCount: number;
+  // Add other metadata fields
+}
+
+export interface ProfileData extends Omit<Profile, 'dateOfBirth'> {
+  dateOfBirth: Date;
+}
 // Helper function to calculate age
 export const calculateAge = (dateOfBirth: string): number => {
   const today = new Date();

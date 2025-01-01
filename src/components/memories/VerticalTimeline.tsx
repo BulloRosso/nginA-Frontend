@@ -38,6 +38,7 @@ import MemoryTypeFilter from './MemoryTypeFilter';
 import { Category } from '../../types/memory';
 import { useTranslation } from 'react-i18next';
 import './VerticalTimeline.css';
+import UploadDialog from './UploadDialog';
 
 interface TimelineProps {
   memories: Memory[];
@@ -194,6 +195,22 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
     onDrop
   });
 
+  const handleUpload = async (files: File[]) => {
+    if (!selectedMemoryForUpload) return;
+
+    try {
+      const urls = await MemoryService.addMediaToMemory(selectedMemoryForUpload, files);
+
+      if (onMemoryDeleted) {
+        onMemoryDeleted();
+      }
+
+      setIsUploadDialogOpen(false);
+    } catch (err) {
+      throw new Error('Failed to upload images');
+    }
+  };
+
   const handleToggleFilter = (category: Category) => {
     setActiveFilters(prev => {
       const newFilters = new Set(prev);
@@ -246,14 +263,25 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
       const filename = imageUrl.split('/').pop()?.split('?')[0];
       if (!filename) throw new Error('Invalid image URL');
 
+      console.log('Starting image deletion process:', {
+          memoryId: selectedMemory.id,
+          filename,
+          imageUrl,
+          currentUrls: selectedMemory.imageUrls
+      });
+      
       // Delete from storage
       await MemoryService.deleteImage(selectedMemory.id, filename);
+       console.log('Successfully deleted image from storage');
 
+      const updatedUrls = selectedMemory.imageUrls.filter(url => url !== imageUrl);
+      console.log('Updating memory with new URLs:', updatedUrls);
+      
       // Update memory's image URLs
-      const updatedUrls = selectedMemory.image_urls.filter(url => url !== imageUrl);
       await MemoryService.updateMemory(selectedMemory.id, {
-        image_urls: updatedUrls
+        imageUrls: updatedUrls
       });
+      console.log('Successfully updated memory');
 
       // Close lightbox
       setSelectedMemory(null);
@@ -261,6 +289,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
 
       // Refresh memories list
       if (onMemoryDeleted) {
+        console.log('Triggering memory list refresh');
         onMemoryDeleted();
       }
     } catch (error) {
@@ -330,8 +359,13 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                   const config = categoryConfig[category] || categoryConfig.childhood;
                   const IconComponent = config.icon;
                   const isEven = index % 2 === 0;
-                  const hasImages = memory.image_urls && memory.image_urls.length > 0;
-          
+                  const hasImages = memory.imageUrls && memory.imageUrls.length > 0;
+
+            console.log('Memory data:', {
+              id: memory.id,
+              imageUrls: memory.imageUrls,
+              hasImages: hasImages
+            });
                   return (
                     
                       <VerticalTimelineElement
@@ -375,10 +409,10 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                           borderRight: `7px solid ${selectedMemoryId === memory.id ? '#1eb3b7' : config.background}` 
                         }}
                       >
-                      {memory.image_urls && memory.image_urls.length > 0 && (
+                      {memory.imageUrls && memory.imageUrls.length > 0 && (
                         <div style={{ position: 'absolute', top: '-38px' }} 
                           className="mt-3 grid grid-cols-3 gap-2">
-                          {memory.image_urls.map((url, imgIndex) => (
+                          {memory.imageUrls.map((url, imgIndex) => (
                             <div 
                               key={imgIndex}
                               className="relative group cursor-pointer"
@@ -472,7 +506,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
           setSelectedMemory(null);
           setSelectedImage(-1);
         }}
-        images={selectedMemory.image_urls}
+        images={selectedMemory.imageUrls}
         currentIndex={selectedImage}
         onNavigate={setSelectedImage}
         onDelete={handleDeleteImage}
@@ -488,33 +522,12 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
     />
 
     {/* Upload Dialog */}
-    <Dialog 
-      open={isUploadDialogOpen} 
+    <UploadDialog 
+      open={isUploadDialogOpen}
       onClose={() => setIsUploadDialogOpen(false)}
-      maxWidth="sm"
-      fullWidth
-    >
-      <DialogContent>
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
-            ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
-            ${isUploading ? 'opacity-50' : ''}
-          `}
-        >
-          <input {...getInputProps()} />
-          {isUploading ? (
-            <div className="flex justify-center">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : isDragActive ? (
-            <p>{t('memory.drop_here')}</p>
-          ) : (
-            <p>{t('memory.drag_drop')}</p>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+      onUpload={handleUpload}
+      maxFiles={5} // or whatever limit you want to set
+    />
 
     {/* Error Snackbar */}
     <Snackbar 

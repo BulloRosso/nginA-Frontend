@@ -26,7 +26,7 @@ export default function LandingPage() {
           flexDirection: 'column',
           justifyContent: 'start',
           backgroundColor: '#f8f9fa',
-          backgroundImage: 'url(/public/noblivion-opener.jpg)',
+          backgroundImage: 'url(/noblivion-opener.jpg)',
           backgroundSize: '100vw',
           backgroundRepeat: 'no-repeat',
           position: 'relative',
@@ -41,7 +41,7 @@ export default function LandingPage() {
               py: 6
             }}
           >
-            <img src="/public/conch-logo.png" alt="Conch Logo" width="100" />
+            <img src="/conch-logo.png" alt="Conch Logo" width="100" />
 
             <Typography 
               variant="h2" 
@@ -151,7 +151,7 @@ export default function LandingPage() {
           >
             <Box sx={{ justifyItems: 'center', textAlign: 'center', p: 3 }}>
              
-              <img src="/public/noblivion-icon-1.png" style={{ width: '160px'}}></img>
+              <img src="/noblivion-icon-1.png" style={{ width: '160px'}}></img>
                <br></br>
               <Typography variant="h5" mb={2}>1. {t('landing.features.create_profile.title')}</Typography>
               <Typography color="text.secondary">
@@ -159,7 +159,7 @@ export default function LandingPage() {
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/public/noblivion-icon-2.png" style={{ width: '160px'}}></img>
+              <img src="/noblivion-icon-2.png" style={{ width: '160px'}}></img>
               <br></br>
               <Typography variant="h5" mb={2}>2. {t('landing.features.share_memories.title')}</Typography>
               <Typography color="text.secondary">
@@ -167,7 +167,7 @@ export default function LandingPage() {
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/public/noblivion-icon-3.png" style={{ width: '160px'}}></img>
+              <img src="/noblivion-icon-3.png" style={{ width: '160px'}}></img>
               <br></br>
               <Typography variant="h5" mb={2}>3. {t('landing.features.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">

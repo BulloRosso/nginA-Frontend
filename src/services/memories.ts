@@ -1,7 +1,8 @@
 // src/services/memories.ts
-import { Memory, Category, Location, Person, Emotion } from '../types/memory';
+import { Memory, Category, Location, Person, MemoryCreate , Emotion } from '../types/memory';
 import api from './api';
 import { UUID } from '../types/common';
+import dayjs from 'dayjs';
 
 interface MemoryResponse {
   id: UUID;
@@ -28,18 +29,54 @@ interface MemoryResponse {
   };
 }
 
+const mapResponseToMemory = (data: any): Memory => ({
+  id: data.id,
+  profileId: data.profile_id,
+  sessionId: data.session_id,
+  category: data.category,
+  description: data.description,
+  timePeriod: new Date(memory.time_period), 
+  caption: data.caption || '',
+  original_description: data.original_description || '',
+  imageUrls: data.image_urls || [],
+  location: data.location,
+  people: data.people || [],
+  emotions: data.emotions || [],
+  audioUrl: data.audio_url,
+  createdAt: new Date(data.created_at),
+  updatedAt: new Date(data.updated_at),
+  sentimentAnalysis: data.sentiment_analysis
+});
+
 class MemoryService {
+
   /**
    * Get all memories for a profile
    */
   static async getMemories(profileId: UUID): Promise<Memory[]> {
     try {
       const response = await api.get<MemoryResponse[]>(`/api/v1/memories/${profileId}`);
+
+      console.log('Raw API response:', response.data);
+
+      // Map the response data to Memory objects
       return response.data.map(memory => ({
-        ...memory,
-        timePeriod: new Date(memory.time_period),
+        id: memory.id,
+        profileId: memory.profile_id,
+        sessionId: memory.session_id,
+        category: memory.category,
+        description: memory.description,
+        timePeriod: dayjs(memory.time_period),
+        caption: memory.caption || '',
+        original_description: memory.original_description || '',
+        imageUrls: memory.image_urls || [], // Fix: map from snake_case to camelCase
+        location: memory.location,
+        people: memory.people || [],
+        emotions: memory.emotions || [],
+        audioUrl: memory.audio_url,
         createdAt: new Date(memory.created_at),
-        updatedAt: new Date(memory.updated_at)
+        updatedAt: new Date(memory.updated_at),
+        sentimentAnalysis: memory.sentiment_analysis
       }));
     } catch (error) {
       console.error('Failed to fetch memories:', error);
@@ -49,10 +86,17 @@ class MemoryService {
 
   static async deleteImage(memoryId: UUID, filename: string): Promise<void> {
     try {
+
+      console.log('Calling deleteImage API:', {
+          memoryId,
+          filename
+      });
+      
       // Delete file from Supabase storage
       const response = await api.delete(`/api/v1/memories/${memoryId}/media/${filename}`);
-      if (!response.data.success) {
-        throw new Error('Failed to delete image');
+      console.log('Delete API response:', response.data);
+      if (!response.data || !response.data.success) {
+          throw new Error(response.data?.message || 'Failed to delete image');
       }
     } catch (error) {
       console.error('Failed to delete image:', error);
@@ -75,7 +119,7 @@ class MemoryService {
         session_id: sessionId,
         category: memory.category,
         description: memory.description,
-        time_period: memory.time_period,
+        time_period: memory.timePeriod,
         location: memory.location || {
           name: "Unknown",
           city: null,
@@ -84,8 +128,8 @@ class MemoryService {
         },
         people: memory.people || [],
         emotions: memory.emotions || [],
-        image_urls: memory.image_urls || [],
-        audio_url: memory.audio_url || null
+        image_urls: memory.imageUrls || [],
+        audio_url: memory.audioUrl || null
       };
 
       const response = await api.post<MemoryResponse>(
@@ -153,16 +197,31 @@ class MemoryService {
     updates: Partial<MemoryCreate>
   ): Promise<Memory> {
     try {
+      console.log('Updating memory:', {
+          memoryId,
+          updates
+      });
+
+      const apiUpdates = {
+        ...updates,
+        image_urls: updates.imageUrls // Convert to snake_case for API
+      };
+      delete apiUpdates.imageUrls; // Remove the camelCase version
+      
       const response = await api.put<MemoryResponse>(
         `/api/v1/memories/${memoryId}`,
-        updates
+        apiUpdates
       );
 
+      console.log('Update API response:', response.data);
+
+      // Map the response back to our frontend format
       return {
-        ...response.data,
-        timePeriod: new Date(response.data.time_period),
-        createdAt: new Date(response.data.created_at),
-        updatedAt: new Date(response.data.updated_at)
+          ...response.data,
+          timePeriod: new Date(response.data.time_period),
+          createdAt: new Date(response.data.created_at),
+          updatedAt: new Date(response.data.updated_at),
+          imageUrls: response.data.image_urls || [] // Map from snake_case back to camelCase
       };
     } catch (error) {
       console.error('Failed to update memory:', error);

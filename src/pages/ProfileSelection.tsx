@@ -220,7 +220,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
              alignItems: 'end',
              flexDirection: 'row'
           }}>
-            <img  onClick={handleCreateNew} src="/public/create-profile.jpg" style={{ cursor: 'pointer', width: '140px' }} alt="Noblivion Logo"></img>
+            <img  onClick={handleCreateNew} src="/create-profile.jpg" style={{ cursor: 'pointer', width: '140px' }} alt="Noblivion Logo"></img>
             <Button
               variant="contained"
               startIcon={<PersonAddIcon />}

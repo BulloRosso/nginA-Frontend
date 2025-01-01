@@ -20,6 +20,28 @@
     "buttons": {
       "save": "Save",
       "cancel": "Cancel"
-    }
+    },
   }
+  "lightbox": {
+    "close": "Close",
+    "delete": "Delete image",
+    "previous": "Previous image",
+    "next": "Next image",
+    "image_alt": "Image {{number}}",
+    "thumbnail_alt": "Thumbnail {{number}}",
+    "image_counter": "{{current}} / {{total}}"
+  },
+  "upload": {
+    "title": "Upload Images",
+    "drag_drop": "Drag & drop images here, or click to select",
+    "drop_here": "Drop the images here",
+    "selected_files": "Selected Files ({{count}}/{{max}})",
+    "preview": "Preview",
+    "uploading": "Uploading...",
+    "upload_button": "Upload Images",
+    "supported_formats": "Supports: JPG, PNG, GIF",
+    "max_files": "Maximum {{count}} files",
+    "error_generic": "Failed to upload images"
+  }
+  
 }}

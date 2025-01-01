@@ -1,5 +1,7 @@
 // types/memory.ts
 import { UUID } from './common';
+import { Category } from './enums';
+import { Dayjs } from 'dayjs';
 
 export enum Category {
   CHILDHOOD = 'childhood',
@@ -30,30 +32,43 @@ export interface Emotion {
 }
 
 export interface Memory {
-  id: UUID;
-  profileId: UUID;
-  sessionId: UUID;
+  id: string;
+  profileId: string;
+  sessionId: string;
   category: Category;
-  caption: string;
   description: string;
-  original_description: string;
   timePeriod: Date;
-  location?: Location;
-  people: Person[];
-  emotions: Emotion[];
+  caption: string;
+  original_description: string;
   imageUrls: string[];
-  audioUrl?: string;
+  location?: {
+    name: string;
+    city: string | null;
+    country: string | null;
+    description: string | null;
+  };
+  people?: string[];
+  emotions?: string[];
+  audioUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
   sentimentAnalysis?: {
-    joy: number;
-    sadness: number;
-    anger: number;
-    fear: number;
-    surprise: number;
-    nostalgia: number;
-    intensity: number;
-  };
+    sentiment: string;
+    score: number;
+  } | null;
+}
+
+export interface MemoryCreate {
+  profileId: string;
+  sessionId: string;
+  category: Category;
+  description: string;
+  timePeriod: Date;
+  location?: Memory['location'];
+  people?: string[];
+  emotions?: string[];
+  imageUrls?: string[];
+  audioUrl?: string | null;
 }
 
 export interface InterviewResponse {

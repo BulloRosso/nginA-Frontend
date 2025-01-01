@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button } from '@mui/material';
 import { SkipNext as SkipIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import VideoLoadingIndicator from './VideoLoadingIndicator';
 
 export default function IntroductionVideo() {
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement>(null);
   const { t, i18n } = useTranslation(['common']);
   const [remainingTime, setRemainingTime] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -29,6 +31,10 @@ export default function IntroductionVideo() {
         `${minutes}:${seconds.toString().padStart(2, '0')}`
       );
     }
+  };
+
+  const handleLoadedData = () => {
+    setIsLoading(false);
   };
 
   const handleSkip = () => {
@@ -57,10 +63,12 @@ export default function IntroductionVideo() {
         maxWidth: '1400px',
         position: 'relative'
       }}>
+        {isLoading && <VideoLoadingIndicator />}
         <video
           ref={videoRef}
           onEnded={handleVideoEnd}
           onTimeUpdate={handleTimeUpdate}
+          onLoadedData={handleLoadedData}
           style={{ width: '100%', borderRadius: '8px' }}
           controls={false}
         >

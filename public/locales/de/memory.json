@@ -21,6 +21,27 @@
         "save": "Speichern",
         "cancel": "Abbrechen"
       }
-    }
+    },
+  "lightbox": {
+    "close": "Schließen",
+    "delete": "Bild löschen",
+    "previous": "Vorheriges Bild",
+    "next": "Nächstes Bild",
+    "image_alt": "Bild {{number}}",
+    "thumbnail_alt": "Vorschaubild {{number}}",
+    "image_counter": "{{current}} / {{total}}"
+  },
+  "upload": {
+    "title": "Bilder hochladen",
+    "drag_drop": "Bilder hierher ziehen oder klicken zum Auswählen",
+    "drop_here": "Bilder hier ablegen",
+    "selected_files": "Ausgewählte Dateien ({{count}}/{{max}})",
+    "preview": "Vorschau",
+    "uploading": "Wird hochgeladen...",
+    "upload_button": "Bilder hochladen",
+    "supported_formats": "Unterstützt: JPG, PNG, GIF",
+    "max_files": "Maximal {{count}} Dateien",
+    "error_generic": "Fehler beim Hochladen der Bilder"
+  }
   }
 }

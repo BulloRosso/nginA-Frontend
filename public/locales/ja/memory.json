@@ -5,6 +5,27 @@
     "selected_memory": "この思い出に詳細を追加",
     "loading_timeline": "タイムラインを準備中...",
     "selection_hint": "ヒント：タイムラインで思い出を選択して、さらに詳細を追加できます。丸いアイコンをクリックしてください。",
+    "upload": {
+      "title": "画像をアップロード",
+      "drag_drop": "ここに画像をドラッグ＆ドロップ、または選択してください",
+      "drop_here": "ここに画像をドロップ",
+      "selected_files": "選択されたファイル ({{count}}/{{max}})",
+      "preview": "プレビュー",
+      "uploading": "アップロード中...",
+      "upload_button": "画像をアップロード",
+      "supported_formats": "対応形式: JPG, PNG, GIF",
+      "max_files": "最大 {{count}} ファイル",
+      "error_generic": "アップロードに失敗しました"
+    },
+    "lightbox": {
+      "close": "閉じる",
+      "delete": "画像を削除",
+      "previous": "前の画像",
+      "next": "次の画像",
+      "image_alt": "画像 {{number}}",
+      "thumbnail_alt": "サムネイル {{number}}",
+      "image_counter": "{{current}} / {{total}}"
+    },
     "edit_dialog": {
       "title": "思い出を編集",
       "category": "カテゴリ",

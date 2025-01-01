@@ -1,17 +1,11 @@
-// src/components/memories/ImageLightbox.tsx
 import React from 'react';
-import {
-  Dialog,
-  IconButton,
-  DialogContent,
-  Box,
-  Tooltip
-} from '@mui/material';
-import {
-  Close as CloseIcon,
-  NavigateNext,
-  NavigateBefore,
-  Delete as DeleteIcon
+import { Dialog, IconButton } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import { 
+  Close as CloseIcon, 
+  ChevronLeft as ChevronLeftIcon, 
+  ChevronRight as ChevronRightIcon,
+  Delete as DeleteIcon 
 } from '@mui/icons-material';
 
 interface ImageLightboxProps {
@@ -20,7 +14,7 @@ interface ImageLightboxProps {
   images: string[];
   currentIndex: number;
   onNavigate: (index: number) => void;
-  onDelete?: (imageUrl: string) => Promise<void>;
+  onDelete: (url: string) => void;
 }
 
 const ImageLightbox: React.FC<ImageLightboxProps> = ({
@@ -31,118 +25,134 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
   onNavigate,
   onDelete
 }) => {
-  const [isDeleting, setIsDeleting] = React.useState(false);
-
-  const handleDelete = async () => {
-    if (!onDelete || isDeleting) return;
-    try {
-      setIsDeleting(true);
-      await onDelete(images[currentIndex]);
-      if (images.length > 1) {
-        onNavigate(Math.min(currentIndex, images.length - 2));
-      } else {
-        onClose();
-      }
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const { t } = useTranslation('memory');
 
   return (
-    <Dialog
-      open={open}
+    <Dialog 
+      open={open} 
       onClose={onClose}
-      maxWidth={false}
+      maxWidth="xl"
+      fullWidth
       PaperProps={{
-        style: {
-          backgroundColor: 'transparent',
-          boxShadow: 'none',
-          position: 'relative'
+        sx: { 
+          m: 1  
         }
       }}
     >
-      <DialogContent sx={{ p: 0, position: 'relative', overflow: 'hidden' }}>
+      <div className="relative bg-black min-h-[80vh] flex items-center justify-center">
         {/* Close button */}
         <IconButton
           onClick={onClose}
+          aria-label={t('memory.lightbox.close')}
           sx={{
             position: 'absolute',
-            top: 8,
-            right: 8,
+            top: 16,
+            right: 16,
             color: 'white',
-            bgcolor: 'rgba(0,0,0,0.4)',
-            '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' }
+            '&:hover': {
+              color: '#e0e0e0'
+            },
+            zIndex: 10
           }}
         >
           <CloseIcon />
         </IconButton>
 
         {/* Delete button */}
-        {onDelete && (
+        <IconButton
+          onClick={() => onDelete(images[currentIndex])}
+          aria-label={t('memory.lightbox.delete')}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            color: 'white',
+            '&:hover': {
+              color: '#f44336'
+            },
+            zIndex: 10
+          }}
+        >
+          <DeleteIcon />
+        </IconButton>
+
+        {/* Navigation */}
+        {currentIndex > 0 && (
           <IconButton
-            onClick={handleDelete}
-            disabled={isDeleting}
+            onClick={() => onNavigate(currentIndex - 1)}
+            aria-label={t('memory.lightbox.previous')}
             sx={{
               position: 'absolute',
-              top: 8,
-              right: 56,
+              left: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
               color: 'white',
-              bgcolor: 'rgba(0,0,0,0.4)',
-              '&:hover': { bgcolor: 'rgba(255,0,0,0.6)' }
+              '&:hover': {
+                color: '#e0e0e0'
+              },
+              zIndex: 10
             }}
           >
-            <DeleteIcon />
+            <ChevronLeftIcon fontSize="large" />
           </IconButton>
         )}
 
-        {/* Navigation buttons */}
-        {images.length > 1 && (
-          <>
-            <IconButton
-              onClick={() => onNavigate(currentIndex - 1)}
-              disabled={currentIndex === 0}
-              sx={{
-                position: 'absolute',
-                left: 8,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'white',
-                bgcolor: 'rgba(0,0,0,0.4)',
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' }
-              }}
-            >
-              <NavigateBefore />
-            </IconButton>
-            <IconButton
-              onClick={() => onNavigate(currentIndex + 1)}
-              disabled={currentIndex === images.length - 1}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'white',
-                bgcolor: 'rgba(0,0,0,0.4)',
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.6)' }
-              }}
-            >
-              <NavigateNext />
-            </IconButton>
-          </>
+        {currentIndex < images.length - 1 && (
+          <IconButton
+            onClick={() => onNavigate(currentIndex + 1)}
+            aria-label={t('memory.lightbox.next')}
+            sx={{
+              position: 'absolute',
+              right: 16,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'white',
+              '&:hover': {
+                color: '#e0e0e0'
+              },
+              zIndex: 10
+            }}
+          >
+            <ChevronRightIcon fontSize="large" />
+          </IconButton>
         )}
 
-        {/* Image */}
-        <Box
-          component="img"
+        {/* Main Image */}
+        <img
           src={images[currentIndex]}
-          alt={`Image ${currentIndex + 1}`}
-          sx={{
-            maxHeight: 'calc(100vh - 64px)',
-            maxWidth: '100%',
-            objectFit: 'contain'
-          }}
+          alt={t('memory.lightbox.image_alt', { number: currentIndex + 1 })}
+          className="max-h-[calc(80vh-100px)] max-w-full object-contain"
         />
-      </DialogContent>
+
+        {/* Thumbnails */}
+        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 p-4 overflow-hidden">
+          <div className="flex justify-center space-x-2 overflow-x-auto overflow-y-hidden">
+            {images.map((image, index) => (
+              <div
+                key={index}
+                onClick={() => onNavigate(index)}
+                className={`
+                  cursor-pointer transition-all duration-200
+                  ${index === currentIndex ? 'ring-2 ring-[gold] scale-105' : 'opacity-50 hover:opacity-100'}
+                `}
+              >
+                <img
+                  src={image}
+                  alt={t('lightbox.thumbnail_alt', { number: index + 1 })}
+                  className="h-16 w-16 object-cover rounded"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Image counter */}
+        <div 
+          className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full"
+        >
+          {t('memory.lightbox.image_counter', { current: currentIndex + 1, total: images.length })}
+        </div>
+      </div>
     </Dialog>
   );
 };

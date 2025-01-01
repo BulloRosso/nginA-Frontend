@@ -92,7 +92,7 @@ export default function LandingPageBusiness() {
           flexDirection: 'column',
           justifyContent: 'start',
           backgroundColor: '#f8f9fa',
-          backgroundImage: 'url(/public/leaving_expert.jpg)',
+          backgroundImage: 'url(/leaving_expert.jpg)',
           backgroundSize: '100vw',
           backgroundRepeat: 'no-repeat',
           position: 'relative',
@@ -109,7 +109,7 @@ export default function LandingPageBusiness() {
           >
             <Box sx={{ justifyItems: 'center',
                         textAlign: 'center', paddingLeft: '160px'}}>  
-              <img src="/public/conch-logo.png" alt="Conch Logo" width="100" />
+              <img src="/conch-logo.png" alt="Conch Logo" width="100" />
   
               <Typography 
                 variant="h2" 
@@ -234,7 +234,7 @@ export default function LandingPageBusiness() {
           >
             <Box sx={{ justifyItems: 'center', textAlign: 'center', p: 3 }}>
              
-              <img src="/public/noblivion-icon-1.png" style={{ width: '160px'}}></img>
+              <img src="/noblivion-icon-1.png" style={{ width: '160px'}}></img>
                <br></br>
               <Typography variant="h5" mb={2}>1. {t('landing.features_business.create_profile.title')}</Typography>
               <Typography color="text.secondary">
@@ -242,7 +242,7 @@ export default function LandingPageBusiness() {
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/public/noblivion-icon-2.png" style={{ width: '160px'}}></img>
+              <img src="/noblivion-icon-2.png" style={{ width: '160px'}}></img>
               <br></br>
               <Typography variant="h5" mb={2}>2. {t('landing.features_business.share_memories.title')}</Typography>
               <Typography color="text.secondary">
@@ -250,7 +250,7 @@ export default function LandingPageBusiness() {
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/public/noblivion-icon-3.png" style={{ width: '160px'}}></img>
+              <img src="/noblivion-icon-3.png" style={{ width: '160px'}}></img>
               <br></br>
               <Typography variant="h5" mb={2}>3. {t('landing.features_business.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">

@@ -43,6 +43,7 @@ import { Memory } from '../types/memory';
 import { createDefaultMemories } from '../utils/memoryDefaults';
 import { Profile } from '../types/profile';
 import { ProfileService } from '../services/profiles';
+import { AudioWaveformProps } from '@/types/components';
 
 const QuestionTypography = styled(Typography)(({ theme }) => ({
   fontFamily: '"Pangolin", regular',
@@ -90,7 +91,7 @@ const CameraPreview = styled('video')({
   marginBottom: '16px'
 });
 
-const AudioWaveform = styled(Box)(({ theme, isRecording }) => ({
+const AudioWaveform = styled(Box)<AudioWaveformProps>(({ theme, isRecording }) => ({
   width: '100%',
   height: '60px',
   backgroundColor: theme.palette.background.paper,
@@ -557,7 +558,7 @@ const MemoryCapture = () => {
 
 return (
     <Container 
-        maxWidth="{false}" // This removes max-width constraint
+        maxWidth={false} // This removes max-width constraint
         disableGutters
         sx={{ 
           paddingLeft: '12px',
@@ -580,7 +581,7 @@ return (
           }}
         >
           {/* Memory Input Area */}
-          <Grid item xs={12} md={5} xl={4} xxl={5} sx={{ height: '100%' }}>
+          <Grid item xs={12} md={5} xl={4} sx={{ height: '100%' }}>
             <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Tabs
                 value={activeTab}
@@ -789,7 +790,7 @@ return (
             </Grid>
           
             {/* Timeline Area */}
-            <Grid item xs={12} md={7} xl={8} xxl={7} sx={{ height: '100%' }}>
+            <Grid item xs={12} md={7} xl={8} sx={{ height: '100%' }}>
                <Card sx={{ height: '100%', display: 'flex', paddingBottom: '0 important', margin: 0, flexDirection: 'column' }}>
                   <CardContent sx={{ 
                     flex: 1, 

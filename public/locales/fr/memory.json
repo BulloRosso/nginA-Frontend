@@ -5,6 +5,27 @@
     "selected_memory": "Ajouter des détails à ce souvenir",
     "loading_timeline": "Préparation de la chronologie...",
     "selection_hint": "Astuce : Vous pouvez sélectionner un souvenir dans la chronologie pour y ajouter des détails. Cliquez simplement sur l'icône ronde.",
+    "upload": {
+      "title": "Télécharger des images",
+      "drag_drop": "Glissez et déposez des images ici, ou cliquez pour sélectionner",
+      "drop_here": "Déposez les images ici",
+      "selected_files": "Fichiers sélectionnés ({{count}}/{{max}})",
+      "preview": "Aperçu",
+      "uploading": "Téléchargement en cours...",
+      "upload_button": "Télécharger les images",
+      "supported_formats": "Formats supportés : JPG, PNG, GIF",
+      "max_files": "Maximum {{count}} fichiers",
+      "error_generic": "Échec du téléchargement des images"
+    },
+    "lightbox": {
+      "close": "Fermer",
+      "delete": "Supprimer l'image",
+      "previous": "Image précédente",
+      "next": "Image suivante",
+      "image_alt": "Image {{number}}",
+      "thumbnail_alt": "Vignette {{number}}",
+      "image_counter": "{{current}} / {{total}}"
+    },
     "edit_dialog": {
       "title": "Modifier le souvenir",
       "category": "Catégorie",

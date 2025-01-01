@@ -94,7 +94,7 @@ export const Register = ({ onSuccess }) => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <img src="/public/conch-logo.png" alt={t('common.logo_alt')} width="80px" />
+          <img src="/conch-logo.png" alt={t('common.logo_alt')} width="80px" />
         </Box>
 
         <Typography variant="h5" component="h1" gutterBottom align="center">

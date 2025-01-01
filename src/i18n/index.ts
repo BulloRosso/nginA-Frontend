@@ -11,7 +11,6 @@ i18n
   .init({
     fallbackLng: 'en',
     supportedLngs: ['en', 'de', 'hy', 'fr', 'ja'],
-    debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false,
     },

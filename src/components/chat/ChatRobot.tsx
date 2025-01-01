@@ -60,9 +60,10 @@ declare global {
   }
 }
 
-import ReactMarkdown from 'react-markdown';
 import { ChatService } from '../../services/chat';
 import { useTranslation } from 'react-i18next';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 interface Message {
   text: string;
@@ -102,7 +103,7 @@ const markdownStyles = `
 const hasInitialized = { current: false };
 
 const ChatRobot: React.FC = () => {
-  const { t, i18n } = useTranslation('chat', 'common');
+  const { t, i18n } = useTranslation(['chat', 'common']);
   const [messages, setMessages] = useState<Message[]>([{
     text: t('chat.welcome_message'),
     isUser: false,
@@ -283,9 +284,12 @@ const ChatRobot: React.FC = () => {
                   {message.isUser ? (
                     <Typography variant="body1">{message.text}</Typography>
                   ) : (
-                    <ReactMarkdown className="markdown-content">
-                      {message.text}
-                    </ReactMarkdown>
+                  <div 
+                    className="markdown-content"
+                    dangerouslySetInnerHTML={{ 
+                      __html: DOMPurify.sanitize(marked(message.text))
+                    }} 
+                  />
                   )}
                   <Typography 
                     variant="caption" 

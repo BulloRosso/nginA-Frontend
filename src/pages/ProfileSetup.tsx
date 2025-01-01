@@ -251,7 +251,7 @@ const ProfileSetup = () => {
                 >
                   
                   {t('profile.help')}
-                  <img src="/public/noblivion-icon-1.png" alt="Noblivion" style={{ width:'120px', justifySelf:'center', marginBottom: '10px' }} />
+                  <img src="/noblivion-icon-1.png" alt="Noblivion" style={{ width:'120px', justifySelf:'center', marginBottom: '10px' }} />
                   {t('profile.help2')}
                 </Typography>
               </Box>

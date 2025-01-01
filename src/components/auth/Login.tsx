@@ -29,6 +29,7 @@ import MFASetupModal from './MFASetupModal';
 import MFAVerifyModal from './MFAVerifyModal';
 import ResendConfirmation from './ResendConfirmation';
 import { AuthError } from '../../types/auth';
+import { MFAData } from '@/types/auth';
 
 interface LoginProps {
   onSuccess: () => void;
@@ -43,13 +44,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [mfaData, setMfaData] = useState<{
-    factorId: string;
-    challengeId?: string;
-    qrCode?: string;
-    secret?: string;
-    needsSetup: boolean;
-  } | null>(null);
+  const [mfaData, setMfaData] =  useState<MFAData | null>(null);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -167,7 +162,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <img src="/public/conch-logo.png" alt="Conch Logo" width="80px" />
+          <img src="/conch-logo.png" alt="Conch Logo" width="80px" />
         </Box>
 
         <Typography variant="h5" component="h1" gutterBottom align="center">

@@ -1,5 +1,16 @@
 // types/api.ts
 import { Memory } from './memory';
+import axios from 'axios';
+
+export const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL
+});
+
+export interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message?: string;
+}
 
 export const MemoryService = {
   getMemories: async (profileId: string) => {

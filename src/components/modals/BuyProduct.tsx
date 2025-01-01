@@ -90,7 +90,7 @@ const BuyProduct: React.FC<BuyProductProps> = ({ open, onClose, profileId, profi
         </Typography>
       </DialogTitle>
 
-      <DialogContent sx={{ backgroundImage: 'url(/public/noblivion-opener.jpg)',
+      <DialogContent sx={{ backgroundImage: 'url(/noblivion-opener.jpg)',
                            backgroundSize: 'cover' }}>
         {/* Price Tag */}
         <Box

@@ -16,7 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { BugReport, TopicButton } from './answer-modules/AnswerModules';
 import { ProfileRating } from './answer-modules/ProfileRating';
 import { SupportBotService } from '../services/supportbot';
-import ReactMarkdown from 'react-markdown';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 interface Message {
   text: string;
@@ -298,13 +299,12 @@ const SupportBot: React.FC = () => {
                     }
                   }}
                 >
-                  <div className="markdown-content">
-                    {message.isUser ? (
-                      <Typography variant="body1">{message.text}</Typography>
-                    ) : (
-                      <ReactMarkdown>{message.text}</ReactMarkdown>
-                    )}
-                  </div>
+                  <div 
+                    className="markdown-content"
+                    dangerouslySetInnerHTML={{ 
+                      __html: DOMPurify.sanitize(marked.parse(message.text)) 
+                    }} 
+                  />
                   <Typography 
                     variant="caption" 
                     sx={{ 

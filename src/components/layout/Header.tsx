@@ -150,7 +150,7 @@ export const Header = () => {
   return (
     <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
       <Toolbar variant="dense">
-        <img src="/public/conch-logo.png" alt="Conch Logo" width="30" height="30" />
+        <img src="/conch-logo.png" alt="Conch Logo" width="30" height="30" />
         <Typography variant="h6" component="div" sx={{ 
           marginLeft: '8px',
           fontWeight: 'bold', 

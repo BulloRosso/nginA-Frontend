@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import { Category } from '../../types/memory';
 import { useTranslation } from 'react-i18next';
+import { FilterButtonProps, MemoryTypeFilterProps } from '@/types/components';
 
 const FilterButton: React.FC<FilterButtonProps> = ({
   icon,
