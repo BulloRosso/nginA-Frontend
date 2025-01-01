@@ -1,0 +1,42 @@
+{
+  "supportbot": {
+    "title": "Nobby、あなたのnOblivionガイド",
+    "initial_message": "nOblivionに関する質問がある場合、プロフィールの完全性を評価してほしい場合、または問題を報告したい場合は、私がサポートいたします！",
+    "type_message": "ここにメッセージを入力してください...",
+    "error_message": "申し訳ありませんが、エラーが発生しました。もう一度お試しください。",
+    "buttons": {
+      "GETTING_STARTED": "開始する",
+      "INTERVIEW_PROCESS": "使い方",
+      "PRICING": "料金情報",
+      "TECHNICAL_ISSUES": "技術サポート",
+      "PRIVACY": "プライバシー",
+      "CONTACT": "サポートに連絡"
+    },
+    "topics": {
+      "GETTING_STARTED": "nOblivionの使い始め方を教えてもらえますか？",
+      "INTERVIEW_PROCESS": "インタビューのプロセスはどのように機能しますか？",
+      "PRICING": "利用可能な料金オプションとサブスクリプションは何ですか？",
+      "TECHNICAL_ISSUES": "技術的な問題があります。助けていただけますか？",
+      "PRIVACY": "プライバシーポリシーについて教えてもらえますか？",
+      "CONTACT": "個別サポートに連絡する方法を教えてください。"
+    },
+    "profile_rating": {
+      "completeness": "完全性",
+      "memories_stored": "保存された思い出：",
+      "memories_with_images": "画像付きの思い出：",
+      "min_memories_note": "本を印刷するには30の思い出が必要です"
+    },
+    "bug_report": {
+      "severity": "深刻度",
+      "feature_request": "機能のリクエスト",
+      "bug": "バグ",
+      "severe_bug": "重大なバグ",
+      "subject": "件名",
+      "message": "サポートへのメッセージ",
+      "submit": "バグ報告を送信",
+      "thank_you": "フィードバックをお寄せいただきありがとうございます。報告内容について近日中にご連絡いたします。"
+    }
+  }
+
+
+}

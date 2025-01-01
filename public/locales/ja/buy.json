@@ -1,0 +1,47 @@
+{
+  "buy": {
+    "checkout": "チェックアウト",
+    "feature": "機能",
+    "basic": "無料",
+    "premium": "プレミアム",
+    "category": {
+      "memories": "思い出",
+      "storage": "画像/写真",
+      "export": "PDF作成",
+      "support": "保存期間"
+    },
+    "basic_memories": "最大10",
+    "premium_memories": "最大500",
+    "basic_exports": "2",
+    "premium_exports": "無制限",
+    "basic_storage": "思い出ごとに1つ",
+    "premium_storage": "思い出ごとに10個",
+    "basic_retention": "3か月",
+    "premium_retention": "無制限",
+    "currency": "米ドル",
+    "title": "今すぐ思い出を保存し始めましょう！",
+    "one_time_payment": "一回払い",
+    "checkout_title": "チェックアウト",
+    "join_waitlist": "待機リストに参加",
+    "waitlist_title": "待機リスト",
+    "waitlist_subtitle": "思い出保存の革命に参加しませんか",
+    "why_join_title": "なぜ待機リストに参加するのか",
+    "why_join_description": "私たちは、人生の物語を記録・共有する方法を変革する画期的な思い出保存サービスを開発中です。革新的なプラットフォームをいち早く体験するために、待機リストにご参加ください。",
+    "feature_memory_title": "大切な思い出を保存",
+    "feature_memory_desc": "高度なAI技術で、人生の物語を詳細に記録",
+    "feature_security_title": "世代を超えた安全性",
+    "feature_security_desc": "銀行レベルの暗号化で、次世代のために思い出を安全に保存",
+    "feature_books_title": "美しい思い出の本",
+    "feature_books_desc": "デジタル思い出を洗練された物理的な本に変換",
+    "feature_digital_title": "デジタルタイムカプセル",
+    "feature_digital_desc": "家族や大切な人のために持続可能なデジタル遺産を作成",
+    "limited_spots": "利用可能な枠が限られています",
+    "early_access": "今すぐ待機リストに参加して早期アクセスを確保",
+    "email_label": "あなたのメールアドレス",
+    "notification_text": "準備が整い次第お知らせします",
+    "waitlist_success": "待機リストにご参加いただきありがとうございます！近日中にご連絡いたします。",
+    "waitlist_error": "待機リストへの参加に失敗しました。再度お試しください。"
+  }
+
+
+}

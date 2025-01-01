@@ -1,0 +1,54 @@
+{
+  "invitation": {
+    "title": "インタビューに招待",
+    "email_label": "メールアドレス",
+    "send": "招待を送信",
+    "create_error": "招待の作成に失敗しました",
+    "extend_title": "招待を延長",
+    "days_label": "延長日数",
+    "extend_error": "招待の延長に失敗しました",
+    "current_invitee": "現在の招待者",
+    "expires_on": "有効期限",
+    "new_expiry": "新しい有効期限",
+    "confirm_revoke": "この招待を取り消してもよろしいですか？",
+    "show_expired": "期限切れを表示",
+    "sent_success": "インタビューの招待が正常に送信されました",
+    "extend": "延長",
+    "revoke": "取り消す",
+    "loading_dashboard": "招待ダッシュボードを読み込み中...",
+    "refreshing": "招待を更新中...",
+    "load_error": "招待の読み込みに失敗しました",
+    "sending": "招待を送信中...",
+    "extending": "招待を延長中...",
+    "access_error": "アクセスエラー",
+    "table": {
+      "profile": "プロフィール",
+      "email": "メール",
+      "status": "ステータス",
+      "expires": "期限切れ",
+      "sessions": "セッション",
+      "actions": "アクション"
+    },
+    "fetch_error": "招待の取得に失敗しました",
+    "revoke_error": "招待の取り消しに失敗しました",
+    "load_error": "招待の読み込みエラー",
+    "status": {
+      "active": "アクティブ",
+      "expired": "期限切れ",
+      "revoked": "取り消し済み"
+    },
+    "stats": {
+      "total": "招待の合計",
+      "active": "アクティブな招待"
+    },
+    "validating": "招待を検証中...",
+    "invalid_token_message": "このインタビュー招待は無効か期限切れです。招待を送った人に新しい招待を依頼してください。",
+    "errors": {
+      "No token provided": "招待トークンが提供されていません",
+      "Invalid or expired token": "この招待は無効です",
+      "Failed to validate invitation token": "招待トークンの検証に失敗しました"
+    }
+  }
+
+
+}

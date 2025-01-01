@@ -1,0 +1,27 @@
+{
+  "interview": {
+    "loading_question": "Chargement de la question...",
+    "add_images": "Télécharger",
+    "use_camera": "Prendre une photo",
+    "drag_or_click": "Glissez ou cliquez pour sélectionner des images",
+    "share_memory": "Partagez votre souvenir...",
+    "transcribing": "Transcription en cours",
+    "upload_images": "Télécharger des images",
+    "capture": "Prendre une photo",
+    "close_camera": "Fermer la caméra",
+    "stop_recording": "Arrêter l'enregistrement",
+    "save_memory": "Enregistrer le souvenir",
+    "upload_photo": "Télécharger une photo",
+    "start_recording": "Parler",
+    "initial_question": "Parlez-moi d'un moment mémorable de votre vie...",
+    "tab_interview": "Notre entretien",
+    "tab_sessions": "Sessions récentes",
+    "tab_tips": "Conseils",
+    "previous_sessions": "Sessions d'entretien précédentes",
+    "no_previous_sessions": "Aucune session précédente trouvée.",
+    "tips_title": "Conseils pour de meilleurs souvenirs",
+    "tips_content": "Partagez des détails et des émotions spécifiques pour rendre vos souvenirs plus vivants."
+  }
+
+
+}

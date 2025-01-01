@@ -1,0 +1,29 @@
+{
+  "settings": {
+    "auth_error": "Erreur d'authentification. Veuillez réessayer de vous connecter.",
+    "login_required": "Vous devez être connecté pour enregistrer les paramètres.",
+    "title": "Paramètres",
+    "save_success": "Paramètres enregistrés avec succès",
+    "save_error": "Échec de l'enregistrement des paramètres",
+    "narrator_perspective": "Perspective du narrateur",
+    "narrator_verbosity": "Niveau de détails",
+    "narrator_style": "Style narratif",
+    "perspective": {
+      "ego": "Première personne",
+      "third_person": "Troisième personne"
+    },
+    "verbosity": {
+      "verbose": "Détaillé",
+      "normal": "Normal",
+      "brief": "Concis"
+    },
+    "style": {
+      "professional": "Professionnel",
+      "romantic": "Romantique",
+      "optimistic": "Optimiste",
+      "neutral": "Neutre"
+    }
+  }
+
+
+}

@@ -1,0 +1,27 @@
+{
+  "interview": {
+    "loading_question": "質問を読み込み中...",
+    "add_images": "画像をアップロード",
+    "use_camera": "写真を撮る",
+    "drag_or_click": "画像をドラッグまたはクリックして選択",
+    "share_memory": "思い出を共有してください...",
+    "transcribing": "書き起こし中",
+    "upload_images": "画像をアップロード",
+    "capture": "写真を撮る",
+    "close_camera": "カメラを閉じる",
+    "stop_recording": "録音を停止",
+    "save_memory": "思い出を保存",
+    "upload_photo": "写真をアップロード",
+    "start_recording": "話す",
+    "initial_question": "あなたの人生で忘れられない瞬間について話してください...",
+    "tab_interview": "私たちのインタビュー",
+    "tab_sessions": "最近のセッション",
+    "tab_tips": "ヒント",
+    "previous_sessions": "以前のインタビューセッション",
+    "no_previous_sessions": "以前のセッションは見つかりませんでした。",
+    "tips_title": "より良い思い出のためのヒント",
+    "tips_content": "特定の詳細や感情を共有して、思い出をより鮮明にしてください。"
+  }
+
+
+}

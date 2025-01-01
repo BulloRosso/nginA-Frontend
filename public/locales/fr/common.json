@@ -1,0 +1,90 @@
+{
+  "common": {
+    "error": "Erreur",
+    "watch_video": "Avant de commencer...",
+    "welcomenoblivion": "Bienvenue (de retour) sur nOblivion",
+    "forgotpassword": "Mot de passe oublié ?",
+    "remaining_time": "Temps restant",
+    "signin": "Se connecter",
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "back": "Retour",
+    "next": "Suivant",
+    "skip_video": "Passer la vidéo",
+    "validating_access": "Validation de l'accès...",
+    "access_denied": "Accès refusé",
+    "session_expired": "Votre session a expiré",
+    "loading_data": "Chargement des données...",
+    "saving": "Enregistrement...",
+    "try_again": "Réessayer",
+    "error_occurred": "Une erreur s'est produite",
+    "sessionwith": "Entretien avec",
+    "categories": {
+      "childhood": "Enfance",
+      "career": "Carrière",
+      "travel": "Voyages",
+      "relationships": "Relations",
+      "hobbies": "Loisirs",
+      "pets": "Animaux de compagnie"
+    },
+    "menu": {
+      "home": "Accueil",
+      "profiles": "Sélectionner un profil",
+      "logout": "Déconnexion",
+      "invitations": "Invitations"
+    },
+    "memoryfilter": {
+      "year_range": "Intervalle d'années",
+      "year_filter": "Filtrer par année"
+    },
+    "auth": {
+      "email_not_confirmed": "Veuillez confirmer votre adresse e-mail avant de vous connecter.",
+      "resend_confirmation_link": "Renvoyer le lien de confirmation",
+      "resend_confirmation_title": "Renvoyer l'e-mail de confirmation",
+      "resend_confirmation_message": "Nous vous enverrons un nouveau lien de confirmation à {{email}}.",
+      "resend_confirmation": "Renvoyer l'e-mail",
+      "resend_confirmation_success": "Un nouveau lien de confirmation a été envoyé à votre adresse e-mail. Veuillez vérifier votre boîte de réception.",
+      "invalid_credentials": "E-mail ou mot de passe invalide",
+      "confirmation_required": "Confirmation de l'e-mail requise",
+      "confirmation_sent": "Un e-mail de confirmation a été envoyé. Veuillez vérifier votre boîte de réception",
+      "create_account": "Créer un compte",
+      "enable_mfa": "Activer l'authentification à deux facteurs",
+      "or": "OU",
+      "sign_in_with": "Se connecter avec {{provider}}",
+      "already_have_account": "Vous avez déjà un compte ?",
+      "sign_in": "Se connecter",
+      "sign_up": "S'inscrire",
+      "new_account": "Vous n'avez pas encore de compte ?",
+      "reset_password": "Réinitialiser le mot de passe",
+      "password_reset_instructions_sent": "Si l'adresse e-mail existe dans notre système, vous recevrez bientôt les instructions pour réinitialiser votre mot de passe.",
+      "password_reset_error": "Impossible de traiter la demande de réinitialisation du mot de passe. Veuillez réessayer plus tard.",
+      "send_reset_instructions": "Envoyer les instructions de réinitialisation",
+      "back_to_login": "Retour à la connexion",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "new_password": "Nouveau mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "first_name": "Prénom",
+      "last_name": "Nom de famille",
+      "mfa": {
+        "tooltip": "L'authentification à deux facteurs ajoute une couche supplémentaire de sécurité à votre compte en nécessitant un code de votre application d'authentification lors de la connexion.",
+        "setup_title": "Configurer l'authentification à deux facteurs",
+        "setup_instructions": "Veuillez scanner le code QR avec votre application d'authentification.",
+        "scan_qr_prompt": "Scannez ce code QR avec votre application d'authentification (par ex. Google Authenticator, Microsoft Authenticator)",
+        "manual_entry": "Code d'entrée manuel",
+        "enter_code": "Entrez le code à 6 chiffres",
+        "verification_title": "Vérifier l'authentification à deux facteurs",
+        "enter_code_prompt": "Entrez le code de votre application d'authentification",
+        "verify": "Vérifier",
+        "invalid_code": "Code invalide (peut-être qu'il a déjà expiré)",
+        "setup_error_title": "Erreur de configuration de l'authentification à deux facteurs",
+        "setup_error_message": "Erreur lors de la configuration de l'authentification à deux facteurs. Veuillez réessayer.",
+        "verification_error": "Code de vérification invalide. Veuillez réessayer.",
+        "success": "L'authentification à deux facteurs a été activée avec succès."
+      }
+    }
+  }
+
+
+}

@@ -1,0 +1,69 @@
+{
+  "profile": {
+    "change_photo": "Changer la photo",
+    "upload_photo": "Télécharger une photo",
+    "print_profile": "Imprimer les souvenirs",
+    "chat": "Discussion",
+    "buy": "Achetez maintenant",
+    "currency": "USD",
+    "delete_success": "Profil supprimé avec succès",
+    "delete_error": "Erreur lors de la suppression du profil. Veuillez réessayer plus tard.",
+    "age": "Âge",
+    "total_sessions": "Nombre total de sessions",
+    "last_session": "Dernière session",
+    "create_book": "Créer un livre au format PDF",
+    "remove_profile": "Supprimer le profil",
+    "confirm_delete": "Confirmer la suppression",
+    "delete_warning": "Êtes-vous sûr de vouloir supprimer ce profil ? Cette action est irréversible.",
+    "select_profile": "Créer ou sélectionner un profil pour l'entretien",
+    "create_new": "Créer un nouveau profil",
+    "invite_interview": "Inviter à un entretien",
+    "or_continue": "ou continuer avec un profil existant",
+    "sessions": "Sessions",
+    "no_profiles": "Aucun profil trouvé. Créez-en un pour commencer.",
+    "step3_description": "Les paramètres suivants sont pour la reformulation automatique de vos souvenirs : par exemple, 'J'ai acheté un nouveau bateau' contre 'Ralph a acheté un nouveau bateau'. Notre IA vérifie votre grammaire et applique un style cohérent.",
+    "title": "Décrivez la personne à interviewer",
+    "helpcaption": "Notre première étape",
+    "help": "Avant de commencer le processus d'entretien, nous devons en savoir plus sur vous et votre parcours. Ces informations nous aident à créer une expérience plus personnalisée et significative adaptée spécifiquement à votre parcours.",
+    "help2": "Si vous êtes la personne à interviewer, veuillez fournir des informations sur VOTRE vie - sinon décrivez simplement la personne pour qui vous souhaitez offrir un entretien nOblivion.",
+    "help3": "Vous pouvez gérer plus d'une personne (appelée profil) avec votre nOblivion.",
+    "steps": {
+      "basic_info": "Informations de base",
+      "characterization": "Caractérisation",
+      "memory_style":"Style de mémoire"
+    },
+    "fields": {
+      "first_name": "Prénom",
+      "last_name": "Nom de famille",
+      "dob": "Date de naissance",
+      "pob": "Lieu de naissance",
+      "gender": "Genre",
+      "add_child": "Ajouter un enfant",
+      "add_language": "Ajouter une langue"
+    },
+    "gender": {
+      "male": "Homme",
+      "female": "Femme",
+      "other": "Autre"
+    },
+    "backstory": {
+      "label": "Caractérisation",
+      "description": "Veuillez fournir une description détaillée de la personne en au moins trois phrases. Incluez les événements marquants de sa vie, ses traits de personnalité et ses caractéristiques mémorables.",
+      "placeholder": "Décrivez la vie, la personnalité et les expériences notables de la personne..."
+    },
+    "errors": {
+      "required_first_name": "Le prénom est obligatoire",
+      "required_last_name": "Le nom de famille est obligatoire",
+      "required_dob": "La date de naissance est obligatoire",
+      "required_pob": "Le lieu de naissance est obligatoire",
+      "required_gender": "Le genre est obligatoire",
+      "required_image": "L'image de profil est obligatoire",
+      "required_backstory": "Veuillez fournir au moins trois phrases pour la caractérisation",
+      "invalid_image": "Veuillez télécharger un fichier image valide",
+      "save_failed": "Échec de l'enregistrement du profil"
+    },
+    "continue_to_interview": "Continuer vers l'entretien"
+  }
+
+
+}

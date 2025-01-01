@@ -1,0 +1,17 @@
+{
+  "print": {
+    "settings": "Créer un fichier PDF à partir des souvenirs",
+    "template": "Sélectionner un modèle",
+    "professional": "Professionnel",
+    "warm": "Chaleureux",
+    "romantic": "Romantique",
+    "sort_order": "Ordre de tri",
+    "back_to_profiles": "Retour à la sélection des profils",
+    "by_category": "Par catégorie",
+    "by_timestamp": "Par date",
+    "generate": "Générer le PDF",
+    "request_received": "Votre demande d'impression a été reçue. Vous recevrez bientôt un e-mail avec le lien de téléchargement."
+  }
+
+
+}

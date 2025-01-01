@@ -1,0 +1,29 @@
+{
+  "memory": {
+    "drop_here": "ここにファイルをドロップしてください...",
+    "drag_drop": "ここに画像をドラッグ＆ドロップするか、クリックしてファイルを選択",
+    "selected_memory": "この思い出に詳細を追加",
+    "loading_timeline": "タイムラインを準備中...",
+    "selection_hint": "ヒント：タイムラインで思い出を選択して、さらに詳細を追加できます。丸いアイコンをクリックしてください。",
+    "edit_dialog": {
+      "title": "思い出を編集",
+      "category": "カテゴリ",
+      "description": "説明",
+      "date": "日付",
+      "caption": "キャプション",
+      "location": {
+        "title": "場所の詳細",
+        "name": "場所の名前",
+        "city": "都市",
+        "country": "国",
+        "description": "場所の説明"
+      },
+      "buttons": {
+        "save": "保存",
+        "cancel": "キャンセル"
+      }
+    }
+  }
+
+
+}

@@ -1,6 +1,6 @@
 // src/components/LandingPage.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button, Container, Typography, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -11,6 +11,10 @@ export default function LandingPage() {
   const handleGetStarted = () => {
     navigate('/introduction');
   };
+
+  const handleGotoBusiness = () => {
+    navigate('/business');
+  }
 
   return (
     <Box>
@@ -202,7 +206,7 @@ export default function LandingPage() {
             {t('landing.cta.button')}
           </Button>
           <Typography variant="h5" mt={4}>
-            <a href="/business" style={{ textDecoration: 'underline' }}>{t('landing.business_edition_hint')}</a>
+            <Link to="/business" style={{ textDecoration: 'underline' }}>{t('landing.business_edition_hint')}</Link>
           </Typography>
         </Container>
       </Box>

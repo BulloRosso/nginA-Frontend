@@ -1,0 +1,90 @@
+{
+  "common": {
+    "error": "エラー",
+    "watch_video": "始める前に...",
+    "welcomenoblivion": "nOblivionへようこそ（お帰りなさい）",
+    "forgotpassword": "パスワードを忘れましたか？",
+    "remaining_time": "残り時間",
+    "signin": "サインイン",
+    "loading": "読み込み中...",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "back": "戻る",
+    "next": "次へ",
+    "skip_video": "ビデオをスキップ",
+    "validating_access": "アクセスを検証中...",
+    "access_denied": "アクセス拒否",
+    "session_expired": "セッションが期限切れです",
+    "loading_data": "データを読み込み中...",
+    "saving": "保存中...",
+    "try_again": "再試行",
+    "error_occurred": "エラーが発生しました",
+    "sessionwith": "インタビュー相手",
+    "categories": {
+      "childhood": "幼少期",
+      "career": "キャリア",
+      "travel": "旅行",
+      "relationships": "人間関係",
+      "hobbies": "趣味",
+      "pets": "ペット"
+    },
+    "menu": {
+      "home": "ホーム",
+      "profiles": "プロフィールを選択",
+      "logout": "ログアウト",
+      "invitations": "招待"
+    },
+    "memoryfilter": {
+      "year_range": "年範囲",
+      "year_filter": "年でフィルター"
+    },
+    "auth": {
+      "email_not_confirmed": "ログインする前にメールアドレスを確認してください。",
+      "resend_confirmation_link": "確認リンクを再送",
+      "resend_confirmation_title": "確認メールを再送",
+      "resend_confirmation_message": "新しい確認リンクを{{email}}に送信します。",
+      "resend_confirmation": "メールを再送",
+      "resend_confirmation_success": "新しい確認リンクがメールアドレスに送信されました。受信トレイを確認してください。",
+      "invalid_credentials": "無効なメールアドレスまたはパスワード",
+      "confirmation_required": "メール確認が必要です",
+      "confirmation_sent": "確認メールが送信されました。受信トレイを確認してください。",
+      "create_account": "アカウントを作成",
+      "enable_mfa": "多要素認証を有効にする",
+      "or": "または",
+      "sign_in_with": "{{provider}}でサインイン",
+      "already_have_account": "すでにアカウントをお持ちですか？",
+      "sign_in": "サインイン",
+      "sign_up": "登録",
+      "new_account": "まだアカウントをお持ちでない場合",
+      "reset_password": "パスワードをリセット",
+      "password_reset_instructions_sent": "メールアドレスがシステムに存在する場合、まもなくパスワードリセットの手順が送信されます。",
+      "password_reset_error": "パスワードリセットリクエストを処理できませんでした。後でもう一度試してください。",
+      "send_reset_instructions": "リセット手順を送信",
+      "back_to_login": "ログインに戻る",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "new_password": "新しいパスワード",
+      "confirm_password": "パスワードを確認",
+      "first_name": "名",
+      "last_name": "姓",
+      "mfa": {
+        "tooltip": "多要素認証は、ログイン時に認証アプリからのコードを必要とすることで、アカウントのセキュリティを強化します。",
+        "setup_title": "多要素認証を設定",
+        "setup_instructions": "認証アプリでQRコードをスキャンしてください。",
+        "scan_qr_prompt": "このQRコードをGoogle AuthenticatorやMicrosoft Authenticatorなどの認証アプリでスキャンしてください。",
+        "manual_entry": "手動入力コード",
+        "enter_code": "6桁のコードを入力",
+        "verification_title": "多要素認証を確認",
+        "enter_code_prompt": "認証アプリからコードを入力してください。",
+        "verify": "確認",
+        "invalid_code": "無効なコード（既に期限切れかもしれません）",
+        "setup_error_title": "多要素認証設定エラー",
+        "setup_error_message": "多要素認証の設定中にエラーが発生しました。再試行してください。",
+        "verification_error": "無効な検証コード。もう一度試してください。",
+        "success": "多要素認証が正常に有効化されました。"
+      }
+    }
+  }
+
+
+}

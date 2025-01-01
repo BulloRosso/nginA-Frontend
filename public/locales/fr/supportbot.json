@@ -1,0 +1,42 @@
+{
+  "supportbot": {
+    "title": "Nobby, votre guide nOblivion",
+    "initial_message": "Si vous avez des questions sur nOblivion, que je dois évaluer la complétude de votre profil ou que vous souhaitez signaler un problème - je suis votre bot !",
+    "type_message": "Entrez votre message ici...",
+    "error_message": "Désolé, une erreur s'est produite. Veuillez réessayer.",
+    "buttons": {
+      "GETTING_STARTED": "Commencer",
+      "INTERVIEW_PROCESS": "Comment ça marche",
+      "PRICING": "Tarification",
+      "TECHNICAL_ISSUES": "Support technique",
+      "PRIVACY": "Confidentialité",
+      "CONTACT": "Contacter le support"
+    },
+    "topics": {
+      "GETTING_STARTED": "Pouvez-vous expliquer comment commencer avec nOblivion ?",
+      "INTERVIEW_PROCESS": "Comment fonctionne le processus d'entretien ?",
+      "PRICING": "Quelles sont les options de tarification et d'abonnement disponibles ?",
+      "TECHNICAL_ISSUES": "J'ai des problèmes techniques. Pouvez-vous aider ?",
+      "PRIVACY": "Pouvez-vous expliquer vos politiques de confidentialité ?",
+      "CONTACT": "Comment puis-je contacter le support personnel ?"
+    },
+    "profile_rating": {
+      "completeness": "Complétude",
+      "memories_stored": "Souvenirs enregistrés :",
+      "memories_with_images": "Souvenirs avec images :",
+      "min_memories_note": "30 souvenirs requis pour l'impression d'un livre"
+    },
+    "bug_report": {
+      "severity": "Gravité",
+      "feature_request": "Demande de fonctionnalité",
+      "bug": "Bug",
+      "severe_bug": "Bug grave",
+      "subject": "Sujet",
+      "message": "Message au support",
+      "submit": "Soumettre un rapport de bug",
+      "thank_you": "Merci d'avoir pris le temps de nous donner votre avis. Nous reviendrons vers vous sous peu à propos de votre rapport."
+    }
+  }
+
+
+}

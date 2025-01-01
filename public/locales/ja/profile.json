@@ -1,0 +1,69 @@
+{
+  "profile": {
+    "change_photo": "写真を変更する",
+    "upload_photo": "写真をアップロードする",
+    "print_profile": "思い出を印刷する",
+    "chat": "チャット",
+    "buy": "今すぐ購入",
+    "currency": "米ドル",
+    "delete_success": "プロフィールが正常に削除されました",
+    "delete_error": "プロフィールの削除中にエラーが発生しました。後でもう一度お試しください。",
+    "age": "年齢",
+    "total_sessions": "合計セッション数",
+    "last_session": "最後のセッション",
+    "create_book": "PDF形式で本を作成",
+    "remove_profile": "プロフィールを削除",
+    "confirm_delete": "削除を確認",
+    "delete_warning": "このプロフィールを削除してもよろしいですか？この操作は元に戻せません。",
+    "select_profile": "インタビュー用のプロフィールを作成または選択してください",
+    "create_new": "新しいプロフィールを作成",
+    "invite_interview": "インタビューに招待",
+    "or_continue": "または既存のプロフィールで続行",
+    "sessions": "セッション",
+    "no_profiles": "プロフィールが見つかりませんでした。開始するには新しいプロフィールを作成してください。",
+    "step3_description": "以下の設定は、思い出の自動再構成用です。例：「私は新しいボートを買いました」対「ラルフが新しいボートを買いました」。AIが文法を確認し、一貫したスタイルを適用します。",
+    "title": "インタビュー対象者を説明してください",
+    "helpcaption": "最初のステップ",
+    "help": "インタビューのプロセスを開始する前に、あなたのことや背景について詳しく知る必要があります。この情報により、あなたの体験に特化した、より個別化された意味のある体験を作成することができます。",
+    "help2": "インタビュー対象がご自身の場合は、あなたの人生に関する情報をご提供ください。それ以外の場合は、nOblivionインタビューを贈りたい方について記述してください。",
+    "help3": "nOblivionでは、複数の人（プロフィールと呼ばれます）を管理することができます。",
+    "steps": {
+      "basic_info": "基本情報",
+      "characterization": "特性",
+      "memory_style":"記憶のスタイル"
+    },
+    "fields": {
+      "first_name": "名",
+      "last_name": "姓",
+      "dob": "生年月日",
+      "pob": "出生地",
+      "gender": "性別",
+      "add_child": "子どもを追加",
+      "add_language": "言語を追加"
+    },
+    "gender": {
+      "male": "男性",
+      "female": "女性",
+      "other": "その他"
+    },
+    "backstory": {
+      "label": "特性",
+      "description": "対象者について、少なくとも3文で詳細に記述してください。重要な人生の出来事、性格の特長、記憶に残る特徴を含めてください。",
+      "placeholder": "対象者の人生、性格、特筆すべき経験を説明してください..."
+    },
+    "errors": {
+      "required_first_name": "名は必須です",
+      "required_last_name": "姓は必須です",
+      "required_dob": "生年月日は必須です",
+      "required_pob": "出生地は必須です",
+      "required_gender": "性別は必須です",
+      "required_image": "プロフィール画像は必須です",
+      "required_backstory": "特性の説明に少なくとも3文を提供してください",
+      "invalid_image": "有効な画像ファイルをアップロードしてください",
+      "save_failed": "プロフィールの保存に失敗しました"
+    },
+    "continue_to_interview": "インタビューを続ける"
+  }
+
+
+}

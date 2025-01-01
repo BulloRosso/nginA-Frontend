@@ -1,0 +1,17 @@
+{
+  "print": {
+    "settings": "思い出からPDFファイルを作成",
+    "template": "テンプレートを選択",
+    "professional": "プロフェッショナル",
+    "warm": "温かみ",
+    "romantic": "ロマンチック",
+    "sort_order": "並べ替え順序",
+    "back_to_profiles": "プロフィール選択に戻る",
+    "by_category": "カテゴリ別",
+    "by_timestamp": "日付順",
+    "generate": "PDFを生成",
+    "request_received": "印刷リクエストを受け付けました。ダウンロードリンクを含むメールを近日中にお送りします。"
+  }
+
+
+}

@@ -1,0 +1,29 @@
+{
+  "memory": {
+    "drop_here": "Déposez les fichiers ici...",
+    "drag_drop": "Glissez et déposez des images ici, ou cliquez pour sélectionner des fichiers",
+    "selected_memory": "Ajouter des détails à ce souvenir",
+    "loading_timeline": "Préparation de la chronologie...",
+    "selection_hint": "Astuce : Vous pouvez sélectionner un souvenir dans la chronologie pour y ajouter des détails. Cliquez simplement sur l'icône ronde.",
+    "edit_dialog": {
+      "title": "Modifier le souvenir",
+      "category": "Catégorie",
+      "description": "Description",
+      "date": "Date",
+      "caption": "Légende",
+      "location": {
+        "title": "Détails du lieu",
+        "name": "Nom du lieu",
+        "city": "Ville",
+        "country": "Pays",
+        "description": "Description du lieu"
+      },
+      "buttons": {
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+      }
+    }
+  }
+
+
+}

@@ -27,7 +27,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function LandingPageBusiness() {
   const navigate = useNavigate();
-  const { t } = useTranslation(['landing', 'common']);
+  const { t } = useTranslation(['landing', 'buy', 'common']);
 
   const handleGetStarted = () => {
     navigate('/introduction');
@@ -278,7 +278,7 @@ export default function LandingPageBusiness() {
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                  <TableCell>{t('buy.feature')}</TableCell>
+                  <TableCell>{t('buy.feature', { ns: 'buy'})}</TableCell>
                   <TableCell>{t('landing.feature_comparison.title_personal')}</TableCell>
                   <TableCell sx={{ bgcolor: 'gold', color: '#000' }}>
                     {t('landing.feature_comparison.title_business')}

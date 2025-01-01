@@ -1,0 +1,54 @@
+{
+  "invitation": {
+    "title": "Inviter à un entretien",
+    "email_label": "Adresse e-mail",
+    "send": "Envoyer l'invitation",
+    "create_error": "Échec de la création de l'invitation",
+    "extend_title": "Prolonger l'invitation",
+    "days_label": "Jours de prolongation",
+    "extend_error": "Échec de la prolongation de l'invitation",
+    "current_invitee": "Invité actuel",
+    "expires_on": "Expiration",
+    "new_expiry": "Nouvelle date d'expiration",
+    "confirm_revoke": "Êtes-vous sûr de vouloir révoquer cette invitation ?",
+    "show_expired": "Afficher les expirées",
+    "sent_success": "Invitation à l'entretien envoyée avec succès",
+    "extend": "Prolonger",
+    "revoke": "Révoquer",
+    "loading_dashboard": "Chargement du tableau de bord des invitations...",
+    "refreshing": "Actualisation des invitations...",
+    "load_error": "Échec du chargement des invitations",
+    "sending": "Envoi de l'invitation...",
+    "extending": "Prolongation de l'invitation...",
+    "access_error": "Erreur d'accès",
+    "table": {
+      "profile": "Profil",
+      "email": "E-mail",
+      "status": "Statut",
+      "expires": "Expire",
+      "sessions": "Sessions",
+      "actions": "Actions"
+    },
+    "fetch_error": "Échec de la récupération des invitations",
+    "revoke_error": "Échec de la révocation de l'invitation",
+    "load_error": "Erreur de chargement des invitations",
+    "status": {
+      "active": "Actif",
+      "expired": "Expiré",
+      "revoked": "Révoqué"
+    },
+    "stats": {
+      "total": "Total des invitations",
+      "active": "Invitations actives"
+    },
+    "validating": "Validation de l'invitation...",
+    "invalid_token_message": "Cette invitation est soit invalide, soit expirée. Veuillez contacter la personne qui vous a invité pour une nouvelle invitation.",
+    "errors": {
+      "No token provided": "Aucun jeton d'invitation fourni",
+      "Invalid or expired token": "Cette invitation n'est plus valide",
+      "Failed to validate invitation token": "Échec de la validation du jeton d'invitation"
+    }
+  }
+
+
+}

@@ -1,0 +1,83 @@
+{
+  "landing": {
+    "title": "nOblivion",
+    "subtitle": "Des souvenirs précieux préservés",
+    "subtitle_business": "Ne perdez plus jamais un expert !",
+    "description": "Préservez les histoires de vie de votre famille grâce à des conversations significatives avec notre interviewer IA.",
+    "decription_business": "La perte des experts devient moins douloureuse si vous conservez les connaissances de vos experts avec nOblivion.",
+    "ds": "Partagez des souvenirs, ajoutez des photos et créez un héritage durable pour les générations à venir.",
+    "business_edition_hint": "...également disponible en version professionnelle !",
+    "try_now": "Essayez maintenant",
+    "how_it_works": "Comment ça marche",
+    "ds_business": "Vos experts sont disponibles sous forme de chatbots IA 24/7 pour vos employés. Vos experts IT peuvent accéder aux connaissances via des points de terminaison API.",
+    "backstory": {
+      "quote": "En marchant le long du rivage, nous tombons souvent sur des coquillages vides - des échos silencieux du passé.",
+      "paragraph1": "Leurs histoires restent un mystère, perdues dans le temps, mais elles éveillent notre imagination. Ces coquillages, autrefois colorés et vivants dans un monde sous-marin, sont maintenant des rappels fragiles de quelque chose de plus grand. Ils nous enseignent une vérité essentielle : préserver les histoires du passé nous donne la sagesse de vivre pleinement dans le présent.",
+      "paragraph2": "Honorons ces récits, car en comprenant d'où nous venons, nous façonnons un présent plus brillant et plus significatif."
+    },
+    "description_business": "La problématique des 'experts partants' perd de son impact lorsque vous conservez les connaissances de vos collaborateurs avec nOblivion.",
+    "backstory_business": {
+      "quote": "Les connaissances de vos employés forment le caractère de votre entreprise",
+      "paragraph1": "Les employés d'une entreprise façonnent son caractère et son identité grâce à leurs compétences, expériences et valeurs. Ils incarnent les connaissances et la culture qui rendent l'entreprise unique et assurent son succès. Ces connaissances, explicites ou implicites, constituent une ressource précieuse transmise à travers la collaboration, l'innovation et la tradition.",
+      "paragraph2": "Il est donc essentiel de préserver les connaissances des employés pour garantir la continuité, l'adaptabilité et la compétitivité, en particulier en période de changement ou lors de l'introduction de nouvelles technologies."
+    },
+    "features": {
+      "create_profile": {
+        "title": "Créer un profil",
+        "description": "Commencez par créer un profil avec des informations de base sur vous-même ou un être cher."
+      },
+      "share_memories": {
+        "title": "Partager des souvenirs",
+        "description": "Participez à des conversations naturelles avec notre interviewer IA pour capturer les histoires de votre vie."
+      },
+      "preserve_legacy": {
+        "title": "Préservez un héritage",
+        "description": "Ajoutez des photos, organisez des souvenirs et créez une belle chronologie des événements de la vie, qui peut être imprimée sous forme de livre à partir du fichier PDF que nous créons pour vous !"
+      }
+    },
+    "features_business": {
+      "create_profile": {
+        "title": "Créer un profil",
+        "description": "Créez un profil avec des informations de base sur votre expert."
+      },
+      "share_memories": {
+        "title": "Interviews d'experts",
+        "description": "Sessions de 30 minutes avec notre interviewer IA pour préserver les connaissances internes."
+      },
+      "preserve_legacy": {
+        "title": "Expert virtuel",
+        "description": "La richesse de l'expérience de votre expert peut être accessible par vos employés à tout moment sous la forme d'un chatbot IA."
+      }
+    },
+    "cta": {
+      "title": "Offrez-vous ou à un être cher et commencez à préserver vos souvenirs dès aujourd'hui",
+      "button": "Essayez maintenant"
+    },
+    "cta_business": {
+      "title": "Découvrez à quel point c'est facile en utilisant notre édition personnelle",
+      "button": "Essayez maintenant"
+    },
+    "feature_comparison_title": "Voici les points forts",
+    "feature_comparison": {
+      "title_personal": "nOblivion Édition personnelle",
+      "title_business": "nOblivion Édition professionnelle",
+      "API": "Accès via API",
+      "basic_API": "non",
+      "premium_API": "oui",
+      "agents": "Agents",
+      "basic_agents": "non",
+      "premium_agents": "Chaque nuit, les agents IA affinent le graphe de connaissances.",
+      "knowledge": "Base de connaissances",
+      "basic_knowledge": "Texte intégral / Vecteur / Graphe",
+      "premium_knowledge": "Texte intégral / Vecteur / Graphe",
+      "bot": "Chatbot IA",
+      "basic_bot": "Basique (requêtes limitées)",
+      "premium_bot": "Avancé",
+      "categories": "Catégories de souvenirs",
+      "basic_categories": "6 catégories fixes",
+      "premium_categories": "12 catégories personnalisées (par profil)"
+    }
+  }
+
+
+}

@@ -1,0 +1,47 @@
+{
+  "buy": {
+    "checkout": "Passer à la caisse",
+    "feature": "Fonctionnalité",
+    "basic": "Gratuit",
+    "premium": "Premium",
+    "category": {
+      "memories": "Souvenirs",
+      "storage": "Images/Photos",
+      "export": "Création de PDF",
+      "support": "Rétention"
+    },
+    "basic_memories": "jusqu'à 10",
+    "premium_memories": "jusqu'à 500",
+    "basic_exports": "2",
+    "premium_exports": "illimité",
+    "basic_storage": "1 par souvenir",
+    "premium_storage": "10 par souvenir",
+    "basic_retention": "3 mois",
+    "premium_retention": "illimité",
+    "currency": "USD",
+    "title": "Commencez à sauvegarder vos souvenirs maintenant !",
+    "one_time_payment": "Paiement unique",
+    "checkout_title": "Paiement",
+    "join_waitlist": "Rejoindre la liste d'attente",
+    "waitlist_title": "Liste d'attente",
+    "waitlist_subtitle": "Faites partie de notre révolution pour la préservation des souvenirs",
+    "why_join_title": "Pourquoi rejoindre notre liste d'attente ?",
+    "why_join_description": "Nous développons un service révolutionnaire de préservation des souvenirs qui changera la façon dont nous capturons et partageons les histoires de vie. Rejoignez notre liste d'attente pour être parmi les premiers à découvrir cette plateforme innovante lors de son lancement.",
+    "feature_memory_title": "Préservez vos souvenirs précieux",
+    "feature_memory_desc": "Une technologie avancée d'IA pour capturer et préserver les histoires de votre vie avec des détails époustouflants",
+    "feature_security_title": "Sécurisé pour les générations",
+    "feature_security_desc": "Un chiffrement de niveau bancaire garantit la sécurité de vos souvenirs pour les générations futures",
+    "feature_books_title": "Magnifiques livres de souvenirs",
+    "feature_books_desc": "Transformez vos souvenirs numériques en livres physiques élégamment conçus",
+    "feature_digital_title": "Capsule temporelle numérique",
+    "feature_digital_desc": "Créez un héritage numérique durable pour votre famille et vos proches",
+    "limited_spots": "Places limitées disponibles",
+    "early_access": "Rejoignez la liste d'attente aujourd'hui pour garantir votre accès anticipé",
+    "email_label": "Votre adresse e-mail",
+    "notification_text": "Nous vous informerons dès que nous serons prêts à lancer",
+    "waitlist_success": "Merci d'avoir rejoint notre liste d'attente ! Nous vous contacterons bientôt.",
+    "waitlist_error": "Échec de l'inscription à la liste d'attente. Veuillez réessayer."
+  }
+
+
+}

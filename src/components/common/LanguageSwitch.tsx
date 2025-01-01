@@ -8,6 +8,8 @@ const languages = {
   en: 'English',
   de: 'Deutsch',
   hy: 'Հայերեն',
+  fr: 'Français',
+  ja: '日本語',
 };
 
 export const LanguageSwitch = () => {

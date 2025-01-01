@@ -1,0 +1,29 @@
+{
+  "settings": {
+    "auth_error": "認証エラーが発生しました。再度ログインしてください。",
+    "login_required": "設定を保存するにはログインが必要です。",
+    "title": "設定",
+    "save_success": "設定が正常に保存されました",
+    "save_error": "設定の保存に失敗しました",
+    "narrator_perspective": "語り手の視点",
+    "narrator_verbosity": "詳細度",
+    "narrator_style": "語りのスタイル",
+    "perspective": {
+      "ego": "一人称",
+      "third_person": "三人称"
+    },
+    "verbosity": {
+      "verbose": "詳細",
+      "normal": "標準",
+      "brief": "簡潔"
+    },
+    "style": {
+      "professional": "プロフェッショナル",
+      "romantic": "ロマンチック",
+      "optimistic": "楽観的",
+      "neutral": "中立"
+    }
+  }
+
+
+}

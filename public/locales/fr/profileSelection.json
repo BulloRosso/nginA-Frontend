@@ -1,0 +1,11 @@
+{
+  "profileSelection": {
+    "title": "Veuillez sélectionner un profil",
+    "createNew": "Créer un nouveau profil",
+    "or": "ou continuer avec un profil existant",
+    "noProfiles": "Aucun profil n'existe encore. Créez un profil pour commencer.",
+    "age": "Âge",
+    "lastInterview": "Dernier entretien"
+  }
+
+}
