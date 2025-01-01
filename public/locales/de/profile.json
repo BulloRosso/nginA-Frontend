@@ -1,6 +1,7 @@
 { "profile":
 {
   "chat": "Chat",
+  "interview": "Interview",
   "print_profile": "Erinnerungen drucken",
   "invite_interview": "Zum Interview einladen",
   "currency": "€",

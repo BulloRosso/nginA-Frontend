@@ -67,7 +67,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(['profile','common']);
+  const { t, i18n } = useTranslation(['profile', 'interview', 'common']);
 
   // Map i18n languages to date-fns locales
   const locales = {
@@ -363,7 +363,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                       onClick={(e) => handleInterviewClick(e, profile.id)}
                       sx={{ mr: 1 }}
                     >
-                      Interview
+                      {t('interview.interview', { ns: 'interview'})}
                     </Button>
                     <IconButton
                       onClick={(e) => handleMenuClick(e, profile.id)}

@@ -1,4 +1,5 @@
 { "interview": {
+  "interview": "Interview",
   "loading_question": "Loading question...",
   "add_images": "Upload",
   "use_camera": "Snapshot",
