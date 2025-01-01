@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { BugReport, TopicButton } from './answer-modules/AnswerModules';
 import { ProfileRating } from './answer-modules/ProfileRating';
 import { SupportBotService } from '../services/supportbot';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   text: string;
@@ -31,9 +32,56 @@ const SupportBot: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Custom styles for Markdown elements
+  const markdownStyles = {
+    p: { margin: '0.5em 0' },
+    'h1, h2, h3, h4, h5, h6': { margin: '0.5em 0' },
+    a: { color: '#1eb3b7', textDecoration: 'underline' },
+    ul: { 
+      marginLeft: '1.5em',
+      listStyleType: 'disc',
+      '& ul': {
+        listStyleType: 'circle',
+        '& ul': {
+          listStyleType: 'square'
+        }
+      }
+    },
+    ol: { 
+      marginLeft: '1.5em',
+      marginTop: '1em',
+      marginBottom: '1em',
+      listStyleType: 'decimal',
+      '& ol': {
+        listStyleType: 'lower-alpha',
+        '& ol': {
+          listStyleType: 'lower-roman'
+        }
+      }
+    },
+    'li': {
+      display: 'list-item',
+      margin: '0.2em 0',
+      marginTop: '1em',
+      marginBottom: '1em',
+    },
+    code: {
+      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      padding: '0.2em 0.4em',
+      borderRadius: '3px',
+      fontSize: '85%'
+    },
+    pre: {
+      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+      padding: '1em',
+      borderRadius: '4px',
+      overflow: 'auto'
+    }
+  };
+  
   useEffect(() => {
     const initialMessage = t('supportbot.initial_message');
-    const messageWithButtons = initialMessage + ' <TopicButton cmd="GETTING_STARTED" /> <TopicButton cmd="INTERVIEW_PROCESS" />';
+    const messageWithButtons = initialMessage + ' <TopicButton cmd="GETTING_STARTED" /> <TopicButton cmd="TECHNICAL_ISSUES" />';
     console.log('Message before parsing:', messageWithButtons);
 
     const [cleanText, modules] = parseModules(messageWithButtons);
@@ -243,9 +291,20 @@ const SupportBot: React.FC = () => {
                     maxWidth: '70%',
                     backgroundColor: message.isUser ? '#1eb3b7' : '#fff',
                     color: message.isUser ? '#fff' : 'inherit',
+                    '& .markdown-content': {
+                      ...markdownStyles,
+                      '& *:first-child': { marginTop: 0 },
+                      '& *:last-child': { marginBottom: 0 }
+                    }
                   }}
                 >
-                  <Typography variant="body1">{message.text}</Typography>
+                  <div className="markdown-content">
+                    {message.isUser ? (
+                      <Typography variant="body1">{message.text}</Typography>
+                    ) : (
+                      <ReactMarkdown>{message.text}</ReactMarkdown>
+                    )}
+                  </div>
                   <Typography 
                     variant="caption" 
                     sx={{ 
