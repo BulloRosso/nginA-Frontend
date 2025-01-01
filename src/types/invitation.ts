@@ -34,4 +34,5 @@ export interface InvitationStats {
 export interface CreateInvitationDto {
   profile_id: UUID;
   email: string;
+  language: string;
 }

@@ -29,38 +29,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    // If the error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
+    if (error.response?.status === 401) {
+      const refreshToken = localStorage.getItem('refresh_token');
       try {
-        // The refresh token is automatically included in the request via cookie
-        const response = await api.post('/api/v1/auth/refresh');
-
-        // Store new access token
-        const newAccessToken = response.data.access_token;
-        localStorage.setItem('token', newAccessToken);
-
-        // Update the failed request with new token and retry
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return api(originalRequest);
+        const response = await api.post('/api/v1/auth/refresh', {
+          refresh_token: refreshToken
+        });
+        localStorage.setItem('token', response.data.access_token);
+        error.config.headers.Authorization = `Bearer ${response.data.access_token}`;
+        return api(error.config);
       } catch (refreshError) {
-        // If refresh fails, clear everything and redirect to login
-        console.error('Token refresh failed:', refreshError);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-
-        // Optional: Emit an event that auth context can listen to
-        window.dispatchEvent(new Event('auth-error'));
-
-        // Redirect to login
+        localStorage.clear();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );

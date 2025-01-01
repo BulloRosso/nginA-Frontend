@@ -4,8 +4,13 @@ import { Invitation, InvitationStats, CreateInvitationDto } from '../types/invit
 import { UUID } from '../types/common';
 
 export const InvitationService = {
+  
   createInvitation: async (data: CreateInvitationDto): Promise<Invitation> => {
-    const response = await api.post('/api/v1/invitations', data);
+    const response = await api.post('/api/v1/invitations', { 
+        data,
+      ...data,
+      language: data.language || window.localStorage.getItem('language') || 'en'
+    });
     return response.data;
   },
 

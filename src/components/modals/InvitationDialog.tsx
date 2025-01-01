@@ -27,7 +27,7 @@ const InvitationDialog: React.FC<InvitationDialogProps> = ({
   profile,
   onSuccess
 }) => {
-  const { t } = useTranslation(['invitation','common']);
+  const { t, i18n } = useTranslation(['invitation','common']);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,8 @@ const InvitationDialog: React.FC<InvitationDialogProps> = ({
 
       await InvitationService.createInvitation({
         profile_id: profile.id,
-        email
+        email,
+        language: i18n.language
       });
 
       onSuccess();
