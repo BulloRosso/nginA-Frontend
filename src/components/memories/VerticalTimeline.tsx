@@ -361,11 +361,6 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                   const isEven = index % 2 === 0;
                   const hasImages = memory.imageUrls && memory.imageUrls.length > 0;
 
-            console.log('Memory data:', {
-              id: memory.id,
-              imageUrls: memory.imageUrls,
-              hasImages: hasImages
-            });
                   return (
                     
                       <VerticalTimelineElement

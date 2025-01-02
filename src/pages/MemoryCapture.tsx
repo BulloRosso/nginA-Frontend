@@ -91,69 +91,6 @@ const CameraPreview = styled('video')({
   marginBottom: '16px'
 });
 
-const AudioWaveform = styled('canvas')({
-  width: '100%',
-  height: '60px',
-  backgroundColor: '#f5f5f5',
-  borderRadius: '4px'
-});
-
-const AudioVisualizer = ({ isRecording, mediaRecorder }) => {
-  const canvasRef = useRef(null);
-  const animationFrameRef = useRef(null);
-  const analyserRef = useRef(null);
-  const dataArrayRef = useRef(null);
-
-  useEffect(() => {
-    if (isRecording && mediaRecorder) {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      analyserRef.current = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(mediaRecorder.stream);
-      source.connect(analyserRef.current);
-
-      analyserRef.current.fftSize = 256;
-      const bufferLength = analyserRef.current.frequencyBinCount;
-      dataArrayRef.current = new Uint8Array(bufferLength);
-
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-
-      const draw = () => {
-        if (!isRecording) return;
-
-        animationFrameRef.current = requestAnimationFrame(draw);
-        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
-
-        ctx.fillStyle = '#f5f5f5';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const barWidth = canvas.width / dataArrayRef.current.length;
-        let x = 0;
-
-        dataArrayRef.current.forEach(value => {
-          const barHeight = (value / 255) * canvas.height;
-          ctx.fillStyle = `rgb(30, 179, 183, ${value / 255})`;
-          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-          x += barWidth;
-        });
-      };
-
-      draw();
-
-      return () => {
-        if (animationFrameRef.current) {
-          cancelAnimationFrame(animationFrameRef.current);
-        }
-        audioContext.close();
-      };
-    }
-  }, [isRecording]);
-
-  return (
-    <AudioWaveform ref={canvasRef} />
-  );
-};
-
 const AnimatedMicIcon = styled(Box)(({ theme }) => ({
   position: 'relative',
   left: '0px',  // Pull out of the flow
@@ -275,10 +212,13 @@ const MemoryCapture = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [transcript, setTranscript] = useState('');
+  
+  const latestTranscriptRef = useRef('');
   const videoRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
   const recognitionRef = useRef(null);
+  
   const [profile, setProfile] = useState<Profile | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -300,13 +240,16 @@ const MemoryCapture = () => {
   };
   
   // Initialize speech recognition
-  if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = true;
-  }
-
+  useEffect(() => {
+    if (!recognitionRef.current && (window.SpeechRecognition || window.webkitSpeechRecognition)) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = i18n.language === 'de' ? 'de-DE' : 'en-US';
+    }
+  }, [i18n.language]);
+  
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/jpeg': [], 'image/png': [] },
     onDrop: useCallback(async (acceptedFiles) => {
@@ -496,7 +439,7 @@ const MemoryCapture = () => {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, []);  
 
   const startRecording = async () => {
     try {
@@ -504,20 +447,22 @@ const MemoryCapture = () => {
       mediaRecorderRef.current = new MediaRecorder(stream);
 
       if (recognitionRef.current) {
-        setTranscript('');
         let silenceTimeout;
 
         recognitionRef.current.onresult = (event) => {
           if (silenceTimeout) clearTimeout(silenceTimeout);
 
-          const current = event.resultIndex;
-          const latestTranscript = event.results[current][0].transcript;
-          setTranscript(latestTranscript);
+          latestTranscriptRef.current = Array.from(event.results)
+            .map(result => result[0].transcript)
+            .join(' ');
+
+          setTranscript(latestTranscriptRef.current);
 
           silenceTimeout = setTimeout(() => {
             stopRecording();
           }, 2000);
         };
+
         recognitionRef.current.start();
       }
 
@@ -529,29 +474,20 @@ const MemoryCapture = () => {
       console.error(err);
     }
   };
-
+  
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      // Stop the recorder
       mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
 
-      // Stop all tracks in the stream
-      mediaRecorderRef.current.stream.getTracks().forEach(track => {
-        track.stop();
-      });
-
-      // Stop speech recognition
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
 
       setIsRecording(false);
       setMediaMode(null);
-
-      if (transcript) {
-        setResponse(prev => (prev + ' ' + transcript).trim());
-        setTranscript('');
-      }
+      setResponse(prev => prev ? `${prev} ${latestTranscriptRef.current}`.trim() : latestTranscriptRef.current.trim());
+      setTranscript('');
     }
   };
 
@@ -721,35 +657,18 @@ return (
                     fullWidth
                     multiline
                     rows={4}
-                    value={response}
+                    value={isRecording ? transcript : response}
                     onChange={(e) => setResponse(e.target.value)}
-                    placeholder={t('interview.share_memory')}
-                    disabled={loading}
-                    sx={{ flex: 1 }}
+                    placeholder={isRecording ? t('common.listening') : t('interview.share_memory')}
+                    disabled={loading || isRecording}
+                    sx={{ 
+                      flex: 1,
+                      '& .MuiInputBase-root': {
+                        backgroundColor: isRecording ? '#fdf2bd' : 'transparent',
+                        transition: 'background-color 0.3s ease'
+                      }
+                    }}
                   />
-    
-                  {/* Live Transcript */}
-                  {isRecording && transcript && (
-                    <Typography variant="body2" color="textSecondary">
-                      {t('interview.transcribing')}: {transcript}
-                    </Typography>
-                  )}
-                  
-                  {/* Audio UI */}
-                  {mediaMode === 'audio' && (
-                    <Box sx={{ textAlign: 'center' }}>
-                      <AudioVisualizer isRecording={isRecording} mediaRecorder={mediaRecorderRef.current} />
-                      <Button
-                        variant="contained"
-                        color="error"
-                        onClick={stopRecording}
-                        startIcon={<StopIcon />}
-                        sx={{ mt: 1 }}
-                      >
-                        {t('interview.stop_recording')}
-                      </Button>
-                    </Box>
-                  )}
     
                   {/* Image Preview Grid */}
                   {images.length > 0 && (

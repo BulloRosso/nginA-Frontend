@@ -1,6 +1,7 @@
 {
   "common": {
     "error": "Erreur",
+    "listening": "Parlez s'il vous plaît - j'écoute...",
     "watch_video": "Avant de commencer...",
     "welcomenoblivion": "Bienvenue (de retour) sur nOblivion",
     "forgotpassword": "Mot de passe oublié ?",
