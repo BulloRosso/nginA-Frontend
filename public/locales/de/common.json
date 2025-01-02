@@ -68,6 +68,13 @@
     "email": "Email",
     "new_password": "Neues Password",
     "password": "Passwort",
+    "password_requirements": {
+      "title": "Passwortanforderungen nicht erfüllt:",
+      "uppercase": "Mindestens ein Großbuchstabe",
+      "length": "Mindestens 12 Zeichen lang",
+      "number": "Mindestens eine Zahl",
+      "special": "Mindestens ein Sonderzeichen (., -, *)"
+    },
     "confirm_password": "Password wiederholen",
     "first_name": "Vorname",
     "last_name": "Nachname",

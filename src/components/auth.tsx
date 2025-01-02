@@ -8,6 +8,7 @@ import {
   Paper,
   Link,
   Alert,
+  AlertTitle,
   CircularProgress,
   Divider,
   IconButton,
@@ -28,6 +29,7 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { AuthService, SignupData } from '../services/auth';
 import { useAuth } from '../contexts/auth';
 import { useTranslation } from 'react-i18next';
+import PasswordStrengthChecker from './auth/PasswordStrengthChecker';
 
 // Register Component
 export const Register = ({ onSuccess }) => {
@@ -35,6 +37,7 @@ export const Register = ({ onSuccess }) => {
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -165,6 +168,10 @@ export const Register = ({ onSuccess }) => {
               ),
             }}
           />
+          <PasswordStrengthChecker 
+            password={formData.password} 
+            onValidityChange={setIsPasswordValid} 
+          />
 
           <TextField
             fullWidth
@@ -203,7 +210,7 @@ export const Register = ({ onSuccess }) => {
             type="submit"
             variant="contained"
             sx={{ mt: 3 }}
-            disabled={loading}
+            disabled={loading || !isPasswordValid}
           >
             {loading ? <CircularProgress size={24} /> : t('common.auth.create_account')}
           </Button>

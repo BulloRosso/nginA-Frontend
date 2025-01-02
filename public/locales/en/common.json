@@ -16,6 +16,13 @@
   "access_denied": "Access denied",
   "session_expired": "Your session has expired",
   "loading_data": "Loading data...",
+  "password_requirements": {
+    "title": "Password requirements not met:",
+    "uppercase": "At least one uppercase character",
+    "length": "At least 12 characters long",
+    "number": "At least one number",
+    "special": "At least one special character (., -, *)"
+  },
   "saving": "Saving...",
   "try_again": "Try Again",
   "error_occurred": "An error occurred",

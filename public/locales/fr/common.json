@@ -14,6 +14,13 @@
     "skip_video": "Passer la vidéo",
     "validating_access": "Validation de l'accès...",
     "access_denied": "Accès refusé",
+    "password_requirements": {
+      "title": "Exigences du mot de passe non satisfaites :",
+      "uppercase": "Au moins un caractère majuscule",
+      "length": "Au moins 12 caractères",
+      "number": "Au moins un chiffre",
+      "special": "Au moins un caractère spécial (., -, *)"
+    },
     "session_expired": "Votre session a expiré",
     "loading_data": "Chargement des données...",
     "saving": "Enregistrement...",

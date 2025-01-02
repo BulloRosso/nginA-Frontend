@@ -11,6 +11,13 @@
     "cancel": "キャンセル",
     "back": "戻る",
     "next": "次へ",
+    "password_requirements": {
+      "title": "パスワード要件を満たしていません：",
+      "uppercase": "大文字を1文字以上",
+      "length": "12文字以上の長さ",
+      "number": "数字を1文字以上",
+      "special": "特殊文字を1文字以上 (., -, *)"
+    },
     "skip_video": "ビデオをスキップ",
     "validating_access": "アクセスを検証中...",
     "access_denied": "アクセス拒否",
