@@ -345,7 +345,8 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                       startIcon={<RobotIcon />}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleProfileSelect(profile.id,'/chat');
+                        handleProfileSelect(profile.id);
+                        navigate('/chat');
                       }}
                       sx={{ 
                         mr: 1,

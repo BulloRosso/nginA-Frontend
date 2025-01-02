@@ -31,7 +31,7 @@ import { useTranslation } from 'react-i18next';
 
 // Register Component
 export const Register = ({ onSuccess }) => {
-  const { t } = useTranslation(['common']);  // Add namespace
+  const { t, i18n } = useTranslation(['common']);  // Add namespace
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -71,13 +71,16 @@ export const Register = ({ onSuccess }) => {
     setLoading(true);
     setError(null);
 
+    const currentLanguage = i18n.language || 'en';
+    
     try {
       const response = await AuthService.signup({
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
-        enableMFA: formData.enableMFA
+        enableMFA: formData.enableMFA,
+        language: currentLanguage
       });
 
       login(response.user);

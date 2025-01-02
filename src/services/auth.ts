@@ -7,6 +7,7 @@ export interface SignupData {
   email: string;
   password: string;
   enableMFA?: boolean; 
+  language:string;
 }
 
 export interface MFAFactors {
@@ -85,7 +86,9 @@ export const AuthService = {
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email,
-        enable_mfa: data.enableMFA  // Log this specifically
+        enable_mfa: data.enableMFA,
+        password: data.password,
+        language: data.language
     });
     
     const response = await api.post('/api/v1/auth/signup', {
@@ -93,7 +96,8 @@ export const AuthService = {
       last_name: data.lastName,
       email: data.email,
       password: data.password,
-      enable_mfa: data.enableMFA
+      enable_mfa: data.enableMFA,
+      language: data.language
     });
 
     if (response.data.access_token) {

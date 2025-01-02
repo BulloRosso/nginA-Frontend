@@ -532,10 +532,19 @@ const MemoryCapture = () => {
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      // Stop the recorder
       mediaRecorderRef.current.stop();
+
+      // Stop all tracks in the stream
+      mediaRecorderRef.current.stream.getTracks().forEach(track => {
+        track.stop();
+      });
+
+      // Stop speech recognition
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
+
       setIsRecording(false);
       setMediaMode(null);
 
@@ -545,6 +554,18 @@ const MemoryCapture = () => {
       }
     }
   };
+
+  // Cleanup in useEffect
+  useEffect(() => {
+    return () => {
+      // Cleanup on component unmount
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => {
+          track.stop();
+        });
+      }
+    };
+  }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
