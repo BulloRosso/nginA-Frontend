@@ -27,6 +27,7 @@ import PrintSettings from './pages/PrintSettings';
 import { DisclaimerProvider } from './contexts/disclaimer';
 import { Disclaimer } from './components/modals/Disclaimer';
 import InterviewWelcome from './pages/InterviewWelcome';
+import { ResetPassword } from './components/auth/ResetPassword';
 
 const theme = createTheme({
   palette: {
@@ -59,7 +60,7 @@ const App = () => {
               <Route path="/introduction" element={<IntroductionVideo />} />
               <Route path="/interview-welcome" element={<InterviewWelcome />} />
               <Route path="/interview-token" element={<TokenHandler />} />
-              
+              <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Auth routes - no header */}
               <Route 

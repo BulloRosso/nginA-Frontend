@@ -286,17 +286,17 @@ export const AuthService = {
     }
   },
 
-  async requestPasswordReset(email: string): Promise<void> {
-    try {
-      await api.post('/api/v1/auth/request-password-reset', { email });
-    } catch (error) {
-      console.error('Password reset request error:', error);
-      throw error;
-    }
+  async requestPasswordReset(email: string) {
+    const response = await api.post('/api/v1/auth/request-password-reset', { email });
+    return response.data;
   },
 
-  async resetPassword(email: string): Promise<void> {
-    await api.post('/api/v1/auth/reset-password', { email });
+  async resetPassword(newPassword: string, token: string) {
+    const response = await api.post('/api/v1/auth/reset-password', { 
+      new_password: newPassword,
+      token: token
+    });
+    return response.data;
   },
 
   logout() {
