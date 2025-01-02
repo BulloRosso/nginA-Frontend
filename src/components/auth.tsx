@@ -24,7 +24,7 @@ import {
   GitHub as GitHubIcon,
   Security as SecurityIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { AuthService, SignupData } from '../services/auth';
 import { useAuth } from '../contexts/auth';
 import { useTranslation } from 'react-i18next';
@@ -236,7 +236,7 @@ export const Register = ({ onSuccess }) => {
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="body2">
               {t('common.auth.already_have_account')}{' '}
-              <Link href="/login" variant="body2">
+              <Link component={RouterLink} to="/login" variant="body2">
                 {t('common.auth.sign_in')}
               </Link>
             </Typography>
@@ -267,7 +267,7 @@ export const ForgotPassword = ({ onSuccess }) => {
       onSuccess?.();
     } catch (error) {
       // We don't show specific errors to prevent email enumeration
-      setError(t('auth.password_reset_error'));
+      setError(t('common.auth.password_reset_error'));
       console.error('Password reset request error:', error);
     } finally {
       setLoading(false);
@@ -291,7 +291,7 @@ export const ForgotPassword = ({ onSuccess }) => {
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <TextField
             fullWidth
-            label="Email"
+            label={t('common.auth.email')}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -306,11 +306,15 @@ export const ForgotPassword = ({ onSuccess }) => {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} /> : t('common.auth.send_reset_instructions')}
+            {loading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t('common.auth.send_reset_instructions')
+            )}
           </Button>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Link href="/login" variant="body2">
+            <Link component={RouterLink} to="/login" variant="body2">
               {t('common.auth.back_to_login')}
             </Link>
           </Box>

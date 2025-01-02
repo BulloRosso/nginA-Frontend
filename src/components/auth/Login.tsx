@@ -21,7 +21,7 @@ import {
   Google as GoogleIcon,
   GitHub as GitHubIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { AuthService } from '../../services/auth';
 import { useAuth } from '../../contexts/auth';
 import { useTranslation } from 'react-i18next';
@@ -221,7 +221,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           </Button>
 
           <Box sx={{ mt: 2, textAlign: 'right' }}>
-            <Link href="/forgot-password" variant="body2">
+            <Link component={RouterLink} to="/forgot-password" variant="body2">
               {t('common.forgotpassword')}
             </Link>
           </Box>
@@ -253,9 +253,9 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="body2">
-              Don't have an account?{' '}
-              <Link href="/register" variant="body2">
-                Sign Up
+              {t('common.auth.new_account')}
+              <Link component={RouterLink} to="/register" variant="body2">
+                {t('common.auth.sign_up')}
               </Link>
             </Typography>
           </Box>
