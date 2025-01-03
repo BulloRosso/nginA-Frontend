@@ -1,5 +1,9 @@
 { "interview": {
   "interview": "Interview",
+  "date": "Date",
+   "status": "Status", 
+   "summary": "Summary",
+   "topics": "Topics",
   "session_error_title": "Interview Session Error",
   "session_error_message": "There was a problem with the interview session. Would you like to try again?",
   "session_expired_title": "Session Expired",

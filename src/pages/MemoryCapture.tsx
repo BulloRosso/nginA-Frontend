@@ -21,6 +21,13 @@ import {
   Tabs, 
   Tab,
   AlertTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -144,9 +151,8 @@ const MemoryTips = () => {
 };
 
 const SessionList = ({ sessions, language }) => {
+  const { t } = useTranslation(['interview', 'memory', 'common']);
 
-   const { t, i18n } = useTranslation(['interview', 'memory','common']);
-  
   const getDateLocale = () => {
     switch (language) {
       case 'de': return de;
@@ -157,97 +163,65 @@ const SessionList = ({ sessions, language }) => {
     }
   };
 
+  if (sessions.length === 0) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center',
+        gap: 2,
+        p: 4 
+      }}>
+        <TimeIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+        <Typography variant="body1" color="text.secondary">
+          {t('interview.no_previous_sessions')}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
-    <Box sx={{ p: 2 }}>
-      {sessions.length === 0 ? (
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center',
-          gap: 2,
-          p: 4 
-        }}>
-          <TimeIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
-          <Typography variant="body1" color="text.secondary">
-            {t('interview.no_previous_sessions')}
-          </Typography>
-        </Box>
-      ) : (
-        <Timeline>
-          {sessions.map((session) => (
-            <TimelineItem key={session.id}>
-              <TimelineSeparator>
-                <TimelineDot color={session.status === 'active' ? 'primary' : 'success'}>
-                  {session.status === 'active' ? <TimeIcon /> : <CompletedIcon />}
-                </TimelineDot>
-                <TimelineConnector />
-              </TimelineSeparator>
-              <TimelineContent>
-                <Card sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      {format(
-                        new Date(session.started_at),
-                        'PPpp',
-                        { locale: getDateLocale() }
-                      )}
-                    </Typography>
-
-                    {session.summary && (
-                      <Typography variant="body1" sx={{ mt: 1 }}>
-                        {session.summary}
-                      </Typography>
-                    )}
-
-                    {session.topics_of_interest && session.topics_of_interest.length > 0 && (
-                      <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {session.topics_of_interest.map((topic, index) => (
-                          <Chip 
-                            key={index} 
-                            label={topic} 
-                            size="small" 
-                            variant="outlined"
-                          />
-                        ))}
-                      </Box>
-                    )}
-
-                    {session.emotional_state && (
-                      <Box sx={{ mt: 1 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {t('interview.emotional_state')}:
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
-                          {Object.entries(session.emotional_state).map(([key, value]) => (
-                            <Chip 
-                              key={key}
-                              label={`${key}: ${value}`}
-                              size="small"
-                              variant="outlined"
-                              color="primary"
-                            />
-                          ))}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {session.completed_at && (
-                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                        {t('interview.completed_at')}: {format(
-                          new Date(session.completed_at),
-                          'PPpp',
-                          { locale: getDateLocale() }
-                        )}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              </TimelineContent>
-            </TimelineItem>
+    <TableContainer>
+      <Table  aria-label="sessions table">
+        <TableHead>
+          <TableRow>
+            <TableCell>{t('interview.date')}</TableCell>
+            <TableCell>{t('interview.status')}</TableCell>
+            <TableCell>{t('interview.summary')}</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sessions.map((session, index) => (
+            <TableRow
+              key={session.id}
+              sx={{ 
+                '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
+                '&:last-child td, &:last-child th': { border: 0 }
+              }}
+            >
+              <TableCell component="th" scope="row">
+                {format(
+                  new Date(session.started_at),
+                  'PP',
+                  { locale: getDateLocale() }
+                )}
+              </TableCell>
+              <TableCell>
+                <Chip
+                  icon={session.status === 'active' ? <TimeIcon /> : <CompletedIcon />}
+                  label={session.status}
+                  color={session.status === 'active' ? 'primary' : 'success'}
+                  size="small"
+                />
+              </TableCell>
+              <TableCell>
+                {session.summary}
+              </TableCell>
+            </TableRow>
           ))}
-        </Timeline>
-      )}
-    </Box>
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 
