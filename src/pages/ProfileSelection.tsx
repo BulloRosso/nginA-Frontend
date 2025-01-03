@@ -303,7 +303,7 @@ const ProfileSelection: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <ForumIcon sx={{ mr: 1, color: 'text.secondary' }} />
                         <Typography variant="body2" color="text.secondary">
-                          {profile.metadata?.session_count || 0} {t('profile.sessions')}
+                          {profile.metadata?.session_count -1 || 0} {t('profile.sessions')}
                         </Typography>
                       </Box>
                       {profile.updated_at && (

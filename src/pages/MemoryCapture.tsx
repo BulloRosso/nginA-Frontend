@@ -19,7 +19,8 @@ import {
   DialogTitle,
   Grid,
   Tabs, 
-  Tab
+  Tab,
+  AlertTitle,
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -212,6 +213,9 @@ const MemoryCapture = () => {
   const [images, setImages] = useState([]);
   const [error, setError] = useState(null);
   const [transcript, setTranscript] = useState('');
+  // session handling
+  const [sessionError, setSessionError] = useState(false);
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
   
   const latestTranscriptRef = useRef('');
   const videoRef = useRef(null);
@@ -268,6 +272,34 @@ const MemoryCapture = () => {
     }, [images])
   });
 
+  const handleSessionRestart = useCallback(async () => {
+    try {
+      setLoading(true);
+      setSessionError(false);
+      setIsSessionExpired(false);
+
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      const result = await InterviewService.startInterview(profileId, i18n.language);
+      setSessionId(result.session_id);
+      setQuestion(result.initial_question);
+
+      // Clear previous responses when starting new session
+      setResponse('');
+      setImages([]);
+      setTranscript('');
+
+    } catch (err) {
+      console.error('Failed to restart interview:', err);
+      setError('Failed to start new interview session');
+    } finally {
+      setLoading(false);
+    }
+  }, [i18n.language]);
+  
   const handleRemoveImage = (indexToRemove: number) => {
     setImages(images => images.filter((_, index) => index !== indexToRemove));
   };
@@ -297,73 +329,110 @@ const MemoryCapture = () => {
       console.timeEnd('Total fetch');
     }
   }, []); 
-  
-  useEffect(() => {
-    const initializeData = async () => {
-      try {
-        setIsInitializing(true);
-        
-        let profileId = localStorage.getItem('profileId');
-        
-        // If not in localStorage, check sessionStorage (for interview tokens)
-        if (!profileId) {
-          profileId = sessionStorage.getItem('profile_id');
-        }
-        
-        if (!profileId) {
-          throw new Error('No profile ID found');
-        }
 
-        console.time('Parallel API calls');
-        // Run all API calls in parallel
-        const [profileData, memoriesData, interviewData] = await Promise.all([
-          ProfileService.getProfile(profileId),
-          MemoryService.getMemories(profileId),
-          InterviewService.startInterview(profileId, i18n.language)
-        ]);
-        console.timeEnd('Parallel API calls');
-
-        // Set all states
-        setProfile(profileData);
-        setMemories(memoriesData.length === 0 ? createDefaultMemories(profileData) : memoriesData);
-        setSessionId(interviewData.session_id);
-        setQuestion(interviewData.initial_question);
-
-      } catch (err) {
-        console.error('Failed to initialize:', err);
-        setError('Failed to load data');
-      } finally {
-        setIsInitializing(false);
-      }
-    };
-
-    initializeData();
+  const resetState = useCallback(() => {
+    setLoading(false);
+    setQuestion('');
+    setResponse('');
+    setMediaMode(null);
+    setIsRecording(false);
+    setImages([]);
+    setError(null);
+    setTranscript('');
+    setSessionError(false);
+    setIsSessionExpired(false);
+    setProfile(null);
+    setMemories([]);
+    setSessionId(null);
+    setSelectedMemory(null);
+    setIsInitializing(true); // Set back to true as we're about to initialize
   }, []);
-/*  
-  useEffect(() => {
-    const initInterview = async () => {
-      try {
-        setLoading(true);
-        const profileId = localStorage.getItem('profileId');
-        if (!profileId) {
-          throw new Error('No profile ID found');
-        }
 
-        const result = await InterviewService.startInterview(profileId, i18n.language);
-        setSessionId(result.session_id);
-        setQuestion(result.initial_question);
-      } catch (err) {
-        console.error('Failed to start interview:', err);
-        setError('Failed to start interview session');
-      } finally {
-        setLoading(false);
+  const initializeData = useCallback(async () => {
+    try {
+      // First reset all states
+      resetState();
+
+      let profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        profileId = sessionStorage.getItem('profile_id');
       }
-    };
 
-    initInterview();
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      console.log('Fetching data for profile:', profileId);
+
+      // Only fetch profile and memories data
+      const [profileData, memoriesData] = await Promise.all([
+        ProfileService.getProfile(profileId),
+        MemoryService.getMemories(profileId),
+      ]);
+
+      if (!profileData) {
+        throw new Error('No profile data received');
+      }
+
+      console.log('Received profile data:', profileData.id);
+      console.log('Received memories:', memoriesData.length);
+
+      setProfile(profileData);
+      setMemories(memoriesData.length === 0 ? createDefaultMemories(profileData) : memoriesData);
+
+    } catch (err) {
+      console.error('Failed to initialize data:', err);
+      setError('Failed to load data');
+    } finally {
+      setIsInitializing(false);
+    }
+  }, []); 
+
+  // Separate function for interview initialization
+  const initializeInterview = useCallback(async () => {
+    try {
+      setSessionError(false);
+
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      // Start new interview session
+      const interviewData = await InterviewService.startInterview(profileId, i18n.language);
+      setSessionId(interviewData.session_id);
+      setQuestion(interviewData.initial_question);
+
+    } catch (err) {
+      console.error('Session error:', err);
+      setSessionError(true);
+    }
   }, [i18n.language]);
-*/
 
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      // Cleanup when component unmounts
+      resetState();
+    };
+  }, [resetState]);
+
+  // Use effects to initialize component
+  useEffect(() => {
+    const profileId = localStorage.getItem('profileId');
+    if (profileId) {
+      console.log('Starting initialization for profile:', profileId);
+      initializeData();
+    }
+  }, [initializeData]); // Run when component mounts or when initializeData changes
+
+  useEffect(() => {
+    const profileId = localStorage.getItem('profileId');
+    if (profileId) {
+      initializeInterview();
+    }
+  }, [initializeInterview]); // Run when language changes
+  
   // Camera handling
   const startCamera = async () => {
     try {
@@ -519,42 +588,47 @@ const MemoryCapture = () => {
       }
 
       let user_id = JSON.parse(localStorage.getItem('user')).id;
-      if (!user_id ) {
-        console.log(localStorage.getItem('user'))
+      if (!user_id) {
         throw new Error('Cannot read user id from local storage');
       }
-      
-      // Submit response to get classification and sentiment
-      const interviewResponse = await InterviewService.submitResponse(
-        profileId,
-        sessionId,
-        {
-          user_id: user_id,
-          text: response,
-          language: i18n.language
+
+      // Submit response
+      try {
+        const interviewResponse = await InterviewService.submitResponse(
+          profileId,
+          sessionId,
+          {
+            user_id: user_id,
+            text: response,
+            language: i18n.language
+          }
+        );
+
+        // Clear input and update UI
+        setResponse('');
+        setImages([]);
+        setTranscript('');
+        setQuestion(interviewResponse.follow_up);
+
+        // Refresh memories if needed
+        if (interviewResponse.is_memory) {
+          await fetchMemories();
+
+          if (interviewResponse.memory_id) {
+            const timelineElement = document.querySelector(
+              `[data-memory-id="${interviewResponse.memory_id}"]`
+            );
+            timelineElement?.scrollIntoView({ behavior: 'smooth' });
+          }
         }
-      );
 
-      // Clear input regardless of memory classification
-      setResponse('');
-      setImages([]);
-      setTranscript('');
-      setQuestion(interviewResponse.follow_up);
-
-      // Only refresh memories if the input was classified as a memory
-      if (interviewResponse.is_memory) {
-        // Wait for the memories to be fetched to ensure timeline is up to date
-        await fetchMemories();
-
-        // Optional: Scroll to the new memory in the timeline
-        // You could pass the memory_id to the timeline component
-        if (interviewResponse.memory_id) {
-          // Add this to your types if not already present
-          const timelineElement = document.querySelector(
-            `[data-memory-id="${interviewResponse.memory_id}"]`
-          );
-          timelineElement?.scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        // Check if session expired
+        if (err.response?.status === 400 && err.response?.data?.detail?.includes('no longer active')) {
+          setIsSessionExpired(true);
+          return;
         }
+        throw err;
       }
 
     } catch (err) {
@@ -625,6 +699,45 @@ return (
                 }}
                 >
                 <Stack spacing={3} sx={{ flex: 1 }}>
+
+                  {sessionError && (
+                    <Alert 
+                      severity="error" 
+                      action={
+                        <Button
+                          color="inherit"
+                          size="small"
+                          onClick={handleSessionRestart}
+                          disabled={loading}
+                        >
+                          {t('interview.retry')}
+                        </Button>
+                      }
+                    >
+                      <AlertTitle>{t('interview.session_error_title')}</AlertTitle>
+                      {t('interview.session_error_message')}
+                    </Alert>
+                  )}
+
+                  {isSessionExpired && (
+                    <Alert 
+                      severity="warning"
+                      action={
+                        <Button
+                          color="inherit"
+                          size="small"
+                          onClick={handleSessionRestart}
+                          disabled={loading}
+                        >
+                          {t('interview.start_new_session')}
+                        </Button>
+                      }
+                    >
+                      <AlertTitle>{t('interview.session_expired_title')}</AlertTitle>
+                      {t('interview.session_expired_message')}
+                    </Alert>
+                  )}
+                  
                   {error && (
                     <Alert severity="error" onClose={() => setError(null)}>
                       {error}

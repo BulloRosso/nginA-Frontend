@@ -1,6 +1,12 @@
 {
   "interview": {
     "interview": "インタビュー",
+    "session_error_title": "インタビューセッションエラー",
+    "session_error_message": "インタビューセッションに問題が発生しました。再試行しますか？",
+    "session_expired_title": "セッション期限切れ",
+    "session_expired_message": "インタビューセッションが非アクティブのため期限切れとなりました。続行するには新しいセッションを開始してください。",
+    "retry": "再試行",
+    "start_new_session": "新しいセッションを開始",
     "welcome_title": "インタビューへようこそ",
      "video_not_supported": "お使いのブラウザは動画再生に対応していません",
      "remaining_time": "残り時間",

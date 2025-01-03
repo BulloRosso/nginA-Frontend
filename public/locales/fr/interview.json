@@ -1,6 +1,12 @@
 {
   "interview": {
     "interview": "Entretien",
+    "session_error_title": "Erreur de session d'entretien",
+    "session_error_message": "Un problème est survenu avec la session d'entretien. Voulez-vous réessayer ?",
+    "session_expired_title": "Session expirée",
+    "session_expired_message": "Votre session d'entretien a expiré en raison d'une inactivité. Démarrez une nouvelle session pour continuer.",
+    "retry": "Réessayer",
+    "start_new_session": "Démarrer une nouvelle session",
     "welcome_title": "Bienvenue à votre entretien",
      "video_not_supported": "Votre navigateur ne prend pas en charge la lecture vidéo",
      "remaining_time": "Temps restant",

@@ -1,5 +1,11 @@
 { "interview": {
   "interview": "Interview",
+  "session_error_title": "Interview Session Error",
+  "session_error_message": "There was a problem with the interview session. Would you like to try again?",
+  "session_expired_title": "Session Expired",
+  "session_expired_message": "Your interview session has expired due to inactivity. Start a new session to continue.",
+  "retry": "Retry",
+  "start_new_session": "Start New Session",
   "welcome_title": "Welcome to your interview",
    "video_not_supported": "Your browser does not support video playback",
    "remaining_time": "Time remaining",
