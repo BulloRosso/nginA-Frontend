@@ -8,8 +8,15 @@ export interface InterviewResponse {
 }
 
 export interface InterviewSession {
-  session_id: string;
-  initial_question: string;
+  id: string;
+  started_at: string;
+  completed_at?: string;
+  status: 'active' | 'completed';
+  emotional_state?: {
+    [key: string]: string;
+  };
+  summary?: string;
+  topics_of_interest?: string[];
 }
 
 export interface InterviewResult {
@@ -17,6 +24,7 @@ export interface InterviewResult {
   is_memory: boolean;
   memory_id?: string;
 }
+
 
 export class InterviewService {
   static async startInterview(profileId: string, language: string = 'en'): Promise<InterviewSession> {
@@ -53,6 +61,16 @@ export class InterviewService {
       if (error.response?.status === 400 && error.response?.data?.detail?.includes('no longer active')) {
         throw new Error('SESSION_EXPIRED');
       }
+      throw error;
+    }
+  }
+
+  static async getInterviewSessions(profileId: string): Promise<InterviewSession[]> {
+    try {
+      const response = await api.get(`/api/v1/interviews/${profileId}/sessions`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch interview sessions:', error);
       throw error;
     }
   }

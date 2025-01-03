@@ -32,6 +32,12 @@ import {
   Close as CloseIcon,
   TouchApp as TouchAppIcon,
   PostAdd as AddMemoryIcon,
+  AccessTime as TimeIcon, 
+  Check as CompletedIcon,
+  Event as CalendarIcon,
+  KeyboardVoice as VoiceIcon,
+  PhotoLibrary as ImageIcon,
+  FormatListNumbered as ListIcon
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { InterviewService } from '../services/interviews';
@@ -45,6 +51,8 @@ import { createDefaultMemories } from '../utils/memoryDefaults';
 import { Profile } from '../types/profile';
 import { ProfileService } from '../services/profiles';
 import { AudioWaveformProps } from '@/types/components';
+import { format } from 'date-fns';
+import { de, fr, hy, ja } from 'date-fns/locale';
 
 const QuestionTypography = styled(Typography)(({ theme }) => ({
   fontFamily: '"Pangolin", regular',
@@ -61,6 +69,184 @@ interface TabPanelProps {
   index: number;
   value: number;
 }
+
+const MemoryTips = () => {
+  const { t } = useTranslation(['interview']);
+
+  const tips = [
+    {
+      icon: <CalendarIcon />,
+      color: '#FF6B6B', // coral red
+      key: 'timeline_tip'
+    },
+    {
+      icon: <VoiceIcon />,
+      color: '#4ECDC4', // turquoise
+      key: 'voice_tip'
+    },
+    {
+      icon: <ImageIcon />,
+      color: '#45B7D1', // ocean blue
+      key: 'image_tip'
+    },
+    {
+      icon: <ListIcon />,
+      color: '#96CEB4', // sage green
+      key: 'separate_tip'
+    }
+  ];
+
+  return (
+    <Box sx={{ p: 0 }}>
+     
+      <Stack spacing={3} sx={{ mt: 1 }}>
+        {tips.map((tip, index) => (
+          <Card 
+            key={index}
+            sx={{ 
+              borderLeft: 4,
+              borderColor: tip.color,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              transition: 'transform 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              }
+            }}
+          >
+            <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <Box
+                sx={{
+                  bgcolor: `${tip.color}15`, // 15% opacity
+                  p: 1,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                {React.cloneElement(tip.icon, { 
+                  sx: { color: tip.color, fontSize: 28 } 
+                })}
+              </Box>
+              <Typography variant="body1">
+                {t(`interview.${tip.key}`)}
+              </Typography>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
+    </Box>
+  );
+};
+
+const SessionList = ({ sessions, language }) => {
+
+   const { t, i18n } = useTranslation(['interview', 'memory','common']);
+  
+  const getDateLocale = () => {
+    switch (language) {
+      case 'de': return de;
+      case 'fr': return fr;
+      case 'hy': return hy;
+      case 'ja': return ja;
+      default: return undefined;
+    }
+  };
+
+  return (
+    <Box sx={{ p: 2 }}>
+      {sessions.length === 0 ? (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          gap: 2,
+          p: 4 
+        }}>
+          <TimeIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+          <Typography variant="body1" color="text.secondary">
+            {t('interview.no_previous_sessions')}
+          </Typography>
+        </Box>
+      ) : (
+        <Timeline>
+          {sessions.map((session) => (
+            <TimelineItem key={session.id}>
+              <TimelineSeparator>
+                <TimelineDot color={session.status === 'active' ? 'primary' : 'success'}>
+                  {session.status === 'active' ? <TimeIcon /> : <CompletedIcon />}
+                </TimelineDot>
+                <TimelineConnector />
+              </TimelineSeparator>
+              <TimelineContent>
+                <Card sx={{ mb: 2 }}>
+                  <CardContent>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      {format(
+                        new Date(session.started_at),
+                        'PPpp',
+                        { locale: getDateLocale() }
+                      )}
+                    </Typography>
+
+                    {session.summary && (
+                      <Typography variant="body1" sx={{ mt: 1 }}>
+                        {session.summary}
+                      </Typography>
+                    )}
+
+                    {session.topics_of_interest && session.topics_of_interest.length > 0 && (
+                      <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        {session.topics_of_interest.map((topic, index) => (
+                          <Chip 
+                            key={index} 
+                            label={topic} 
+                            size="small" 
+                            variant="outlined"
+                          />
+                        ))}
+                      </Box>
+                    )}
+
+                    {session.emotional_state && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {t('interview.emotional_state')}:
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+                          {Object.entries(session.emotional_state).map(([key, value]) => (
+                            <Chip 
+                              key={key}
+                              label={`${key}: ${value}`}
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+
+                    {session.completed_at && (
+                      <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                        {t('interview.completed_at')}: {format(
+                          new Date(session.completed_at),
+                          'PPpp',
+                          { locale: getDateLocale() }
+                        )}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </TimelineContent>
+            </TimelineItem>
+          ))}
+        </Timeline>
+      )}
+    </Box>
+  );
+};
 
 const TabPanel = (props: TabPanelProps) => {
   const { children, value, index, ...other } = props;
@@ -216,6 +402,9 @@ const MemoryCapture = () => {
   // session handling
   const [sessionError, setSessionError] = useState(false);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
+  const [sessions, setSessions] = useState<InterviewSession[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [sessionsLoaded, setSessionsLoaded] = useState(false);
   
   const latestTranscriptRef = useRef('');
   const videoRef = useRef(null);
@@ -242,6 +431,22 @@ const MemoryCapture = () => {
       prevSelected?.id === memory.id ? null : memory
     );
   };
+
+  const loadSessions = useCallback(async () => {
+    try {
+      setIsLoadingSessions(true);
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) return;
+
+      const fetchedSessions = await InterviewService.getInterviewSessions(profileId);
+      setSessions(fetchedSessions);
+    } catch (error) {
+      console.error('Failed to load sessions:', error);
+      // Optionally show error message
+    } finally {
+      setIsLoadingSessions(false);
+    }
+  }, []);
   
   // Initialize speech recognition
   useEffect(() => {
@@ -344,6 +549,8 @@ const MemoryCapture = () => {
     setProfile(null);
     setMemories([]);
     setSessionId(null);
+    setSessionsLoaded(false); 
+    setSessions([]); 
     setSelectedMemory(null);
     setIsInitializing(true); // Set back to true as we're about to initialize
   }, []);
@@ -572,8 +779,25 @@ const MemoryCapture = () => {
     };
   }, []);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = async (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
+
+    // Load sessions only when switching to sessions tab for the first time
+    if (newValue === 1 && !sessionsLoaded) {
+      try {
+        setIsLoadingSessions(true);
+        const profileId = localStorage.getItem('profileId');
+        if (!profileId) return;
+
+        const fetchedSessions = await InterviewService.getInterviewSessions(profileId);
+        setSessions(fetchedSessions);
+        setSessionsLoaded(true);
+      } catch (error) {
+        console.error('Failed to load sessions:', error);
+      } finally {
+        setIsLoadingSessions(false);
+      }
+    }
   };
   
   // Memory submission
@@ -865,26 +1089,21 @@ return (
               </TabPanel>
 
               <TabPanel value={activeTab} index={1}>
-                <Box sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {t('interview.previous_sessions')}
-                  </Typography>
-                  {/* Add your sessions content here */}
-                  <Typography variant="body1">
-                    {t('interview.no_previous_sessions')}
-                  </Typography>
+                <Box sx={{ p: 0 }}>
+                  {isLoadingSessions ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                      <CircularProgress />
+                    </Box>
+                  ) : (
+                    <SessionList sessions={sessions} language={i18n.language} />
+                  )}
                 </Box>
               </TabPanel>
 
               <TabPanel value={activeTab} index={2}>
-                <Box sx={{ p: 2 }}>
-                  <Typography variant="h6" gutterBottom>
-                    {t('interview.tips_title')}
-                  </Typography>
-                  <Typography variant="body1" paragraph>
-                    {t('interview.tips_content')}
-                  </Typography>
-                  {/* Add more tips content */}
+                <Box sx={{ m: 0, p: 0 }}>
+                  
+                   <MemoryTips />
                 </Box>
               </TabPanel>
               </CardContent>
