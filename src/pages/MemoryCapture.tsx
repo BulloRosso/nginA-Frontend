@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import {
   Mic as MicIcon,
+  QuestionMark as QuestionIcon,
   Stop as StopIcon,
   Camera as CameraIcon,
   PhotoLibrary as PhotoLibraryIcon,
@@ -53,6 +54,8 @@ import { ProfileService } from '../services/profiles';
 import { AudioWaveformProps } from '@/types/components';
 import { format } from 'date-fns';
 import { de, fr, hy, ja } from 'date-fns/locale';
+import { useTTS } from '../hooks/useTTS';
+import { VolumeUp as SpeakIcon } from '@mui/icons-material';
 
 const QuestionTypography = styled(Typography)(({ theme }) => ({
   fontFamily: '"Pangolin", regular',
@@ -425,6 +428,27 @@ const MemoryCapture = () => {
   const [isMemoryLoading, setIsMemoryLoading] = useState(false);  // For memory operations
   const [isSubmitting, setIsSubmitting] = useState(false);  // For memory submission
 
+  //  ----------- Realtime Speech --------------------
+  const {
+    isConnected,
+    isPlaying,
+    error: ttsError,
+    connect: connectTTS,
+    speak
+  } = useTTS();
+
+  const handleSpeak = async (question) => {
+    if (question) {
+      try {
+        speak(question);
+      } catch (err) {
+        console.error('Failed to speak:', err);
+      }
+    }
+  };
+
+  //  ----------- /Realtime Speech --------------------
+  
   // Add the selection handler
   const handleMemorySelect = (memory: Memory) => {
     setSelectedMemory(prevSelected => 
@@ -974,8 +998,11 @@ return (
                     alignItems: 'flex-start'  // Change to flex-start for top alignment
                   }}>
                     <AnimatedMicIcon>
-                      <MicIcon sx={{ 
+                      <QuestionIcon 
+                        onClick={() => question && handleSpeak(question)}
+                        sx={{ 
                         color: 'black', 
+                        cursor: 'pointer',
                         fontSize: '20px',
                         // Center the icon within the circle
                         position: 'absolute',
