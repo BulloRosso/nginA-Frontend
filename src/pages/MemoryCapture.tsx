@@ -52,6 +52,7 @@ import { InterviewService } from '../services/interviews';
 import MemoryService from '../services/memories';
 import { styled } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Category } from '../types/memory';
 import MemoryTimeline from '../components/memories/VerticalTimeline';
 import { Memory } from '../types/memory';
@@ -377,11 +378,14 @@ const MemoryCapture = () => {
   const [error, setError] = useState(null);
   const [transcript, setTranscript] = useState('');
   // session handling
+  const [sessionId, setSessionId] = useState(() => localStorage.getItem('sessionId'));
   const [sessionError, setSessionError] = useState(false);
   const [isSessionExpired, setIsSessionExpired] = useState(false);
-  const [sessions, setSessions] = useState<InterviewSession[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
+  const [sessions, setSessions] = useState([]);
   
   const latestTranscriptRef = useRef('');
   const videoRef = useRef(null);
@@ -394,14 +398,67 @@ const MemoryCapture = () => {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);  // For initial data load
   const [isMemoryLoading, setIsMemoryLoading] = useState(false);  // For memory operations
   const [isSubmitting, setIsSubmitting] = useState(false);  // For memory submission
+  
+  const isMounted = useRef(true);
+  const navigate = useNavigate();
+  
+  // ------------ Session Handling -------------------
 
+  const initializeSession = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setSessionError(false);
+
+      const profileId = localStorage.getItem('profileId');
+      if (!profileId) {
+        throw new Error('No profile ID found');
+      }
+
+      // Try to start a new session
+      const result = await InterviewService.startInterview(profileId, i18n.language);
+
+      // Store session ID in localStorage
+      localStorage.setItem('sessionId', result.session_id);
+      setSessionId(result.session_id);
+
+      // Get initial question
+      const nextQuestion = await InterviewService.getNextQuestion(
+        result.session_id,
+        i18n.language
+      );
+
+      setCurrentQuestion(nextQuestion);
+
+    } catch (err) {
+      console.error('Failed to initialize session:', err);
+      setSessionError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Function to end current session
+  const endSession = useCallback(async () => {
+    try {
+      const currentSessionId = localStorage.getItem('sessionId');
+      if (currentSessionId) {
+        await InterviewService.endSession(currentSessionId);
+        localStorage.removeItem('sessionId');
+        localStorage.removeItem('profileId'); 
+        setSessionId(null);
+        navigate('/profile-selection');
+      }
+    } catch (err) {
+      console.error('Failed to end session:', err);
+      setSessionError(true);
+    }
+  }, [navigate]);
+  
   //  ----------- Realtime Speech --------------------
   const {
     isConnected,
@@ -429,22 +486,6 @@ const MemoryCapture = () => {
       prevSelected?.id === memory.id ? null : memory
     );
   };
-
-  const loadSessions = useCallback(async () => {
-    try {
-      setIsLoadingSessions(true);
-      const profileId = localStorage.getItem('profileId');
-      if (!profileId) return;
-
-      const fetchedSessions = await InterviewService.getInterviewSessions(profileId);
-      setSessions(fetchedSessions);
-    } catch (error) {
-      console.error('Failed to load sessions:', error);
-      // Optionally show error message
-    } finally {
-      setIsLoadingSessions(false);
-    }
-  }, []);
   
   // Initialize speech recognition
   useEffect(() => {
@@ -474,64 +515,29 @@ const MemoryCapture = () => {
       setIsUploadDialogOpen(false);
     }, [images])
   });
-
-  const handleSessionRestart = useCallback(async () => {
-    try {
-      setLoading(true);
-      setSessionError(false);
-      setIsSessionExpired(false);
-
-      const profileId = localStorage.getItem('profileId');
-      if (!profileId) {
-        throw new Error('No profile ID found');
-      }
-
-      const result = await InterviewService.startInterview(profileId, i18n.language);
-      setSessionId(result.session_id);
-      setQuestion(result.initial_question);
-
-      // Clear previous responses when starting new session
-      setResponse('');
-      setImages([]);
-      setTranscript('');
-
-    } catch (err) {
-      console.error('Failed to restart interview:', err);
-      setError('Failed to start new interview session');
-    } finally {
-      setLoading(false);
-    }
-  }, [i18n.language]);
   
   const handleRemoveImage = (indexToRemove: number) => {
     setImages(images => images.filter((_, index) => index !== indexToRemove));
   };
+  
   const fetchMemories = useCallback(async () => {
     try {
+      setIsMemoryLoading(true);
       const profileId = localStorage.getItem('profileId');
       if (!profileId) {
         throw new Error('No profile ID found');
       }
 
-      console.time('Total fetch');
       const fetchedMemories = await MemoryService.getMemories(profileId);
-
-      // Only update state if the component is still mounted
-      setMemories(prevMemories => {
-        // If no memories and profile exists, create defaults
-        if (fetchedMemories.length === 0 && profile) {
-          return createDefaultMemories(profile);
-        }
-        return fetchedMemories;
-      });
+      setMemories(fetchedMemories);
 
     } catch (err) {
       console.error('Failed to fetch memories:', err);
       setError('Failed to load memories');
     } finally {
-      console.timeEnd('Total fetch');
+      setIsMemoryLoading(false);
     }
-  }, []); 
+  }, []);
 
   const resetState = useCallback(() => {
     setLoading(false);
@@ -554,8 +560,14 @@ const MemoryCapture = () => {
   }, []);
 
   const initializeData = useCallback(async () => {
+    
     try {
-      // First reset all states
+      // Add initialization flag check
+      if (isInitializing) {
+        return;
+      }
+
+      setIsInitializing(true);
       resetState();
 
       let profileId = localStorage.getItem('profileId');
@@ -569,30 +581,42 @@ const MemoryCapture = () => {
 
       console.log('Fetching data for profile:', profileId);
 
-      // Only fetch profile and memories data
+      // Use a ref to track if the component is still mounted
+      let isMounted = true;
+
       const [profileData, memoriesData] = await Promise.all([
         ProfileService.getProfile(profileId),
         MemoryService.getMemories(profileId),
       ]);
 
-      if (!profileData) {
-        throw new Error('No profile data received');
+      // Only update state if the component is still mounted
+      if (isMounted) {
+        if (!profileData) {
+          throw new Error('No profile data received');
+        }
+
+        console.log('Received profile data:', profileData.id);
+        console.log('Received memories:', memoriesData.length);
+
+        setProfile(profileData);
+        setMemories(memoriesData);
       }
-
-      console.log('Received profile data:', profileData.id);
-      console.log('Received memories:', memoriesData.length);
-
-      setProfile(profileData);
-      setMemories(memoriesData.length === 0 ? createDefaultMemories(profileData) : memoriesData);
 
     } catch (err) {
       console.error('Failed to initialize data:', err);
       setError('Failed to load data');
     } finally {
-      setIsInitializing(false);
+      if (isMounted) {
+        setIsInitializing(false);
+      }
     }
-  }, []); 
 
+    // Cleanup function to handle unmounts
+    return () => {
+      isMounted.current = false;
+    };
+  }, [resetState]);
+  
   // Separate function for interview initialization
   const initializeInterview = useCallback(async () => {
     try {
@@ -625,11 +649,11 @@ const MemoryCapture = () => {
   // Use effects to initialize component
   useEffect(() => {
     const profileId = localStorage.getItem('profileId');
-    if (profileId) {
+    if (profileId && !memories.length) { // Only initialize if we don't have memories yet
       console.log('Starting initialization for profile:', profileId);
       initializeData();
     }
-  }, [initializeData]); // Run when component mounts or when initializeData changes
+  }, [initializeData, memories.length]); // Add memories.length to dependencies
 
   useEffect(() => {
     const profileId = localStorage.getItem('profileId');
@@ -798,68 +822,82 @@ const MemoryCapture = () => {
     }
   };
   
-  // Memory submission
   const handleSubmit = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setIsLoading(true);
 
       const profileId = localStorage.getItem('profileId');
-      if (!profileId || !sessionId) {
+      const currentSessionId = localStorage.getItem('sessionId');
+
+      if (!profileId || !currentSessionId) {
         throw new Error('Missing profile ID or session ID');
       }
 
-      let user_id = JSON.parse(localStorage.getItem('user')).id;
-      if (!user_id) {
-        throw new Error('Cannot read user id from local storage');
-      }
+      const userId = JSON.parse(localStorage.getItem('user')).id;
 
-      // Submit response
-      try {
-        const interviewResponse = await InterviewService.submitResponse(
-          profileId,
-          sessionId,
-          {
-            user_id: user_id,
-            text: response,
-            language: i18n.language
-          }
-        );
-
-        // Clear input and update UI
-        setResponse('');
-        setImages([]);
-        setTranscript('');
-        setQuestion(interviewResponse.follow_up);
-
-        // Refresh memories if needed
-        if (interviewResponse.is_memory) {
-          await fetchMemories();
-
-          if (interviewResponse.memory_id) {
-            const timelineElement = document.querySelector(
-              `[data-memory-id="${interviewResponse.memory_id}"]`
-            );
-            timelineElement?.scrollIntoView({ behavior: 'smooth' });
-          }
+      // Submit response and get next question
+      const result = await InterviewService.submitResponse(
+        currentSessionId,
+        {
+          user_id: userId,
+          text: response,
+          language: i18n.language
         }
+      );
 
-      } catch (err) {
-        // Check if session expired
-        if (err.response?.status === 400 && err.response?.data?.detail?.includes('no longer active')) {
-          setIsSessionExpired(true);
-          return;
-        }
-        throw err;
+      // Get next question
+      const nextQuestion = await InterviewService.getNextQuestion(
+        currentSessionId,
+        i18n.language
+      );
+
+      // Update UI state
+      setCurrentQuestion(nextQuestion);
+      setResponse('');
+      setImages([]);
+
+      // If memory was created, refresh memories
+      if (result.is_memory) {
+        await fetchMemories();
       }
 
     } catch (err) {
+      if (err.message === 'SESSION_EXPIRED') {
+        setIsSessionExpired(true);
+        return;
+      }
       console.error('Error submitting response:', err);
-      setError('Failed to save response: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      setError('Failed to submit response');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
+
+  // Initialize session on component mount
+  useEffect(() => {
+    if (!sessionId) {
+      initializeSession();
+    } else if (currentQuestion === '') {  // Only validate if we don't have a question
+      const validateSession = async () => {
+        try {
+          const nextQuestion = await InterviewService.getNextQuestion(
+            sessionId,
+            i18n.language
+          );
+          setCurrentQuestion(nextQuestion);
+        } catch (err) {
+          console.error('Session validation failed:', err);
+          // Clear session and reinitialize
+          localStorage.removeItem('sessionId');
+          setSessionId(null);
+          setCurrentQuestion('');
+          // Don't call initializeSession here - it will be triggered by the sessionId change
+        }
+      };
+      validateSession();
+    }
+  }, [sessionId, initializeSession, currentQuestion]);
+
 
 return (
     <Container 
@@ -922,15 +960,16 @@ return (
                 >
                 <Stack spacing={3} sx={{ flex: 1 }}>
 
+                  {/* Session error alert */}
                   {sessionError && (
                     <Alert 
-                      severity="error" 
+                      severity="error"
                       action={
                         <Button
                           color="inherit"
                           size="small"
-                          onClick={handleSessionRestart}
-                          disabled={loading}
+                          onClick={initializeSession}
+                          disabled={isLoading}
                         >
                           {t('interview.retry')}
                         </Button>
@@ -941,6 +980,7 @@ return (
                     </Alert>
                   )}
 
+                  {/* Session expired alert */}
                   {isSessionExpired && (
                     <Alert 
                       severity="warning"
@@ -948,8 +988,8 @@ return (
                         <Button
                           color="inherit"
                           size="small"
-                          onClick={handleSessionRestart}
-                          disabled={loading}
+                          onClick={initializeSession}
+                          disabled={isLoading}
                         >
                           {t('interview.start_new_session')}
                         </Button>
@@ -986,7 +1026,7 @@ return (
                       }} />
                     </AnimatedMicIcon>
                     <QuestionTypography variant="h6" gutterBottom>
-                      {question || t('interview.loading_question')}
+                      {currentQuestion || t('interview.loading_question')}
                     </QuestionTypography>
                   </Box>
     
@@ -1039,7 +1079,7 @@ return (
                   )}
     
                   {/* Control Buttons */}
-                  <Box sx={{ mt: 'auto', pt: 2 }}>
+                  <Box sx={{  pt: 2 }}>
                     <Box sx={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
@@ -1075,7 +1115,18 @@ return (
                         </Button>
                       </Box>
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                      {/* End Interview Button */}
+                    
+                      <Button
+                        variant="outlined"
+                        onClick={endSession}
+                        sx={{ minHeight: '100%' }}
+                        startIcon= {<StopIcon />}
+                      >
+                        {t('interview.end_interview')}
+                      </Button>
+                     
                       <Button
                         variant="contained"
                         onClick={handleSubmit}

@@ -30,7 +30,25 @@
     "steps": {
       "basic_info": "基本情報",
       "characterization": "特性",
-      "memory_style":"記憶のスタイル"
+      "memory_style":"記憶のスタイル",
+       "interviewer": "インタビュアーを選択"
+    },
+    "interviewer": {
+      "description": "希望するインタビュアーを選択してください。それぞれのインタビュアーには独自のアプローチとスタイルがあります。",
+      "skills": {
+        "empathetic": "共感力のある",
+        "feelings_focused": "感情に焦点を当てる",
+        "patient": "忍耐強い",
+        "friendly": "フレンドリー",
+        "results_focused": "結果重視",
+        "motivating": "モチベーションを高める",
+        "realistic": "現実的",
+        "experience_focused": "経験重視",
+        "supporting": "サポーティブ",
+        "optimistic": "楽観的",
+        "ideas_focused": "アイデア重視",
+        "creative": "創造的"
+      }
     },
     "fields": {
       "first_name": "名",

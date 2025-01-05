@@ -30,7 +30,25 @@
     "steps": {
       "basic_info": "Հիմնական տեղեկություններ",
       "characterization": "Բնութագրում",
-      "memory_style": "Հիշողության ոճ"
+      "memory_style": "Հիշողության ոճ",
+      "interviewer": "Ընտրեք ձեր հարցազրուցավարին"
+    },
+    "interviewer": {
+      "description": "Ընտրեք ձեր նախընտրած հարցազրուցավարին: Յուրաքանչյուր հարցազրուցավար ունի իր յուրահատուկ մոտեցումը և ոճը:",
+      "skills": {
+        "empathetic": "Էմպատիկ",
+        "feelings_focused": "Կենտրոնացած զգացմունքների վրա",
+        "patient": "Համբերատար",
+        "friendly": "Բարեկամական",
+        "results_focused": "Կենտրոնացած արդյունքների վրա",
+        "motivating": "Մոտիվացնող",
+        "realistic": "Ռեալիստ",
+        "experience_focused": "Կենտրոնացած փորձի վրա",
+        "supporting": "Աջակցող",
+        "optimistic": "Լավատես",
+        "ideas_focused": "Կենտրոնացած գաղափարների վրա",
+        "creative": "Ստեղծագործ"
+      }
     },
     "fields": {
       "first_name": "Անուն",

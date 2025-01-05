@@ -30,7 +30,25 @@
     "steps": {
       "basic_info": "Informations de base",
       "characterization": "Caractérisation",
-      "memory_style":"Style de mémoire"
+      "memory_style":"Style de mémoire",
+      "interviewer": "Choisissez votre interviewer"
+    },
+    "interviewer": {
+      "description": "Sélectionnez votre interviewer préféré. Chaque interviewer a sa propre approche et son propre style.",
+      "skills": {
+        "empathetic": "Empathique",
+        "feelings_focused": "Centré sur les sentiments",
+        "patient": "Patient",
+        "friendly": "Amical",
+        "results_focused": "Centré sur les résultats",
+        "motivating": "Motivant",
+        "realistic": "Réaliste",
+        "experience_focused": "Centré sur les expériences",
+        "supporting": "Soutenant",
+        "optimistic": "Optimiste",
+        "ideas_focused": "Centré sur les idées",
+        "creative": "Créatif"
+      }
     },
     "fields": {
       "first_name": "Prénom",

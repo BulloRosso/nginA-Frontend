@@ -13,6 +13,7 @@ export interface ProfileData {
   narratorStyle?: string;  // Add these for memory style
   narratorPerspective?: string;
   narratorVerbosity?: string;
+  interviewer: string;
 }
 
 export interface ValidationErrors {

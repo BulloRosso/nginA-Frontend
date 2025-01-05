@@ -31,7 +31,25 @@
   "steps": {
     "basic_info": "Grundinformationen",
     "characterization": "Charakterisierung",
-    "memory_style":"Stil der Erinnerungen"
+    "memory_style":"Stil der Erinnerungen",
+    "interviewer": "Wählen Sie Ihren Interviewer"
+  },
+  "interviewer": {
+    "description": "Wählen Sie Ihren bevorzugten Interviewer. Jeder Interviewer hat seinen eigenen einzigartigen Ansatz und Stil.",
+    "skills": {
+      "empathetic": "Einfühlsam",
+      "feelings_focused": "Fokus auf Gefühle",
+      "patient": "Geduldig",
+      "friendly": "Freundlich",
+      "results_focused": "Fokus auf Ergebnisse",
+      "motivating": "Motivierend",
+      "realistic": "Realistisch",
+      "experience_focused": "Fokus auf Erfahrungen",
+      "supporting": "Unterstützend",
+      "optimistic": "Optimistisch",
+      "ideas_focused": "Fokus auf Ideen",
+      "creative": "Kreativ"
+    }
   },
   "fields": {
     "first_name": "Vorname",

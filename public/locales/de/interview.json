@@ -4,6 +4,7 @@
        "status": "Status",
        "summary": "Zusammenfassung", 
        "topics": "Themen",
+    "end_interview": "Interview beenden",
     "welcome_title": "Willkommen zu Ihrem Interview",
     "session_error_title": "Fehler in der Interviewsitzung",
     "session_error_message": "Es gab ein Problem mit der Interviewsitzung. Möchten Sie es erneut versuchen?",

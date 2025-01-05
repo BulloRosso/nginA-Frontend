@@ -5,6 +5,7 @@
      "status": "ステータス",
      "summary": "概要",
      "topics": "トピックス",
+    "end_interview": "インタビュー終了",
     "session_error_title": "インタビューセッションエラー",
     "session_error_message": "インタビューセッションに問題が発生しました。再試行しますか？",
     "session_expired_title": "セッション期限切れ",

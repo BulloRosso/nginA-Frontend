@@ -5,6 +5,7 @@
      "status": "Statut",
      "summary": "Résumé",
      "topics": "Sujets",
+    "end_interview": "Fin de l'entretien",
     "session_error_title": "Erreur de session d'entretien",
     "session_error_message": "Un problème est survenu avec la session d'entretien. Voulez-vous réessayer ?",
     "session_expired_title": "Session expirée",

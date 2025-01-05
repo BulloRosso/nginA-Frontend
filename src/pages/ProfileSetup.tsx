@@ -25,6 +25,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { SetupStep1 } from '../components/profile/SetupStep1';
 import { SetupStep2 } from '../components/profile/SetupStep2';
 import { SetupStep3 } from '../components/profile/SetupStep3';
+import { SetupStep4 } from '../components/profile/SetupStep4';
 import { ProfileData, ValidationErrors } from '../types/profile-setup';
 
 const ProfileSetup = () => {
@@ -43,7 +44,8 @@ const ProfileSetup = () => {
     backstory: '',
     narratorStyle: 'neutral',
     narratorPerspective: 'ego',
-    narratorVerbosity: 'normal'
+    narratorVerbosity: 'normal',
+    interviewer: 'Narine',
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -86,7 +88,8 @@ const ProfileSetup = () => {
   const steps = [
     t('profile.steps.basic_info'),
     t('profile.steps.characterization'),
-    t('profile.steps.memory_style')
+    t('profile.steps.memory_style'),
+    t('profile.steps.interviewer'),
   ];
 
   const validateStep = (step: number): boolean => {
@@ -160,7 +163,8 @@ const ProfileSetup = () => {
           narrator_perspective: profile.narratorPerspective,
           narrator_verbosity: profile.narratorVerbosity
         },
-        user_id: user.id
+        user_id: user.id,
+        interviewer: "Narine"
       };
 
       formData.append('profile', JSON.stringify(profileData));
@@ -212,6 +216,13 @@ const ProfileSetup = () => {
             setProfile={setProfile} 
             errors={errors}
             setErrors={setErrors}
+          />
+        );
+      case 3:
+        return (
+          <SetupStep4 
+            profile={profile} 
+            setProfile={setProfile} 
           />
         );
       default:
