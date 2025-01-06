@@ -807,6 +807,15 @@ const MemoryCapture = () => {
         }
       );
 
+      if (images.length > 0 && result.memory_id) {
+        const formData = new FormData();
+        images.forEach(image => {
+          formData.append('files', image.file);
+        });
+
+        await MemoryService.addMediaToMemory(result.memory_id, formData);
+      }
+
       // Get next question
       const nextQuestion = await InterviewService.getNextQuestion(
         currentSessionId,
