@@ -61,34 +61,8 @@ class MemoryService {
    */
   static async getMemory(memoryId: string): Promise<Memory> {
     try {
-      const response = await api.get<MemoryResponse>(`/api/v1/memories/${memoryId}`);
-
-      if (!response.data || !response.data.id) {
-        throw new Error('Invalid memory data received from API');
-      }
-
-      // Apply the same mapping logic used in getMemories
-      const memory = {
-        id: response.data.id,
-        profileId: response.data.profile_id,
-        sessionId: response.data.session_id,
-        category: response.data.category || Category.CHILDHOOD,
-        description: response.data.description || '',
-        timePeriod: dayjs(response.data.time_period),  // Use dayjs for consistency
-        caption: response.data.caption || '',
-        original_description: response.data.original_description || '',
-        imageUrls: response.data.image_urls || [],
-        location: response.data.location || null,
-        people: response.data.people || [],
-        emotions: response.data.emotions || [],
-        audioUrl: response.data.audio_url || null,
-        createdAt: new Date(response.data.created_at),
-        updatedAt: new Date(response.data.updated_at),
-        sentimentAnalysis: response.data.sentiment_analysis
-      };
-
-      console.log('Mapped memory:', memory);
-      return memory;
+      const response = await api.get<MemoryResponse>(`/api/v1/memories/memory/${memoryId}`);
+      return mapResponseToMemory(response.data);
     } catch (error) {
       console.error('Failed to fetch memory:', error);
       throw error;

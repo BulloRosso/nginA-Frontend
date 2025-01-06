@@ -39,6 +39,10 @@
     "tab_sessions": "最近のセッション",
     "tab_tips": "ヒント",
     "previous_sessions": "以前のインタビューセッション",
+    "start_date": "開始日",
+     "last_update": "最終更新",
+     "status_active": "アクティブ",
+     "status_completed": "完了",
     "no_previous_sessions": "以前のセッションは見つかりませんでした。",
     "tips_title": "より良い思い出のためのヒント",
     "tips_content": "特定の詳細や感情を共有して、思い出をより鮮明にしてください。"

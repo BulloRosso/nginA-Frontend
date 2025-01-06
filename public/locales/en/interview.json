@@ -38,6 +38,10 @@
   "tab_sessions": "Recent Sessions",
   "tab_tips": "Tips",
   "previous_sessions": "Previous Interview Sessions",
+  "start_date": "Date de début",
+   "last_update": "Dernière mise à jour",
+   "status_active": "Actif",
+   "status_completed": "Terminé",
   "no_previous_sessions": "No previous sessions found.",
   "tips_title": "Tips for Better Memories",
   "tips_content": "Share specific details and emotions to make your memories more vivid."

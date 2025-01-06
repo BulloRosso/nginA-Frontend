@@ -36,6 +36,7 @@ export class InterviewService {
     session_id: string;
     initial_question: string;
     started_at: string;
+    memory_id?: string;
   }> {
     try {
       const response = await api.post(`/api/v1/interviews/${profileId}/start`, null, {

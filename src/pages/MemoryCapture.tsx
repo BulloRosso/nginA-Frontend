@@ -28,6 +28,8 @@ import {
   TableHead,
   TableRow,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Mic as MicIcon,
@@ -152,8 +154,9 @@ const MemoryTips = () => {
 };
 
 const SessionList = ({ sessions, language }) => {
-  const { t } = useTranslation(['interview', 'memory', 'common']);
-
+ const { t } = useTranslation(['interview', 'memory', 'common']);
+ const theme = useTheme();
+ 
   const getDateLocale = () => {
     switch (language) {
       case 'de': return de;
@@ -163,67 +166,61 @@ const SessionList = ({ sessions, language }) => {
       default: return undefined;
     }
   };
+  
+ if (sessions.length === 0) {
+   return (
+     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, p: 4 }}>
+       <TimeIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
+       <Typography variant="body1" color="text.secondary">
+         {t('interview.no_previous_sessions')}
+       </Typography>
+     </Box>
+   );
+ }
 
-  if (sessions.length === 0) {
-    return (
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        gap: 2,
-        p: 4 
-      }}>
-        <TimeIcon sx={{ fontSize: 40, color: 'text.secondary' }} />
-        <Typography variant="body1" color="text.secondary">
-          {t('interview.no_previous_sessions')}
-        </Typography>
-      </Box>
-    );
-  }
+ return  (
+   <Stack spacing={2} sx={{ p: 0 }}>
+     {sessions.map((session) => (
+       <Card key={session.id} sx={{ backgroundColor: '#f3f1eb'}}>
+         <CardContent>
+           <Stack spacing={1}>
 
-  return (
-    <TableContainer>
-      <Table  aria-label="sessions table">
-        <TableHead>
-          <TableRow>
-            <TableCell>{t('interview.date')}</TableCell>
-            <TableCell>{t('interview.status')}</TableCell>
-            <TableCell>{t('interview.summary')}</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sessions.map((session, index) => (
-            <TableRow
-              key={session.id}
-              sx={{ 
-                '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
-                '&:last-child td, &:last-child th': { border: 0 }
-              }}
-            >
-              <TableCell component="th" scope="row">
-                {format(
-                  new Date(session.started_at),
-                  'PP',
-                  { locale: getDateLocale() }
-                )}
-              </TableCell>
-              <TableCell>
+             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', flex: 1, alignItems: 'end', gap: 1 }}>
                 <Chip
                   icon={session.status === 'active' ? <TimeIcon /> : <CompletedIcon />}
-                  label={session.status}
+                  label={t(`interview.status_${session.status}`)}
                   color={session.status === 'active' ? 'primary' : 'success'}
                   size="small"
                 />
-              </TableCell>
-              <TableCell>
-                {session.summary}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
+              </Box>
+             
+             <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+                <Typography variant="subtitle2" fontWeight="bold" width={200}>
+                  {t('interview.start_date')}:
+                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {format(new Date(session.started_at), 'PPp', { locale: getDateLocale() })}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+                <Typography variant="subtitle2" fontWeight="bold" width={200}>
+                  {t('interview.last_update')}:
+                </Typography>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {format(new Date(session.updated_at || session.started_at), 'PPp', { locale: getDateLocale() })}
+                </Typography>
+              </Box>
+
+             
+
+             <Typography variant="body2">{session.summary}</Typography>
+           </Stack>
+         </CardContent>
+       </Card>
+     ))}
+   </Stack>
+ );
 };
 
 const TabPanel = (props: TabPanelProps) => {
@@ -426,6 +423,12 @@ const MemoryCapture = () => {
       setSessionId(result.session_id);
       setCurrentQuestion(result.initial_question); // Store initial question directly
 
+      if (result.memory_id) {
+        const memory = memories.find(m => m.id === result.memory_id);
+        setSelectedMemory(memory);
+        localStorage.setItem('memoryId', result.memory_id);
+      }
+
     } catch (err) {
       console.error('Failed to initialize session:', err);
       setSessionError(true);
@@ -595,6 +598,12 @@ const MemoryCapture = () => {
       setSessionId(interviewData.session_id);
       setCurrentQuestion(interviewData.initial_question);  // Store initial question
       localStorage.setItem('sessionId', interviewData.session_id);
+
+      if (interviewData.memory_id) {
+        const memory = memories.find(m => m.id === interviewData.memory_id);
+        setSelectedMemory(memory);
+        localStorage.setItem('memoryId', interviewData.memory_id);
+      }
 
     } catch (err) {
       console.error('Session error:', err);
