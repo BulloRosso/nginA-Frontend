@@ -5,6 +5,8 @@ export interface InterviewResponse {
   text: string;
   user_id: string;
   language: string;
+  memory_id: string | null;
+  session_id: string | null;
 }
 
 export interface InterviewSession {
@@ -23,6 +25,7 @@ export interface InterviewResult {
   follow_up: string;
   is_memory: boolean;
   memory_id?: string;
+  memory_is_new: boolean;
 }
 
 export class InterviewService {

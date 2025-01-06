@@ -319,12 +319,6 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
     }
   };
 
-  const handleIconClick = (e, memoryId: string) => {
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-    alert(memoryId)
-  }
-
   return (
         <Grid container spacing={0} sx={{ height: '100%' }}> {/* Changed from 700px to 100% */}
           <Grid 
@@ -355,7 +349,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
             <div className="vertical-timeline-wrapper">
               <VerticalTimeline lineColor="#DDD">
                 {filteredMemories.map((memory, index) => {
-                  const category = memory.category.toLowerCase();
+                  const category = (memory?.category || Category.CHILDHOOD).toLowerCase();
                   const config = categoryConfig[category] || categoryConfig.childhood;
                   const IconComponent = config.icon;
                   const isEven = index % 2 === 0;

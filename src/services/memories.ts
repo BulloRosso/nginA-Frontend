@@ -29,55 +29,90 @@ interface MemoryResponse {
   };
 }
 
-const mapResponseToMemory = (data: any): Memory => ({
-  id: data.id,
-  profileId: data.profile_id,
-  sessionId: data.session_id,
-  category: data.category,
-  description: data.description,
-  timePeriod: new Date(memory.time_period), 
-  caption: data.caption || '',
-  original_description: data.original_description || '',
-  imageUrls: data.image_urls || [],
-  location: data.location,
-  people: data.people || [],
-  emotions: data.emotions || [],
-  audioUrl: data.audio_url,
-  createdAt: new Date(data.created_at),
-  updatedAt: new Date(data.updated_at),
-  sentimentAnalysis: data.sentiment_analysis
-});
+const mapResponseToMemory = (data: any): Memory => {
+  if (!data) {
+    throw new Error('Cannot map null or undefined data to Memory');
+  }
+
+  return {
+    id: data.id,
+    profileId: data.profile_id,
+    sessionId: data.session_id,
+    category: data.category || Category.CHILDHOOD, // Provide default category
+    description: data.description || '',
+    timePeriod: new Date(data.time_period), // Fixed: data instead of memory
+    caption: data.caption || '',
+    original_description: data.original_description || '',
+    imageUrls: data.image_urls || [],
+    location: data.location || null,
+    people: data.people || [],
+    emotions: data.emotions || [],
+    audioUrl: data.audio_url || null,
+    createdAt: new Date(data.created_at),
+    updatedAt: new Date(data.updated_at),
+    sentimentAnalysis: data.sentiment_analysis
+  };
+};
 
 class MemoryService {
 
+  /**
+   * Get a single memory for partial refresh
+   */
+  static async getMemory(memoryId: string): Promise<Memory> {
+    try {
+      const response = await api.get<MemoryResponse>(`/api/v1/memories/${memoryId}`);
+
+      if (!response.data || !response.data.id) {
+        throw new Error('Invalid memory data received from API');
+      }
+
+      // Apply the same mapping logic used in getMemories
+      const memory = {
+        id: response.data.id,
+        profileId: response.data.profile_id,
+        sessionId: response.data.session_id,
+        category: response.data.category || Category.CHILDHOOD,
+        description: response.data.description || '',
+        timePeriod: dayjs(response.data.time_period),  // Use dayjs for consistency
+        caption: response.data.caption || '',
+        original_description: response.data.original_description || '',
+        imageUrls: response.data.image_urls || [],
+        location: response.data.location || null,
+        people: response.data.people || [],
+        emotions: response.data.emotions || [],
+        audioUrl: response.data.audio_url || null,
+        createdAt: new Date(response.data.created_at),
+        updatedAt: new Date(response.data.updated_at),
+        sentimentAnalysis: response.data.sentiment_analysis
+      };
+
+      console.log('Mapped memory:', memory);
+      return memory;
+    } catch (error) {
+      console.error('Failed to fetch memory:', error);
+      throw error;
+    }
+  }
+  
   /**
    * Get all memories for a profile
    */
   static async getMemories(profileId: UUID): Promise<Memory[]> {
     try {
       const response = await api.get<MemoryResponse[]>(`/api/v1/memories/${profileId}`);
-
       console.log('Raw API response:', response.data);
 
-      // Map the response data to Memory objects
-      return response.data.map(memory => ({
-        id: memory.id,
-        profileId: memory.profile_id,
-        sessionId: memory.session_id,
-        category: memory.category,
-        description: memory.description,
-        timePeriod: dayjs(memory.time_period),
-        caption: memory.caption || '',
-        original_description: memory.original_description || '',
-        imageUrls: memory.image_urls || [], // Fix: map from snake_case to camelCase
-        location: memory.location,
-        people: memory.people || [],
-        emotions: memory.emotions || [],
-        audioUrl: memory.audio_url,
-        createdAt: new Date(memory.created_at),
-        updatedAt: new Date(memory.updated_at),
-        sentimentAnalysis: memory.sentiment_analysis
-      }));
+      // Map the response data to Memory objects with error handling
+      return response.data.map(memoryData => {
+        try {
+          return mapResponseToMemory(memoryData);
+        } catch (error) {
+          console.error('Error mapping memory:', memoryData, error);
+          // Return a default memory object or filter out invalid ones
+          return null;
+        }
+      }).filter((memory): memory is Memory => memory !== null); // Remove any null entries
     } catch (error) {
       console.error('Failed to fetch memories:', error);
       throw new Error('Failed to fetch memories');
