@@ -371,6 +371,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                           cursor: 'pointer',
                           border: selectedMemoryId === memory.id ? `2px solid ${config.color}` : 'none',
                           transition: 'all 0.2s ease-in-out',
+
                           '&:hover': {
                             transform: 'scale(1.1)',
                             boxShadow: '0 0 8px rgba(0,0,0,0.2)'
@@ -379,7 +380,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                         icon={
                           <IconComponent 
                             onClick={() => onMemorySelect?.(memory)} 
-                            sx={{ 
+                            sx={{  
                               fontSize: '1.2rem',
                               transition: 'transform 0.2s ease',
                               '&:hover': {
@@ -398,7 +399,8 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                           position: 'relative'
                         }}
                         contentArrowStyle={{ 
-                          borderRight: `7px solid ${selectedMemoryId === memory.id ? `${config.color}` : config.background}` 
+                       
+                          borderRight: `12px solid ${selectedMemoryId === memory.id ? `${config.color}` : config.background}` 
                         }}
                       >
                       {memory.imageUrls && memory.imageUrls.length > 0 && (

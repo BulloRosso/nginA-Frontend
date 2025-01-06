@@ -2,3 +2,25 @@
   background-color: #f8f8f8;
   padding: 10px;
 }
+
+.vertical-timeline-element-date {
+  margin: 0 34px;  
+}
+
+@media screen and (min-width: 600px) {
+  .vertical-timeline-element--left .vertical-timeline-element-content {
+    left: -14px;
+  }
+  .vertical-timeline-element--right .vertical-timeline-element-content {
+    left: 14px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .vertical-timeline-element--left .vertical-timeline-element-content {
+    left: 0;
+  }
+  .vertical-timeline-element--right .vertical-timeline-element-content {
+    left: 0;
+  }
+}
