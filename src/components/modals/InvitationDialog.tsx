@@ -8,7 +8,8 @@ import {
   Button,
   TextField,
   CircularProgress,
-  Alert
+  Alert,
+  Typography
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { InvitationService } from '../../services/invitations';
@@ -63,6 +64,14 @@ const InvitationDialog: React.FC<InvitationDialogProps> = ({
           </Alert>
         )}
 
+        <Typography sx={{ mb: 3 }} color="text.secondary">
+          {t('invitation.info')}
+        </Typography>
+        
+        <div style={{ borderRadius: '8px', width:'100%'}}>
+          <img src="/img/invitation-dialog.jpg" style={{ borderRadius: '8px', width:'100%' }}/>
+        </div>
+        
         <TextField
           fullWidth
           label={t('invitation.email_label')}

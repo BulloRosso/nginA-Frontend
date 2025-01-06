@@ -21,6 +21,7 @@
   "sending": "Einladung wird gesendet...",
   "extending": "Einladung wird verlängert...",
   "access_error": "Zugriffsfehler",
+  "info": "Sie können eine einzelne Person zum Interview einladen. Wir versenden einen Link, der direkt (ohne Password/Login-Eingabe) zum Interview führt.",
   "table": {
     "profile": "Profil",
     "email": "E-Mail",

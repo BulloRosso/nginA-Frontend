@@ -14,6 +14,7 @@
   "sent_success": "Interview invitation sent successfully",
   "extend": "Extend",
   "revoke": "Revoke",
+  "info": "You can invite a single person for the interview. We will send a link that directly (without requiring password/login) leads to the interview.",
   "loading_dashboard": "Loading invitations dashboard...",
   "refreshing": "Refreshing invitations...",
   "load_error": "Failed to load invitations",

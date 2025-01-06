@@ -21,6 +21,7 @@
     "sending": "Envoi de l'invitation...",
     "extending": "Prolongation de l'invitation...",
     "access_error": "Erreur d'accès",
+    "info": "Vous pouvez inviter une seule personne à l'entretien. Nous enverrons un lien qui mène directement (sans mot de passe/connexion) à l'entretien.",
     "table": {
       "profile": "Profil",
       "email": "E-mail",
