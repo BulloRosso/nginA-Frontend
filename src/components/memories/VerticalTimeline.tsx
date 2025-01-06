@@ -393,12 +393,12 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
                           borderRadius: '8px',
                           paddingTop: (hasImages) ? '40px' : '8px',
                           boxShadow: selectedMemoryId === memory.id 
-                            ? '0 0 0 2px #1eb3b7'
+                            ? `0 0 0 2px ${config.color}`
                             : '0 3px 6px rgba(0,0,0,0.1)',
                           position: 'relative'
                         }}
                         contentArrowStyle={{ 
-                          borderRight: `7px solid ${selectedMemoryId === memory.id ? '#1eb3b7' : config.background}` 
+                          borderRight: `7px solid ${selectedMemoryId === memory.id ? `${config.color}` : config.background}` 
                         }}
                       >
                       {memory.imageUrls && memory.imageUrls.length > 0 && (
