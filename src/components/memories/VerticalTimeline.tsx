@@ -239,14 +239,17 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
   
   const handleEditSave = async (updatedMemory: Partial<Memory>) => {
     try {
-      await MemoryService.updateMemory(updatedMemory.id!, updatedMemory);
+      console.log('Saving updated memory:', updatedMemory);
+      const result = await MemoryService.updateMemory(updatedMemory.id!, updatedMemory);
+      console.log('Update result:', result);
+
       if (onMemoryDeleted) {
         onMemoryDeleted(); // Refresh the memories list
       }
       setEditingMemory(null);
     } catch (err) {
+      console.error('Failed to update memory:', err);
       setError('Failed to update memory');
-      console.error(err);
     }
   };
 

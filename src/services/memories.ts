@@ -227,43 +227,41 @@ class MemoryService {
   /**
    * Update an existing memory
    */
-  static async updateMemory(
-    memoryId: UUID,
-    updates: Partial<MemoryCreate>
-  ): Promise<Memory> {
+  static async updateMemory(memoryId: string, updates: Partial<Memory>): Promise<Memory> {
     try {
-      console.log('Updating memory:', {
-          memoryId,
-          updates
+      console.log('Starting memory update with:', {
+        memoryId,
+        updates
       });
 
+      // Convert frontend camelCase to backend snake_case
       const apiUpdates = {
         ...updates,
-        image_urls: updates.imageUrls // Convert to snake_case for API
+        time_period: updates.timePeriod || updates.time_period,  // Try both formats
       };
-      delete apiUpdates.imageUrls; // Remove the camelCase version
-      
+
+      console.log('Converted updates for API:', apiUpdates);
+
       const response = await api.put<MemoryResponse>(
         `/api/v1/memories/${memoryId}`,
         apiUpdates
       );
 
-      console.log('Update API response:', response.data);
+      console.log('Raw API response:', response.data);
 
-      // Map the response back to our frontend format
+      // Map response back to frontend format
       return {
-          ...response.data,
-          timePeriod: new Date(response.data.time_period),
-          createdAt: new Date(response.data.created_at),
-          updatedAt: new Date(response.data.updated_at),
-          imageUrls: response.data.image_urls || [] // Map from snake_case back to camelCase
+        ...response.data,
+        timePeriod: new Date(response.data.time_period),
+        createdAt: new Date(response.data.created_at),
+        updatedAt: new Date(response.data.updated_at)
       };
     } catch (error) {
       console.error('Failed to update memory:', error);
-      throw new Error('Failed to update memory');
+      throw error;
     }
   }
-
+  
   /**
    * Add media files to an existing memory
    */

@@ -83,24 +83,40 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
     }
   }, [memory]);
 
+  const handleDateChange = (newDate: Date | null) => {
+    console.log('Date changed:', newDate);
+    setDate(newDate || new Date());
+  };
+
+  
   const handleSave = async () => {
     if (!memory) return;
 
     try {
       setLoading(true);
-      await onSave({
+
+      // Log the date state and its ISO string
+      console.log('Current date state:', date);
+      console.log('Date as ISO string:', date.toISOString());
+
+      const updateData = {
         id: memory.id,
         category,
         caption,
         description,
-        timePeriod: date?.toISOString(),
+        time_period: date.toISOString(),  // snake_case for backend
         location: {
           name: location.name || '',
           city: location.city || '',
           country: location.country || '',
           description: location.description || ''
         }
-      });
+      };
+
+      // Log the complete update data
+      console.log('Memory update data being sent:', updateData);
+
+      await onSave(updateData);
       onClose();
     } catch (error) {
       console.error('Failed to update memory:', error);
@@ -172,7 +188,7 @@ const EditMemoryDialog: React.FC<EditMemoryDialogProps> = ({
             <DatePicker
               label={t('memory.edit_dialog.date')}
               value={date}
-              onChange={(newDate) => setDate(newDate || new Date())}
+              onChange={handleDateChange}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </LocalizationProvider>
