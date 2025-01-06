@@ -97,7 +97,7 @@ const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
   
   // Calculate the year range from memories
   const { minYear, maxYear, hasMultipleYears } = useMemo(() => {
-    const years = memories.map(m => new Date(m.time_period).getFullYear());
+    const years = memories.map(m => new Date(m.timePeriod).getFullYear());
     const min = Math.min(...years);
     const max = Math.max(...years);
     return {
@@ -140,7 +140,7 @@ const MemoryTypeFilter: React.FC<MemoryTypeFilterProps> = ({
   // Calculate filtered memories based on year range
   const yearFilteredMemories = useMemo(() => {
     return memories.filter(memory => {
-      const year = new Date(memory.time_period).getFullYear();
+      const year = new Date(memory.timePeriod).getFullYear();
       return year >= yearRange[0] && year <= yearRange[1];
     });
   }, [memories, yearRange]);
