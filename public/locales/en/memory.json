@@ -42,6 +42,7 @@
     "drop_here": "Drop the images here",
     "selected_files": "Selected Files ({{count}}/{{max}})",
     "preview": "Preview",
+    "max_images_exceeded": "Maximum of 3 images allowed per memory",
     "uploading": "Uploading...",
     "upload_button": "Upload Images",
     "supported_formats": "Supports: JPG, PNG, GIF",

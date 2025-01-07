@@ -13,6 +13,7 @@
       "preview": "Նախադիտում",
       "uploading": "Վերբեռնվում է...",
       "upload_button": "Վերբեռնել նկարները",
+      "max_images_exceeded": "Թույլատրվում է առավելագույնը 3 նկար մեկ հիշողության համար",
       "supported_formats": "Աջակցվում է՝ JPG, PNG, GIF",
       "max_files": "Առավելագույնը {{count}} ֆայլ",
       "error_generic": "Նկարները վերբեռնելու սխալ"

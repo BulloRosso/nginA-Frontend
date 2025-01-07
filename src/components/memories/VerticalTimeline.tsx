@@ -201,6 +201,13 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
   const handleUpload = async (files: File[]) => {
     if (!selectedMemoryForUpload) return;
 
+    const memory = memories.find(m => m.id === selectedMemoryForUpload);
+    const currentImageCount = memory?.imageUrls?.length || 0;
+
+    if (currentImageCount + files.length > 3) {
+      throw new Error(t('memory.upload.max_images_exceeded', { max: 3 }));
+    }
+
     try {
       const urls = await MemoryService.addMediaToMemory(selectedMemoryForUpload, files);
 
@@ -527,7 +534,7 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
       open={isUploadDialogOpen}
       onClose={() => setIsUploadDialogOpen(false)}
       onUpload={handleUpload}
-      maxFiles={5} // or whatever limit you want to set
+      maxFiles={3} // or whatever limit you want to set
     />
 
     {/* Error Snackbar */}

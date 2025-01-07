@@ -11,6 +11,7 @@
       "drop_here": "Déposez les images ici",
       "selected_files": "Fichiers sélectionnés ({{count}}/{{max}})",
       "preview": "Aperçu",
+      "max_images_exceeded": "Maximum de 3 images autorisées par souvenir",
       "uploading": "Téléchargement en cours...",
       "upload_button": "Télécharger les images",
       "supported_formats": "Formats supportés : JPG, PNG, GIF",

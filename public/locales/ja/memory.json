@@ -11,6 +11,7 @@
       "drop_here": "ここに画像をドロップ",
       "selected_files": "選択されたファイル ({{count}}/{{max}})",
       "preview": "プレビュー",
+      "max_images_exceeded": "思い出1つにつき最大3枚まで画像を追加できます",
       "uploading": "アップロード中...",
       "upload_button": "画像をアップロード",
       "supported_formats": "対応形式: JPG, PNG, GIF",

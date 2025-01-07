@@ -42,6 +42,7 @@
     "drop_here": "Bilder hier ablegen",
     "selected_files": "Ausgewählte Dateien ({{count}}/{{max}})",
     "preview": "Vorschau",
+    "max_images_exceeded": "Maximal 3 Bilder pro Erinnerung erlaubt",
     "uploading": "Wird hochgeladen...",
     "upload_button": "Bilder hochladen",
     "supported_formats": "Unterstützt: JPG, PNG, GIF",
