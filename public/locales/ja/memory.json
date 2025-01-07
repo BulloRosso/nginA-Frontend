@@ -17,6 +17,11 @@
       "max_files": "最大 {{count}} ファイル",
       "error_generic": "アップロードに失敗しました"
     },
+    "delete_confirmation": {
+      "title": "思い出を削除",
+      "message": "この思い出を削除してもよろしいですか？この操作は取り消せません。",
+      "confirm": "削除する"
+    },
     "lightbox": {
       "close": "閉じる",
       "delete": "画像を削除",

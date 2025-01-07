@@ -17,6 +17,11 @@
       "max_files": "Maximum {{count}} fichiers",
       "error_generic": "Échec du téléchargement des images"
     },
+    "delete_confirmation": {
+      "title": "Supprimer le souvenir",
+      "message": "Êtes-vous sûr de vouloir supprimer ce souvenir ? Cette action est irréversible.",
+      "confirm": "Supprimer le souvenir"
+    },
     "lightbox": {
       "close": "Fermer",
       "delete": "Supprimer l'image",

@@ -39,6 +39,7 @@ import { Category } from '../../types/memory';
 import { useTranslation } from 'react-i18next';
 import './VerticalTimeline.css';
 import UploadDialog from './UploadDialog';
+import DeleteMemoryConfirmation from '../modals/DeleteMemoryConfirmation';
 
 interface TimelineProps {
   memories: Memory[];
@@ -139,6 +140,8 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
   const [activeFilters, setActiveFilters] = useState<Set<Category>>(new Set());
   const [yearRange, setYearRange] = useState<[number, number] | null>(null);
   const { t, i18n } = useTranslation(['memory', 'common']);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [memoryToDelete, setMemoryToDelete] = useState<Memory | null>(null);
   
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString(i18n.language, {
@@ -301,19 +304,20 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
     }
   };
   
-  const handleDelete = async (memoryId: string) => {
-    if (!memoryId) return;
+  const handleDelete = async () => {
+    if (!memoryToDelete) return;
 
     try {
-      setIsDeleting(memoryId);
+      setIsDeleting(memoryToDelete.id);
       setError(null);
 
-      await MemoryService.deleteMemory(memoryId);
+      await MemoryService.deleteMemory(memoryToDelete.id);
 
-      // Call the callback to refresh the memories list
       if (onMemoryDeleted) {
         onMemoryDeleted();
       }
+      setIsDeleteDialogOpen(false);
+      setMemoryToDelete(null);
     } catch (err) {
       console.error('Error deleting memory:', err);
       setError('Failed to delete memory. Please try again.');
@@ -464,7 +468,10 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
           
                         <IconButton
                           size="small"
-                          onClick={() => handleDelete(memory.id)}
+                          onClick={() => {
+                            setMemoryToDelete(memory);
+                            setIsDeleteDialogOpen(true);
+                          }}
                           disabled={isDeleting === memory.id}
                           sx={{ 
                             color: 'rgba(0, 0, 0, 0.54)',
@@ -533,7 +540,18 @@ const MemoryTimeline: React.FC<TimelineProps> = ({ memories,
         {error}
       </Alert>
     </Snackbar>
-    
+
+    <DeleteMemoryConfirmation
+      open={isDeleteDialogOpen}
+      onClose={() => {
+        setIsDeleteDialogOpen(false);
+        setMemoryToDelete(null);
+      }}
+      onConfirm={handleDelete}
+      memoryCaption={memoryToDelete?.caption || ''}
+      isDeleting={!!isDeleting}
+    />
+          
   </Grid>
   );
 };

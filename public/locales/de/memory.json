@@ -22,6 +22,11 @@
         "cancel": "Abbrechen"
       }
     },
+  "delete_confirmation": {
+    "title": "Erinnerung löschen",
+    "message": "Sind Sie sicher, dass Sie diese Erinnerung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "confirm": "Erinnerung löschen"
+  },
   "lightbox": {
     "close": "Schließen",
     "delete": "Bild löschen",
