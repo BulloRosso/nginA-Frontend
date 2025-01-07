@@ -21,12 +21,6 @@ import {
   Tabs, 
   Tab,
   AlertTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Chip,
   useTheme,
   useMediaQuery,
@@ -838,25 +832,31 @@ const MemoryCapture = () => {
       setSelectedMemory(null);
       localStorage.removeItem('memoryId');
 
+      console.log("-----------------------")
+      console.log("IS MEMORY: " + result.is_memory)
+      console.log("IS NEW: " + result.memory_is_new)
+      console.log("MEMORY ID: " + result.memory_id)
+      console.log("-----------------------")
       // Handle memory updates based on memory_is_new flag
       if (result.is_memory) {
         if (result.memory_is_new) {
-          // If it's a new memory, refresh the entire timeline
-          await fetchMemories();
+          // console.log("New memory created:" + result.memory_id)
+          const newMemory = await MemoryService.getMemory(result.memory_id);
+          setMemories(prevMemories => [...prevMemories, newMemory]);
         } else if (result.memory_id) {
           // If it's an update to existing memory, just update that specific memory
           try {
-            console.log("Updating memory with id:", result.memory_id)
+            // console.log("Updating memory with id:", result.memory_id)
             const updatedMemory = await MemoryService.getMemory(result.memory_id);
 
-            console.log('Updated memory from API:', updatedMemory);
+            // console.log('Updated memory from API:', updatedMemory);
             
             setMemories(prevMemories => {
-              console.log('Previous memories:', prevMemories);
+              // console.log('Previous memories:', prevMemories);
               const newMemories = prevMemories.map(memory => 
                 memory.id === result.memory_id ? updatedMemory : memory
               );
-              console.log('New memories array:', newMemories);
+              // console.log('New memories array:', newMemories);
               return newMemories;
             });
           } catch (err) {
