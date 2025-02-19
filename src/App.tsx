@@ -28,6 +28,7 @@ import { DisclaimerProvider } from './contexts/disclaimer';
 import { Disclaimer } from './components/modals/Disclaimer';
 import InterviewWelcome from './pages/InterviewWelcome';
 import { ResetPassword } from './components/auth/ResetPassword';
+import AgentsCatalogPage from './pages/AgentsCatalogPage';
 
 const theme = createTheme({
   palette: {
@@ -61,6 +62,7 @@ const App = () => {
               <Route path="/interview-welcome" element={<InterviewWelcome />} />
               <Route path="/interview-token" element={<TokenHandler />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/agents" element={<AgentsCatalogPage />} />
               
               {/* Auth routes - no header */}
               <Route 
