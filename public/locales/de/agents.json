@@ -1,6 +1,8 @@
 {
   "agents": {
     "catalog": "Katalog",
-    "catalog_description": "Alle auf diesem System registrierten Agenten"
+    "catalog_description": "Alle auf diesem System registrierten Agenten",
+    "already_in_team": "Agent ist bereits im Team",
+    "add_to_team": "Agent zum Team hinzufügen"  
   }
 }
