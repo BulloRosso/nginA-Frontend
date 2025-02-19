@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProfileSetup from './pages/ProfileSetup';
 import MemoryCapture from './pages/MemoryCapture';
 import ProfileSelection from './pages/ProfileSelection';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme as createMuiTheme, ThemeProvider } from '@mui/material/styles';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -30,7 +30,7 @@ import InterviewWelcome from './pages/InterviewWelcome';
 import { ResetPassword } from './components/auth/ResetPassword';
 import AgentsCatalogPage from './pages/AgentsCatalogPage';
 
-const theme = createTheme({
+const theme = createMuiTheme({
   palette: {
     primary: {
       main: '#1eb3b7',
