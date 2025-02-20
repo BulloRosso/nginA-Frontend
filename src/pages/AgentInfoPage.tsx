@@ -27,6 +27,7 @@ import { OutputTab } from '../components/agents/tabs/OutputTab';
 import { CredentialsTab } from '../components/agents/tabs/CredentialsTab';
 import { CostsTab } from '../components/agents/tabs/CostsTab';
 import { TestAgentDialog } from '../components/agents/TestAgentDialog';
+import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -101,6 +102,9 @@ const AgentInfoPage: React.FC = () => {
           <Typography variant="h4" component="h1">
             {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
           </Typography>
+
+        
+          
           <Fab
             
             size="medium"
@@ -122,6 +126,11 @@ const AgentInfoPage: React.FC = () => {
         </Typography>
 
         <Paper sx={{ mt: 4 }}>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', padding: '20px', gap: 2, ml: 'auto', mr: 8 }}>
+            Agent online status (HEAD) <AgentStatusIndicator agentEndpoint={agent.agent_endpoint} />
+          </Box>
+          
           <Tabs 
             value={tabValue} 
             onChange={(_, newValue) => setTabValue(newValue)}
