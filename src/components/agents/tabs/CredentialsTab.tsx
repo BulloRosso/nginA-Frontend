@@ -12,6 +12,7 @@ import {
   Checkbox,
   Button,
   Typography,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,10 +24,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useTranslation } from 'react-i18next';
 import { Agent } from '../../../types/agent';
 import { VaultService, Credential } from '../../../services/vault';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
   const { t } = useTranslation(['agents']);
@@ -54,6 +56,13 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
       service_name: agent.id
     }));
   }, [agent.id]);
+
+  const isDateOld = (date: string) => {
+    const timestamp = new Date(date).getTime();
+    const now = new Date().getTime();
+    const thirtyDaysSecondsInMs =  2592000 * 1000;
+    return (now - timestamp) > thirtyDaysSecondsInMs;
+  };
 
   const fetchCredentials = async () => {
     try {
@@ -107,8 +116,6 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      
-      
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -119,18 +126,43 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
           </TableHead>
           <TableBody>
             {filteredCredentials.map((credential) => (
-              <TableRow
-                key={credential.id}
-                sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
-              >
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedCredentials.has(credential.id!)}
-                    onChange={() => handleCheckboxChange(credential.id!)}
-                  />
-                </TableCell>
-                <TableCell>{credential.key_name}</TableCell>
-              </TableRow>
+              <React.Fragment key={credential.id}>
+                <TableRow
+                  sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
+                >
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedCredentials.has(credential.id!)}
+                      onChange={() => handleCheckboxChange(credential.id!)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography>{credential.key_name}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography 
+                        variant="caption" 
+                        color={isDateOld(credential.created_at!) ? 'warning.main' : 'text.secondary'}
+                      >
+                        {new Date(credential.created_at!).toLocaleString()}
+                      </Typography>
+                      {isDateOld(credential.created_at!) && (
+                        <Chip
+                          icon={<WarningAmberIcon sx={{ marginLeft: '12px !important', color: 'white !important' }} />}
+                          label="Possibly outdated"
+                          size="small"
+                          sx={{
+                            backgroundColor: 'warning.main',
+                            color: 'white',
+                            '& .MuiChip-icon': {
+                              color: 'white'
+                            }
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
@@ -174,7 +206,7 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
         </Typography>
 
       </Box>
-
+      
       <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)}>
         <DialogTitle>{t('agents.credentials.modal.title')}</DialogTitle>
         <DialogContent>
