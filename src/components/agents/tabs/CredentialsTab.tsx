@@ -11,7 +11,7 @@ import {
   Paper,
   Checkbox,
   Button,
-  Fab,
+  Typography,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,38 +23,48 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { useTranslation } from 'react-i18next';
 import { Agent } from '../../../types/agent';
 import { VaultService, Credential } from '../../../services/vault';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
+  const { t } = useTranslation(['agents']);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [selectedCredentials, setSelectedCredentials] = useState<Set<string>>(new Set());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newCredential, setNewCredential] = useState<Credential>({
-    service_name: '',
+    service_name: agent.id,
     key_name: '',
     secret_key: ''
   });
 
+  // Filter credentials for current agent
+  const filteredCredentials = credentials.filter(
+    cred => cred.service_name === agent.id
+  );
+
+  useEffect(() => {
+    fetchCredentials();
+    // Initialize new credential with agent.id
+    setNewCredential(prev => ({
+      ...prev,
+      service_name: agent.id
+    }));
+  }, [agent.id]);
+
   const fetchCredentials = async () => {
     try {
       const data = await VaultService.getCredentials();
-      // Sort by service_name, then by key_name
-      const sortedData = data.sort((a, b) => {
-        const serviceCompare = a.service_name.localeCompare(b.service_name);
-        return serviceCompare !== 0 ? serviceCompare : a.key_name.localeCompare(b.key_name);
-      });
+      // Sort by key_name ascending
+      const sortedData = data.sort((a, b) => a.key_name.localeCompare(b.key_name));
       setCredentials(sortedData);
     } catch (err) {
       setError('Failed to fetch credentials');
     }
   };
-
-  useEffect(() => {
-    fetchCredentials();
-  }, []);
 
   const handleCheckboxChange = (id: string) => {
     const newSelected = new Set(selectedCredentials);
@@ -86,7 +96,7 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
       }
       await VaultService.createCredential(newCredential);
       setIsAddDialogOpen(false);
-      setNewCredential({ service_name: '', key_name: '', secret_key: '' });
+      setNewCredential({ service_name: agent.id, key_name: '', secret_key: '' });
       await fetchCredentials();
     } catch (err) {
       setError('Failed to add credential');
@@ -97,17 +107,18 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
+      
+      
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox"></TableCell>
-              <TableCell>Service Name</TableCell>
-              <TableCell>Key Name</TableCell>
+              <TableCell>{t('agents.credentials.modal.key_name')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {credentials.map((credential, index) => (
+            {filteredCredentials.map((credential) => (
               <TableRow
                 key={credential.id}
                 sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
@@ -118,7 +129,6 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
                     onChange={() => handleCheckboxChange(credential.id!)}
                   />
                 </TableCell>
-                <TableCell>{credential.service_name}</TableCell>
                 <TableCell>{credential.key_name}</TableCell>
               </TableRow>
             ))}
@@ -126,46 +136,61 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
         </Table>
       </TableContainer>
 
-      {selectedCredentials.size > 0 && (
-        <Box sx={{ mt: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+        {selectedCredentials.size > 0 && (
           <Button
             variant="contained"
             color="error"
             onClick={handleDelete}
           >
-            Delete Credentials ({selectedCredentials.size})
+            {t('agents.credentials.delete_count', { count: selectedCredentials.size })}
           </Button>
-        </Box>
-      )}
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+        )}
         <Button
           variant="contained"
           color="primary"
           onClick={() => setIsAddDialogOpen(true)}
           startIcon={<AddIcon />}
+          sx={{ ml: 'auto' }}
         >
-          Add Credential
+          {t('agents.credentials.add_new')}
         </Button>
       </Box>
 
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'start', 
+          gap: 1,
+          backgroundColor: '#f5f4ee',
+          borderRadius: 1,
+          p: 2,
+          mt: 2
+        }}
+      >
+        <InfoOutlinedIcon color="warning" fontSize="small" />
+        <Typography color="warning.dark" sx={{ flex: 1 }}>
+          {t('agents.credentials.note')}
+        </Typography>
+
+      </Box>
+
       <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)}>
-        <DialogTitle>Add Credential</DialogTitle>
+        <DialogTitle>{t('agents.credentials.modal.title')}</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
             margin="dense"
-            label="Service Name"
+            label={t('agents.credentials.modal.service_name')}
             fullWidth
             value={newCredential.service_name}
-            onChange={(e) => setNewCredential({
-              ...newCredential,
-              service_name: e.target.value
-            })}
+            InputProps={{
+              readOnly: true,
+            }}
+            disabled
           />
           <TextField
             margin="dense"
-            label="Key Name"
+            label={t('agents.credentials.modal.key_name')}
             fullWidth
             value={newCredential.key_name}
             onChange={(e) => setNewCredential({
@@ -182,7 +207,7 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
           />
           <TextField
             margin="dense"
-            label="Secret"
+            label={t('agents.credentials.modal.secret')}
             type={showSecret ? 'text' : 'password'}
             fullWidth
             value={newCredential.secret_key}
@@ -210,9 +235,11 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setIsAddDialogOpen(false)}>
+            {t('agents.credentials.modal.cancel')}
+          </Button>
           <Button onClick={handleAddCredential} variant="contained">
-            Add Credential
+            {t('agents.credentials.modal.submit')}
           </Button>
         </DialogActions>
       </Dialog>

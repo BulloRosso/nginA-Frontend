@@ -7,11 +7,25 @@
     "tabs": {
       "input": "Eingabe",
       "output": "Ausgabe",
-      "credentials": "Anmeldedaten",
+      "credentials": "API Keys & Tokens",
       "costs": "Kosten & Laufzeit"
     },
     "discover_new": "Neuen Agenten entdecken",
     "discover_now": "Jetzt entdecken",
-    "discovery_url": "Agent Discovery URL"
+    "discovery_url": "Agent Discovery URL",
+    "credentials": {
+      "note": "Aus Sicherheitsgründen können Secrets weder angezeigt noch aktualisiert werden. Bitte löschen Sie diese entsprechend und legen sie dann erneut an",
+      "delete_selected": "Lösche Credentials",
+      "delete_count": "Lösche Credentials ({{count}})",
+      "add_new": "Neue Credentials",
+      "modal": {
+        "title": "Neue Credentials",
+        "service_name": "Service Name",
+        "key_name": "Key Name",
+        "secret": "Secret",
+        "cancel": "Abbruch",
+        "submit": "Neue Credentials"
+      }
+    }
   }
 }
