@@ -171,7 +171,7 @@ export const Header = () => {
           fontWeight: 'bold', 
           flexGrow: 1 
         }}>
-          <span style={{ color: 'red' }}>nO</span>blivion
+          ngin<span style={{ color: 'red' }}>A</span>
           {profileName && (
             <span style={{ 
               marginLeft: '16px', 

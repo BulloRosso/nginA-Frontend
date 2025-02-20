@@ -13,6 +13,10 @@ import {
   Alert
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import InputIcon from '@mui/icons-material/Input';
+import OutputIcon from '@mui/icons-material/Output';
+import SecurityIcon from '@mui/icons-material/Security';
+import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
 import { useTranslation } from 'react-i18next';
 import { AgentService } from '../services/agents';
 import { Agent } from '../types/agent';
@@ -40,7 +44,7 @@ const AgentInfoPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
-  const { t, i18n } = useTranslation('agents');
+  const { t, i18n } = useTranslation(['agents']);
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -81,18 +85,18 @@ const AgentInfoPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ mb: 4 }}>
-        <IconButton 
-          onClick={() => navigate(-1)} 
-          sx={{ mb: 2 }}
-          aria-label="back"
-        >
-          <ArrowBackIcon />
-        </IconButton>
+      <Box sx={{ mt: 3 }}>
 
-        <Typography variant="h4" component="h1" gutterBottom>
-          {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <img 
+            src="/img/robot-head-outline.svg" 
+            alt="Robot head icon" 
+            style={{ width: '32px', height: '32px' }}
+          />
+          <Typography variant="h4" component="h1">
+            {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
+          </Typography>
+        </Box>
 
         <Typography variant="body1" paragraph>
           {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
@@ -104,10 +108,26 @@ const AgentInfoPage: React.FC = () => {
             onChange={(_, newValue) => setTabValue(newValue)}
             aria-label="agent information tabs"
           >
-            <Tab label={t('tabs.input')} />
-            <Tab label={t('tabs.output')} />
-            <Tab label={t('tabs.credentials')} />
-            <Tab label={t('tabs.costs')} />
+            <Tab 
+              icon={<InputIcon />} 
+              iconPosition="start" 
+              label={t('agents.tabs.input')} 
+            />
+            <Tab 
+              icon={<OutputIcon />} 
+              iconPosition="start" 
+              label={t('agents.tabs.output')} 
+            />
+            <Tab 
+              icon={<SecurityIcon />} 
+              iconPosition="start" 
+              label={t('agents.tabs.credentials')} 
+            />
+            <Tab 
+              icon={<MonetizationOnOutlinedIcon />} 
+              iconPosition="start" 
+              label={t('agents.tabs.costs')} 
+            />
           </Tabs>
 
           <TabPanel value={tabValue} index={0}>

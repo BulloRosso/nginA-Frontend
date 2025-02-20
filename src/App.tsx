@@ -63,13 +63,7 @@ const App = () => {
               <Route path="/interview-welcome" element={<InterviewWelcome />} />
               <Route path="/interview-token" element={<TokenHandler />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/agents" element={<AgentsCatalogPage />} />
-              <Route 
-                path="/agents/:id" 
-                element={
-                  <AgentInfoPage />  
-                } 
-              />
+             
               
               {/* Auth routes - no header */}
               <Route 
@@ -99,6 +93,26 @@ const App = () => {
                   <ProtectedRoute>
                     <VerifiedRoute>
                       <ProfileSelection />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
+
+              <Route 
+                path="/agents" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <AgentsCatalogPage />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } />
+              <Route 
+                path="/agents/:id" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <AgentInfoPage />  
                     </VerifiedRoute>
                   </ProtectedRoute>
                 } 

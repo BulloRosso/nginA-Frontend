@@ -53,7 +53,7 @@ const SchemaTable: React.FC<SchemaTableProps> = ({ schema }) => {
               <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
                 {name}
               </TableCell>
-              <TableCell>{field.type}</TableCell>
+              <TableCell><code>{field.type}</code></TableCell>
               <TableCell>
                 {field.description ? renderMarkdown(field.description) : '-'}
               </TableCell>

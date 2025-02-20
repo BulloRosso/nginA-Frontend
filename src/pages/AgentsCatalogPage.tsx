@@ -112,24 +112,43 @@ const AgentsCatalogPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg">
+    <Container 
+      maxWidth={false} 
+      disableGutters 
+      sx={{ 
+        width: '100%',
+        margin: 0,
+        padding: 0,
+      }}
+    >
       <Box sx={{ 
         pt: 2, 
-        pb: 4,
+        pb: 2,
         mb: 2,
         padding: 2,
         backgroundSize: 'cover',
         background: 'url(/img/agents-banner.jpg) no-repeat center'
       }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h4" component="h1"
+          sx={{ 
+            color: 'white',
+            fontWeight: 'bold',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          }}
+          gutterBottom>
           {t('agents.catalog')}
         </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
+        <Typography variant="body1" color="white"
+          sx={{
+            textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
+          }}
+          paragraph>
           {t('agents.catalog_description')}
         </Typography>
       </Box>
-
-      <AgentsCatalog key={refreshKey} />
+      <Box sx={{ paddingRight: '20px'}}>
+        <AgentsCatalog key={refreshKey} />
+      </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Button
