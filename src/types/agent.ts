@@ -4,26 +4,9 @@ export interface I18nContent {
   en: string;
 }
 
-export interface Credential {
-  key: string;
-  value: string;
-}
-
-export interface Text {
-  key: string;
-  value: string;
-}
-
-export interface File {
-  key: string;
-  url: string;
-  mimeType: string;
-}
-
-export interface IOConfig {
-  credentials?: Credential[];
-  texts?: Text[];
-  files?: File[];
+export interface SchemaField {
+  type: string;
+  description?: string;
 }
 
 export interface Agent {
@@ -31,21 +14,25 @@ export interface Agent {
   created_at: string;
   title: I18nContent;
   description: I18nContent;
-  input?: IOConfig;
-  output?: IOConfig;
+  input?: Record<string, SchemaField>;
+  output?: Record<string, SchemaField>;
   credits_per_run: number;
   workflow_id?: string;
   stars: number;
   image_url?: string;
+  max_execution_time_secs?: number;
+  agent_endpoint?: string;
 }
 
 export interface AgentCreateDto {
   title: I18nContent;
   description: I18nContent;
-  input?: IOConfig;
-  output?: IOConfig;
+  input?: Record<string, SchemaField>;
+  output?: Record<string, SchemaField>;
   credits_per_run?: number;
   workflow_id?: string;
   stars?: number;
   image_url?: string;
+  max_execution_time_secs?: number;
+  agent_endpoint?: string;
 }

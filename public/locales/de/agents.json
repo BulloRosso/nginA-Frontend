@@ -3,6 +3,12 @@
     "catalog": "Katalog",
     "catalog_description": "Alle auf diesem System registrierten Agenten",
     "already_in_team": "Agent ist bereits im Team",
-    "add_to_team": "Agent zum Team hinzufügen"  
+    "add_to_team": "Agent zum Team hinzufügen",
+    "tabs": {
+      "input": "Eingabe",
+      "output": "Ausgabe",
+      "credentials": "Anmeldedaten",
+      "costs": "Kosten & Laufzeit"
+    }
   }
 }

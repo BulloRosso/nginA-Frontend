@@ -19,8 +19,10 @@ import { AgentService } from '../services/agents';
 import { TeamService } from '../services/teams';
 import { Agent } from '../types/agent';
 import { Team } from '../types/team';
+import { useNavigate } from 'react-router-dom';
 
 const AgentsCatalog: React.FC = () => {
+  const navigate = useNavigate();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [team, setTeam] = useState<Team | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,10 +89,12 @@ const AgentsCatalog: React.FC = () => {
         <Grid item xs={12} sm={6} md={4} lg={3} key={agent.id}>
           <Box sx={{ position: 'relative', pt: 2, px: 2, height: '100%' }}>
             <Card 
+              onClick={() => navigate(`/agents/${agent.id}`)}
               sx={{ 
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
+                cursor: 'pointer',
                 position: 'relative',
                 '&:hover': {
                   boxShadow: 6,

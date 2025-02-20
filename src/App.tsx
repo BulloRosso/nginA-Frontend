@@ -29,6 +29,7 @@ import { Disclaimer } from './components/modals/Disclaimer';
 import InterviewWelcome from './pages/InterviewWelcome';
 import { ResetPassword } from './components/auth/ResetPassword';
 import AgentsCatalogPage from './pages/AgentsCatalogPage';
+import AgentInfoPage from './pages/AgentInfoPage';
 
 const theme = createMuiTheme({
   palette: {
@@ -63,6 +64,12 @@ const App = () => {
               <Route path="/interview-token" element={<TokenHandler />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/agents" element={<AgentsCatalogPage />} />
+              <Route 
+                path="/agents/:id" 
+                element={
+                  <AgentInfoPage />  
+                } 
+              />
               
               {/* Auth routes - no header */}
               <Route 
