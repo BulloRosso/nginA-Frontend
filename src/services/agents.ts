@@ -2,6 +2,10 @@
 import api from './api';
 import { Agent, AgentCreateDto } from '../types/agent';
 
+interface TestAgentInput {
+  input: Record<string, string>;
+}
+
 export const AgentService = {
   getAgents: async (limit: number = 100, offset: number = 0): Promise<Agent[]> => {
     const response = await api.get('/api/v1/agents', {
@@ -30,7 +34,12 @@ export const AgentService = {
   },
 
   discoverAgent: async (agentDiscoveryUrl: string): Promise<Agent> => {
-      const response = await api.post('/api/v1/agents/discover', { agentDiscoveryUrl });
-      return response.data;
+    const response = await api.post('/api/v1/agents/discover', { agentDiscoveryUrl });
+    return response.data;
+  },
+
+  testAgent: async (id: string, data: TestAgentInput): Promise<any> => {
+    const response = await api.post(`/api/v1/agents/${id}/test`, data);
+    return response.data;
   }
 };

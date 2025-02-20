@@ -13,6 +13,8 @@ import {
   Alert
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
+import DirectionsRunOutlinedIcon from '@mui/icons-material/DirectionsRunOutlined';
+import { Fab } from '@mui/material';
 import InputIcon from '@mui/icons-material/Input';
 import OutputIcon from '@mui/icons-material/Output';
 import SecurityIcon from '@mui/icons-material/Security';
@@ -24,6 +26,7 @@ import { InputTab } from '../components/agents/tabs/InputTab';
 import { OutputTab } from '../components/agents/tabs/OutputTab';
 import { CredentialsTab } from '../components/agents/tabs/CredentialsTab';
 import { CostsTab } from '../components/agents/tabs/CostsTab';
+import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -44,6 +47,7 @@ const AgentInfoPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
+  const [testDialogOpen, setTestDialogOpen] = useState(false);
   const { t, i18n } = useTranslation(['agents']);
 
   useEffect(() => {
@@ -86,8 +90,9 @@ const AgentInfoPage: React.FC = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 3 }}>
+      
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, position: 'relative' }}>
           <img 
             src="/img/robot-head-outline.svg" 
             alt="Robot head icon" 
@@ -96,7 +101,21 @@ const AgentInfoPage: React.FC = () => {
           <Typography variant="h4" component="h1">
             {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
           </Typography>
+          <Fab
+            
+            size="medium"
+            onClick={() => setTestDialogOpen(true)}
+            sx={{ backgroundColor: 'gold', position: 'absolute', right: 0 }}
+          >
+            <DirectionsRunOutlinedIcon />
+          </Fab>
         </Box>
+
+        <TestAgentDialog
+          open={testDialogOpen}
+          onClose={() => setTestDialogOpen(false)}
+          agent={agent}
+        />
 
         <Typography variant="body1" paragraph>
           {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
