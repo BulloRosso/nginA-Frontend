@@ -9,6 +9,9 @@
       "output": "Ausgabe",
       "credentials": "Anmeldedaten",
       "costs": "Kosten & Laufzeit"
-    }
+    },
+    "discover_new": "Neuen Agenten entdecken",
+    "discover_now": "Jetzt entdecken",
+    "discovery_url": "Agent Discovery URL"
   }
 }

@@ -27,5 +27,10 @@ export const AgentService = {
 
   deleteAgent: async (id: string): Promise<void> => {
     await api.delete(`/api/v1/agents/${id}`);
+  },
+
+  discoverAgent: async (agentDiscoveryUrl: string): Promise<Agent> => {
+      const response = await api.post('/api/v1/agents/discover', { agentDiscoveryUrl });
+      return response.data;
   }
 };
