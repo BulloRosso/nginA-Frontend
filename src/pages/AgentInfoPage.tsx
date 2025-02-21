@@ -29,6 +29,8 @@ import { CostsTab } from '../components/agents/tabs/CostsTab';
 import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
 
+
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -127,9 +129,7 @@ const AgentInfoPage: React.FC = () => {
 
         <Paper sx={{ mt: 4 }}>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', padding: '20px', gap: 2, ml: 'auto', mr: 8 }}>
-            Agent online status (HEAD) <AgentStatusIndicator agentEndpoint={agent.agent_endpoint} />
-          </Box>
+         
           
           <Tabs 
             value={tabValue} 
@@ -170,6 +170,13 @@ const AgentInfoPage: React.FC = () => {
           <TabPanel value={tabValue} index={3}>
             <CostsTab agent={agent} />
           </TabPanel>
+
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'end', paddingRight: '24px', paddingBottom: '10px', gap: 2, right: 0 }}>
+            <Typography variant="body1" color="text.secondary">
+            <small>{t('agents.is_online')}</small>
+            </Typography>
+            <AgentStatusIndicator agentEndpoint={agent.agent_endpoint} />
+          </Box>
         </Paper>
       </Box>
     </Container>

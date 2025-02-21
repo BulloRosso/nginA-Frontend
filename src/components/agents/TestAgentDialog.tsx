@@ -77,13 +77,13 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
       setLoading(true);
       setError(null);
 
-      const response = await AgentService.testAgent(agent.id, {
+      const response = await AgentService.testAgent(agent.agent_endpoint, {
         input: inputValues
       });
 
       // Handle successful response
       console.log('Test response:', response);
-      onClose();
+      // --------------------
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to test agent');
     } finally {

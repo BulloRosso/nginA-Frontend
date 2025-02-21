@@ -8,8 +8,9 @@
       "input": "Eingabe",
       "output": "Ausgabe",
       "credentials": "API Keys & Tokens",
-      "costs": "Kosten & Laufzeit"
+      "costs": "Kosten & Tags"
     },
+    "is_online": "Ist online",
     "discover_new": "Neuen Agenten entdecken",
     "discover_now": "Jetzt entdecken",
     "discovery_url": "Agent Discovery URL",

@@ -60,11 +60,11 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
       <ListItemText primary={t('common.menu.profiles')} />
     </MenuItem>,
 
-    <MenuItem key="invitations" onClick={() => handleNavigation('/invitations')}>
+    <MenuItem key="invitations" onClick={() => handleNavigation('/agents')}>
       <ListItemIcon>
         <InviteIcon fontSize="small" />
       </ListItemIcon>
-      <ListItemText primary={t('common.menu.invitations')} />
+      <ListItemText primary={t('common.menu.catalog')} />
     </MenuItem>
   ];
 
@@ -165,9 +165,8 @@ export const Header = () => {
   return (
     <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
       <Toolbar variant="dense">
-        <img src="/conch-logo.png" alt="Conch Logo" width="30" height="30" />
         <Typography variant="h6" component="div" sx={{ 
-          marginLeft: '8px',
+          
           fontWeight: 'bold', 
           flexGrow: 1 
         }}>
