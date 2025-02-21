@@ -19,6 +19,7 @@
     "@mui/lab": "^5.0.0-alpha.165",
     "@mui/material": "^5.15.10",
     "@mui/x-date-pickers": "^6.19.4",
+    "@mui/x-tree-view": "^7.26.0",
     "@supabase/supabase-js": "^2.39.3",
     "axios": "^1.6.7",
     "date-fns": "^2.30.0",

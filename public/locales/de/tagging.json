@@ -1,0 +1,37 @@
+{
+  "tagging": {
+    "categories": {
+      "compliance": "Compliance",
+      "creates": "Erzeugt",
+      "costs": "Kosten"
+    },
+    "tags": {
+      "compliance": {
+        "HIPAA": "HIPAA",
+        "PCI": "PCI",
+        "GDPR": "DSGVO"
+      },
+      "creates": {
+        "text": "Text",
+        "audio": "Audio",
+        "image": "Bild",
+        "video": "Video"
+      },
+      "costs": {
+        "free": "Kostenlos",
+        "paid": "Kostenpflichtig"
+      }
+    },
+    "dialog": {
+      "title": "Tags auswählen",
+      "no_tags": "Keine Tags verfügbar",
+      "cancel": "Abbrechen",
+      "assign": "Zuweisen"
+    },
+    "input": {
+      "label": "Tags",
+      "placeholder": "Tags hinzufügen...",
+      "select_button": "Tags auswählen"
+    }
+  }
+}
