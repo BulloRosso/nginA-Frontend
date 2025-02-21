@@ -13,11 +13,15 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Box,
   TextField,
-  styled
+  styled,
+  IconButton,
 } from '@mui/material';
 import { Agent } from '../../types/agent';
 import { AgentService } from '../../services/agents';
+import ResponseEditor from './ResponseEditor'; 
+import { Close as CloseIcon } from '@mui/icons-material';
 
 interface TestAgentDialogProps {
   open: boolean;
@@ -64,7 +68,8 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
   const [inputValues, setInputValues] = useState<InputValues>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [response, setResponse] = useState<any>(null); 
+  
   const handleInputChange = (propertyName: string, value: string) => {
     setInputValues(prev => ({
       ...prev,
@@ -72,18 +77,20 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
     }));
   };
 
+  const handleReset = () => {
+    setInputValues({});
+    setResponse(null);
+    setError(null);
+  };
+
   const handleSubmit = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await AgentService.testAgent(agent.agent_endpoint, {
-        input: inputValues
-      });
+      const response = await AgentService.testAgent(agent.agent_endpoint,  inputValues);
 
-      // Handle successful response
-      console.log('Test response:', response);
-      // --------------------
+      setResponse(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to test agent');
     } finally {
@@ -93,9 +100,20 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Test Agent</DialogTitle>
-      <DialogContent>
-        <TableContainer component={Paper} sx={{ mt: 2 }}>
+      <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>Test Agent</div>
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ mb: 0 }}>
+        <TableContainer component={Paper} sx={{ mt: 1, mb: 0 }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -135,18 +153,41 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
             </TableBody>
           </Table>
         </TableContainer>
+        
+        <Box sx={{ mt: 0, borderRadius: '8px' }}>
+          <ResponseEditor 
+            response={response}
+            onReset={handleReset}
+          />
+        </Box>
+        
         {error && (
           <div style={{ color: 'red', marginTop: '16px' }}>
             {error}
           </div>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+      <DialogActions sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '24px 24px',
+        flex: 1
+      }}>
+        {response && (
+      <Button 
+          variant="outlined"
+          color="secondary"
+          onClick={handleReset}
+        >
+          Reset
+        </Button>
+        )}
+        <span></span>
         <Button 
           onClick={handleSubmit} 
           variant="contained" 
           disabled={loading}
+          sx={{ backgroundColor: 'gold' }}
         >
           {loading ? 'Testing...' : 'Invoke Agent'}
         </Button>
