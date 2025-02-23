@@ -220,7 +220,7 @@ const AgentInfoPage: React.FC = () => {
             <CostsTab agent={agent} />
           </TabPanel>
           <TabPanel value={tabValue} index={4}>
-            <InputFormForSchema schema={schema} onSubmit={handleSchemaSubmit} />
+            
           </TabPanel>
 
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'end', paddingRight: '24px', paddingBottom: '10px', gap: 2, right: 0 }}>

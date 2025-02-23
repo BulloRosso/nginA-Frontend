@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  CardContent,
   TextField,
   Button,
   IconButton,
@@ -14,6 +13,11 @@ const SchemaForm = ({ schema, onSubmit }) => {
   const [formData, setFormData] = useState({});
   const [expandedItems, setExpandedItems] = useState({});
 
+  const handleReset = () => {
+    setFormData({});
+    setExpandedItems({});
+  }
+  
   const handleChange = (path, value) => {
     setFormData(prev => {
       const newData = { ...prev };
@@ -52,11 +56,9 @@ const SchemaForm = ({ schema, onSubmit }) => {
 
       current.push({});
 
-      // Auto-expand newly added item
-      const newIndex = current.length - 1;
       setExpandedItems(prevExpanded => ({
         ...prevExpanded,
-        [`${path}.${newIndex}`]: true
+        [`${path}.${current.length - 1}`]: true
       }));
 
       return newData;
@@ -86,13 +88,17 @@ const SchemaForm = ({ schema, onSubmit }) => {
   };
 
   const renderField = (fieldSchema, path) => {
+    const isRequired = schema.required?.includes(path.split('.').pop());
+    const fieldLabel = `${fieldSchema.title || path.split('.').pop()}`;
+
     switch (fieldSchema.type) {
       case 'string':
         return (
           <Box sx={{ mb: 2 }}>
             <TextField
+              required={isRequired}
               fullWidth
-              label={fieldSchema.title || path.split('.').pop()}
+              label={fieldLabel}
               onChange={(e) => handleChange(path, e.target.value)}
               value={getValueByPath(formData, path) || ''}
               margin="none"
@@ -106,7 +112,7 @@ const SchemaForm = ({ schema, onSubmit }) => {
                 sx={{ 
                   mt: 0, 
                   p: "6px", 
-                  color: '#999999',
+                  color: '#666666',
                   bgcolor: "#f6f4ee",
                   borderRadius: 0
                 }}
@@ -118,26 +124,38 @@ const SchemaForm = ({ schema, onSubmit }) => {
         );
 
       case 'number':
+      case 'integer':
         return (
-          <Box sx={{ mb: 2, width: '50%' }}>
+          <Box sx={{ mb: 2 }}>
             <TextField
+              required={isRequired}
               fullWidth
               type="number"
-              label={fieldSchema.title || path.split('.').pop()}
-              onChange={(e) => handleChange(path, parseFloat(e.target.value))}
+              label={fieldLabel}
+              onChange={(e) => {
+                const value = fieldSchema.type === 'integer' 
+                  ? parseInt(e.target.value)
+                  : parseFloat(e.target.value);
+                handleChange(path, value);
+              }}
               value={getValueByPath(formData, path) || ''}
               margin="none"
               size="small"
+              sx={{ backgroundColor: 'white', borderRadius: 1 }}
               variant="outlined"
+              inputProps={{
+                step: fieldSchema.type === 'integer' ? 1 : 'any'
+              }}
             />
             {fieldSchema.description && (
               <Typography 
                 variant="body2" 
                 sx={{ 
-                  mt: 0.5, 
+                  mt: 0, 
                   p: "6px", 
+                  color: '#666666',
                   bgcolor: "#f6f4ee",
-                  borderRadius: 1
+                  borderRadius: 0
                 }}
               >
                 {fieldSchema.description}
@@ -149,7 +167,6 @@ const SchemaForm = ({ schema, onSubmit }) => {
       case 'object':
         return (
           <Box sx={{ mb: 2 }}>
-            
             {Object.entries(fieldSchema.properties).map(([key, prop]) => (
               <div key={key}>
                 {renderField(prop, `${path}.${key}`)}
@@ -222,12 +239,7 @@ const SchemaForm = ({ schema, onSubmit }) => {
                 </Box>
                 <Collapse in={expandedItems[`${path}.${index}`]}>
                   <Box sx={{ p: 1 }}>
-                    {index === 0 && Object.entries(fieldSchema.items.properties).map(([key, prop], idx) => (
-                      <div key={key}>
-                        {renderField(prop, `${path}.${index}.${key}`)}
-                      </div>
-                    ))}
-                    {index > 0 && renderField(fieldSchema.items, `${path}.${index}`)}
+                    {renderField(fieldSchema.items, `${path}.${index}`)}
                   </Box>
                 </Collapse>
               </Box>
@@ -241,6 +253,7 @@ const SchemaForm = ({ schema, onSubmit }) => {
   };
 
   const getValueByPath = (obj, path) => {
+    if (!path) return obj;
     return path.split('.').reduce((current, part) => {
       return current?.[part];
     }, obj);
@@ -251,16 +264,38 @@ const SchemaForm = ({ schema, onSubmit }) => {
     onSubmit(formData);
   };
 
+  const notEmpty = (obj) => {
+    return Object.entries(obj).length > 0
+  };
+  
+
   return (
-    <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '16px' }}>
+    <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '1000px', margin: '0', paddingTop: '10px' }}>
       {renderField(schema, '')}
+      
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        flex: 1
+      }}>
+        {notEmpty(formData) && (
+          <Button 
+            variant="outlined"
+            color="secondary"
+            onClick={handleReset}
+          >
+            Reset
+          </Button>
+        )}
+      <Box>
+      </Box>
       <Button 
         variant="contained" 
         type="submit"
-        sx={{ mt: 2 }}
       >
         Submit
       </Button>
+      </Box>
     </form>
   );
 };

@@ -40,14 +40,14 @@ const ResponseEditor = ({ response, onReset }) => {
       <Collapse in={showEditor} timeout={300}>
         <Box 
           sx={{
-            height: '160px',
+            height: '220px',
             border: '1px solid',
             borderColor: 'divider',
             overflow: 'hidden'
           }}
         >
           <Editor
-            height="160px"
+            height="220px"
             defaultLanguage="json"
             value={editorValue}
             options={editorOptions}

@@ -6,23 +6,18 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Box,
   CircularProgress,
-  TextField,
-  styled,
   IconButton,
+  Typography
 } from '@mui/material';
 import { Agent } from '../../types/agent';
 import { AgentService } from '../../services/agents';
-import ResponseEditor from './ResponseEditor'; 
+import ResponseEditor from './ResponseEditor';
+import SchemaForm from './tabs/InputFormForSchema';
 import { Close as CloseIcon } from '@mui/icons-material';
+import InputIcon from '@mui/icons-material/Input';
+import OutputIcon from '@mui/icons-material/Output';
 
 interface TestAgentDialogProps {
   open: boolean;
@@ -30,67 +25,26 @@ interface TestAgentDialogProps {
   agent: Agent;
 }
 
-interface InputValues {
-  [key: string]: string;
-}
-
-const ResizableTextField = styled(TextField)({
-  '& .MuiInputBase-inputMultiline': {
-    resize: 'vertical',
-    minHeight: '24px'
-  },
-  '& .MuiInputBase-root': {
-    backgroundColor: 'white'
-  }
-});
-
-const StyledTextField = styled(TextField)({
-  '& .MuiInputBase-root': {
-    backgroundColor: 'white'
-  }
-});
-
-const StyledTableCell = styled(TableCell)({
-  verticalAlign: 'top',
-  paddingTop: '16px'
-});
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
-
 export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
   open,
   onClose,
   agent
 }) => {
-  const [inputValues, setInputValues] = useState<InputValues>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [response, setResponse] = useState<any>(null); 
-  
-  const handleInputChange = (propertyName: string, value: string) => {
-    setInputValues(prev => ({
-      ...prev,
-      [propertyName]: value
-    }));
-  };
+  const [response, setResponse] = useState<any>(null);
 
   const handleReset = () => {
-    setInputValues({});
     setResponse(null);
     setError(null);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (formData: any) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await AgentService.testAgent(agent.agent_endpoint,  inputValues);
-
+      const response = await AgentService.testAgent(agent.agent_endpoint, formData);
       setResponse(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to test agent');
@@ -114,54 +68,26 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ mb: 0 }}>
-        <TableContainer component={Paper} sx={{ mt: 1, mb: 0 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>Property</StyledTableCell>
-                <StyledTableCell>Description</StyledTableCell>
-                <StyledTableCell>Value</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.entries(agent.input || {}).map(([propertyName, schema]) => (
-                <StyledTableRow key={propertyName}>
-                  <StyledTableCell><b>{propertyName}</b> ({schema.type})</StyledTableCell>
-                  <StyledTableCell>{schema.description || '-'}</StyledTableCell>
-                  <StyledTableCell>
-                    {schema.type === 'text' ? (
-                      <ResizableTextField
-                        fullWidth
-                        multiline
-                        minRows={1}
-                        value={inputValues[propertyName] || ''}
-                        onChange={(e) => handleInputChange(propertyName, e.target.value)}
-                        size="small"
-                        error={Boolean(error)}
-                      />
-                    ) : (
-                      <StyledTextField
-                        fullWidth
-                        value={inputValues[propertyName] || ''}
-                        onChange={(e) => handleInputChange(propertyName, e.target.value)}
-                        size="small"
-                        error={Boolean(error)}
-                      />
-                    )}
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        
-        <Box sx={{ mt: 0, borderRadius: '8px' }}>
+        <Typography variant="h6">
+          <InputIcon /> Input parameters
+        </Typography>
+        <SchemaForm 
+          schema={ agent.input || {} }
+          onSubmit={handleSubmit}
+        />
+
+        {response && (
+        <Box sx={{ mt: 2, borderRadius: '8px' }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            <OutputIcon /> Response from agent
+          </Typography>
           <ResponseEditor 
             response={response}
             onReset={handleReset}
           />
         </Box>
-        
+        )}
+
         {error && (
           <div style={{ color: 'red', marginTop: '16px' }}>
             {error}
@@ -174,36 +100,18 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
         padding: '24px 24px',
         flex: 1
       }}>
-        {response && (
-      <Button 
-          variant="outlined"
-          color="secondary"
-          onClick={handleReset}
-        >
-          Reset
-        </Button>
-        )}
+       
         <span></span>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
-          disabled={loading}
-          sx={{ backgroundColor: 'gold' }}
-        >
-          {loading && (
-          <CircularProgress size={24}
+        {loading && (
+          <CircularProgress 
+            size={24}
             thickness={6}
             sx={{
               color: 'primary',
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              marginTop: '-12px',
-              marginLeft: '-12px',
-            }} />
-          )}
-          {loading ? 'Waiting for response...' : 'Invoke Agent'}
-        </Button>
+              marginRight: 2
+            }} 
+          />
+        )}
       </DialogActions>
     </Dialog>
   );
