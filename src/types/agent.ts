@@ -14,8 +14,8 @@ export interface Agent {
   created_at: string;
   title: I18nContent;
   description: I18nContent;
-  input?: Record<string, SchemaField>;
-  output?: Record<string, SchemaField>;
+  input?: JSONSchemaDefinition;
+  output?: JSONSchemaDefinition;;
   credits_per_run: number;
   workflow_id?: string;
   stars: number;
@@ -35,4 +35,39 @@ export interface AgentCreateDto {
   image_url?: string;
   max_execution_time_secs?: number;
   agent_endpoint?: string;
+}
+
+// Define comprehensive JSON Schema types
+export interface JSONSchemaDefinition {
+  $schema?: string;
+  $ref?: string;
+  $defs?: Record<string, JSONSchemaDefinition>;
+  type?: string | string[];
+  properties?: Record<string, JSONSchemaDefinition>;
+  items?: JSONSchemaDefinition | JSONSchemaDefinition[];
+  required?: string[];
+  enum?: any[];
+  const?: any;
+  allOf?: JSONSchemaDefinition[];
+  anyOf?: JSONSchemaDefinition[];
+  oneOf?: JSONSchemaDefinition[];
+  not?: JSONSchemaDefinition;
+  if?: JSONSchemaDefinition;
+  then?: JSONSchemaDefinition;
+  else?: JSONSchemaDefinition;
+  format?: string;
+  pattern?: string;
+  minimum?: number;
+  maximum?: number;
+  minLength?: number;
+  maxLength?: number;
+  minItems?: number;
+  maxItems?: number;
+  uniqueItems?: boolean;
+  multipleOf?: number;
+  description?: string;
+  default?: any;
+  examples?: any[];
+  title?: string;
+  additionalProperties?: boolean | JSONSchemaDefinition;
 }

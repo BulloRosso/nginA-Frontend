@@ -29,7 +29,7 @@ import { CostsTab } from '../components/agents/tabs/CostsTab';
 import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
 import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
-
+import InputFormForSchema from '../components/agents/tabs/InputFormForSchema';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,6 +43,45 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
   </div>
 );
 
+const schema = {
+  type: "object",
+  properties: {
+    name: {
+      type: "string",
+      title: "Full Name",
+      description: "Enter your full name"
+    },
+    age: {
+      type: "number",
+      title: "Age" 
+    
+    },
+    addresses: {
+      type: "array",
+      title: "Addresses",
+      items: {
+        type: "object",
+        properties: {
+          street: {
+            type: "string",
+            title: "Street Address"
+          },
+          city: {
+            type: "string",
+            title: "City",
+            description: "Must be in germany!"
+          },
+          zipCode: {
+            type: "string",
+            title: "ZIP Code",
+            description: "5 digits"
+          }
+        }
+      }
+    }
+  }
+};
+
 const AgentInfoPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -53,6 +92,11 @@ const AgentInfoPage: React.FC = () => {
   const [testDialogOpen, setTestDialogOpen] = useState(false);
   const { t, i18n } = useTranslation(['agents']);
 
+
+  const handleSchemaSubmit = (data) => {
+    console.log('Form data:', data);
+  };
+  
   useEffect(() => {
     const fetchAgent = async () => {
       try {
@@ -174,6 +218,9 @@ const AgentInfoPage: React.FC = () => {
           </TabPanel>
           <TabPanel value={tabValue} index={3}>
             <CostsTab agent={agent} />
+          </TabPanel>
+          <TabPanel value={tabValue} index={4}>
+            <InputFormForSchema schema={schema} onSubmit={handleSchemaSubmit} />
           </TabPanel>
 
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'end', paddingRight: '24px', paddingBottom: '10px', gap: 2, right: 0 }}>
