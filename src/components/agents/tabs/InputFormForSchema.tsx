@@ -5,11 +5,12 @@ import {
   IconButton,
   Box,
   Typography,
-  Collapse
+  Collapse,
+  CircularProgress
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
-const SchemaForm = ({ schema, onSubmit }) => {
+const SchemaForm = ({ schema, onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({});
   const [expandedItems, setExpandedItems] = useState({});
 
@@ -289,12 +290,14 @@ const SchemaForm = ({ schema, onSubmit }) => {
         )}
       <Box>
       </Box>
-      <Button 
-        variant="contained" 
-        type="submit"
-      >
-        Submit
-      </Button>
+        <Button 
+          variant="contained" 
+          type="submit"
+          disabled={isLoading}
+          startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
+        >
+          Call Agent
+        </Button>
       </Box>
     </form>
   );

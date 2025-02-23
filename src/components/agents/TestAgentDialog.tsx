@@ -33,8 +33,10 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<any>(null);
-
+  const [responseTime, setResponseTime] = useState<number | null>(null);
+  
   const handleReset = () => {
+    setResponseTime(null);
     setResponse(null);
     setError(null);
   };
@@ -44,7 +46,10 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
       setLoading(true);
       setError(null);
 
+      const startTime = Date.now();
       const response = await AgentService.testAgent(agent.agent_endpoint, formData);
+      const endTime = Date.now();
+      setResponseTime((endTime - startTime) / 1000); // Convert to seconds
       setResponse(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to test agent');
@@ -74,13 +79,21 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
         <SchemaForm 
           schema={ agent.input || {} }
           onSubmit={handleSubmit}
+          isLoading={loading}
         />
 
         {response && (
         <Box sx={{ mt: 2, borderRadius: '8px' }}>
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            <OutputIcon /> Response from agent
-          </Typography>
+          <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Typography variant="h6" sx={{ mr: 2 }}>
+              <OutputIcon /> Response from agent
+            </Typography>
+            {responseTime !== null && (
+              <Typography variant="body2" color="text.secondary">
+                Response time: {responseTime.toFixed(2)}s
+              </Typography>
+            )}
+          </Box>
           <ResponseEditor 
             response={response}
             onReset={handleReset}
@@ -94,25 +107,6 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
           </div>
         )}
       </DialogContent>
-      <DialogActions sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        padding: '24px 24px',
-        flex: 1
-      }}>
-       
-        <span></span>
-        {loading && (
-          <CircularProgress 
-            size={24}
-            thickness={6}
-            sx={{
-              color: 'primary',
-              marginRight: 2
-            }} 
-          />
-        )}
-      </DialogActions>
     </Dialog>
   );
 };
