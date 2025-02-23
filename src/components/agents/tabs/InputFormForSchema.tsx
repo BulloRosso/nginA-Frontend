@@ -295,6 +295,15 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
           type="submit"
           disabled={isLoading}
           startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
+          sx={{
+            backgroundColor: 'gold',
+            '&:hover': {
+              backgroundColor: '#DAA520', // Darker gold (goldenrod)
+            },
+            '&:disabled': {
+              backgroundColor: 'rgba(218, 165, 32, 0.5)', // Semi-transparent goldenrod
+            }
+          }}
         >
           Call Agent
         </Button>

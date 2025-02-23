@@ -1,5 +1,5 @@
 // components/agents/TestAgentDialog.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -34,6 +34,14 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<any>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      setResponse(null);
+      setResponseTime(null);
+      setError(null);
+    }
+  }, [open]);
   
   const handleReset = () => {
     setResponseTime(null);

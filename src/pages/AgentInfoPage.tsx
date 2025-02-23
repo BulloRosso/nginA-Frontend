@@ -155,7 +155,18 @@ const AgentInfoPage: React.FC = () => {
             
             size="medium"
             onClick={() => setTestDialogOpen(true)}
-            sx={{ backgroundColor: 'gold', position: 'absolute', right: 0 }}
+            sx={{
+              position: 'absolute', 
+              right: 0,
+              backgroundColor: 'gold',
+              '&:hover': {
+                backgroundColor: '#DAA520', // Darker gold (goldenrod)
+              },
+              '&:disabled': {
+                backgroundColor: 'rgba(218, 165, 32, 0.5)', // Semi-transparent goldenrod
+              }
+            }}
+            
           >
             <DirectionsRunOutlinedIcon />
           </Fab>
