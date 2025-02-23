@@ -8,7 +8,8 @@
       "input": "Eingabe",
       "output": "Ausgabe",
       "credentials": "API Keys & Tokens",
-      "costs": "Kosten & Tags"
+      "costs": "Kosten & Tags",
+      "evals": "Evals"
     },
     "is_online": "Ist online",
     "discover_new": "Neuen Agenten entdecken",

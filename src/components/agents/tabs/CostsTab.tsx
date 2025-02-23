@@ -146,9 +146,13 @@ export const CostsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
   };
 
   return (
-    <Box p={2}>
-      <Typography variant="h6" gutterBottom>
-        Credits per run: {agent.credits_per_run}
+    <Box p={0}>
+
+      <Typography element="div">
+        Endpoint:<br/> {agent.agent_endpoint}
+      </Typography>
+      <Typography sx={{ mt: 2 }} element="div">
+        Credits per run: <b>{agent.credits_per_run}</b> Cred.
       </Typography>
 
       {error && (

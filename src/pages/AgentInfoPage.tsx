@@ -28,7 +28,7 @@ import { CredentialsTab } from '../components/agents/tabs/CredentialsTab';
 import { CostsTab } from '../components/agents/tabs/CostsTab';
 import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
-
+import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
 
 
 interface TabPanelProps {
@@ -155,6 +155,11 @@ const AgentInfoPage: React.FC = () => {
               icon={<MonetizationOnOutlinedIcon />} 
               iconPosition="start" 
               label={t('agents.tabs.costs')} 
+            />
+            <Tab 
+              icon={<RemoveRedEyeOutlinedIcon />} 
+              iconPosition="start" 
+              label={t('agents.tabs.evals')} 
             />
           </Tabs>
 

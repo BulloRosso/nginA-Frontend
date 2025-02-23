@@ -14,6 +14,7 @@ import {
   TableRow,
   Paper,
   Box,
+  CircularProgress,
   TextField,
   styled,
   IconButton,
@@ -189,7 +190,19 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
           disabled={loading}
           sx={{ backgroundColor: 'gold' }}
         >
-          {loading ? 'Testing...' : 'Invoke Agent'}
+          {loading && (
+          <CircularProgress size={24}
+            thickness={6}
+            sx={{
+              color: 'primary',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              marginTop: '-12px',
+              marginLeft: '-12px',
+            }} />
+          )}
+          {loading ? 'Waiting for response...' : 'Invoke Agent'}
         </Button>
       </DialogActions>
     </Dialog>
