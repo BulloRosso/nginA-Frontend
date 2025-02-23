@@ -26,7 +26,9 @@ import {
   AllInclusive as AllOfIcon,
   CallSplit as OneOfIcon,
   ContentCopy as CopyIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon
 } from '@mui/icons-material';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -97,12 +99,23 @@ const resolveRef = (ref: string, rootSchema: JSONSchemaDefinition): JSONSchemaDe
   return current;
 };
 
+// Helper function to get the first property name of an object
+const getFirstPropertyName = (schema: JSONSchemaDefinition): string | null => {
+  if (schema.type === 'object' && schema.properties) {
+    const firstKey = Object.keys(schema.properties)[0];
+    return firstKey || null;
+  }
+  return null;
+};
+
 const SchemaTable: React.FC<SchemaTableProps> = ({ 
   schema, 
   level = 0,
   parentRefs = new Set()
 }) => {
   const [copySuccess, setCopySuccess] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(true);
+  const theme = useTheme();
 
   const handleCopySchema = async () => {
     try {
@@ -112,7 +125,6 @@ const SchemaTable: React.FC<SchemaTableProps> = ({
       console.error('Failed to copy schema:', err);
     }
   };
-  const theme = useTheme();
 
   const renderMarkdown = (text: string | undefined) => {
     if (!text) return '';
@@ -133,12 +145,16 @@ const SchemaTable: React.FC<SchemaTableProps> = ({
 
     return (
       <React.Fragment key={currentPath}>
+         { schemaObj.type != 'object' && (
         <TableRow sx={{ backgroundColor }}>
-          <TableCell sx={{ pl: 2 + level * 3 }}>
+         
+          <TableCell sx={{ 
+              pl: 1 
+            }}>
             <Box sx={{ display: 'flex', justifyItems: 'space-between', alignItems: 'center', gap: 1 }}>
               <Typography>
                 <code>{name}</code>
-                 </Typography>
+              </Typography>
               <span>
                 {required && (
                   <RequiredIcon 
@@ -146,7 +162,7 @@ const SchemaTable: React.FC<SchemaTableProps> = ({
                     sx={{ ml: 0.5, color: theme.palette.error.main }} 
                   />
                 )}
-                </span>
+              </span>
             </Box>
           </TableCell>
           <TableCell sx={{ backgroundColor: 'white'}}>
@@ -164,119 +180,149 @@ const SchemaTable: React.FC<SchemaTableProps> = ({
             </Box>
           </TableCell>
           <TableCell sx={{ backgroundColor: 'white'}}>{renderMarkdown(schemaObj.description)}</TableCell>
+            
         </TableRow>
-
-        {/* Handle $ref */}
-        {schemaObj.$ref && !parentRefs.has(schemaObj.$ref) && (
-          <TableRow>
-            <TableCell colSpan={3} sx={{ p: 0 }}>
-              <Box sx={{ pl: 4 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                  Referenced schema ({schemaObj.$ref}):
-                </Typography>
-                <SchemaTable 
-                  schema={resolveRef(schemaObj.$ref, schema) || {}}
-                  level={level + 1}
-                  parentRefs={new Set([...parentRefs, schemaObj.$ref])}
-                />
-              </Box>
-            </TableCell>
-          </TableRow>
         )}
-
-        {/* Handle nested object properties */}
-        {schemaObj.type === 'object' && schemaObj.properties && (
-          Object.entries(schemaObj.properties).map(([propName, propSchema]) => 
-            renderSchemaRow(
-              propName, 
-              propSchema, 
-              schemaObj.required?.includes(propName),
-              currentPath
-            )
-          )
-        )}
-
-        {/* Handle array items */}
-        {schemaObj.type === 'array' && schemaObj.items && (
-          <TableRow>
-            <TableCell colSpan={3} sx={{ p: 0 }}>
-              <Box sx={{ pl: 4 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                  Array items:
-                </Typography>
-                <SchemaTable 
-                  schema={Array.isArray(schemaObj.items) ? schemaObj.items[0] : schemaObj.items}
-                  level={level + 1}
-                  parentRefs={parentRefs}
-                />
-              </Box>
-            </TableCell>
-          </TableRow>
-        )}
-
-        {/* Handle allOf, oneOf, anyOf */}
-        {(schemaObj.allOf || schemaObj.oneOf || schemaObj.anyOf) && (
-          <TableRow>
-            <TableCell colSpan={3} sx={{ p: 0 }}>
-              <Box sx={{ pl: 4 }}>
-                {(schemaObj.allOf || schemaObj.oneOf || schemaObj.anyOf)?.map((subSchema, idx) => (
-                  <Box key={idx}>
-                    <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                      {schemaObj.allOf ? 'Must match all:' : 'Must match one:'}
-                    </Typography>
-                    <SchemaTable 
-                      schema={subSchema}
-                      level={level + 1}
-                      parentRefs={parentRefs}
-                    />
-                  </Box>
-                ))}
-              </Box>
-            </TableCell>
-          </TableRow>
-        )}
+        {/* Handle nested content */}
+        {renderNestedContent(schemaObj, currentPath, level)}
       </React.Fragment>
     );
   };
 
+  const renderNestedContent = (
+    schemaObj: JSONSchemaDefinition,
+    currentPath: string,
+    level: number
+  ) => {
+    // Handle $ref
+    if (schemaObj.$ref && !parentRefs.has(schemaObj.$ref)) {
+      return (
+        <TableRow>
+          <TableCell colSpan={3} sx={{ p: 0 }}>
+            <Box sx={{ pl: 4 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                Referenced schema ({schemaObj.$ref}):
+              </Typography>
+              <SchemaTable 
+                schema={resolveRef(schemaObj.$ref, schema) || {}}
+                level={level + 1}
+                parentRefs={new Set([...parentRefs, schemaObj.$ref])}
+              />
+            </Box>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    // Handle nested object properties
+    if (schemaObj.type === 'object' && schemaObj.properties) {
+      return Object.entries(schemaObj.properties).map(([propName, propSchema]) => 
+        renderSchemaRow(
+          propName, 
+          propSchema, 
+          schemaObj.required?.includes(propName),
+          currentPath
+        )
+      );
+    }
+
+    // Handle array items
+    if (schemaObj.type === 'array' && schemaObj.items) {
+      const itemSchema = Array.isArray(schemaObj.items) ? schemaObj.items[0] : schemaObj.items;
+      const typeName = getFirstPropertyName(itemSchema);
+
+      return (
+        <TableRow>
+          <TableCell colSpan={3} sx={{ p: 0, backgroundColor: '#f7f0db' }}>
+            <Box sx={{ pl: 2 }}>
+              {typeName && itemSchema.type === 'object' && (
+              <>
+                <Typography variant="h6" sx={{ ml: 1, my: 1 }}>
+                  {typeName}
+               
+                <Chip 
+                  label="object"
+                  size="small"
+                  sx={{  marginLeft: '8px', fontFamily: 'monospace' }}
+                /> </Typography>
+              </>
+              )}
+              <SchemaTable 
+                schema={itemSchema}
+                level={level + 1}
+                parentRefs={parentRefs}
+              />
+            </Box>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    // Handle allOf, oneOf, anyOf
+    if (schemaObj.allOf || schemaObj.oneOf || schemaObj.anyOf) {
+      return (
+        <TableRow>
+          <TableCell colSpan={3} sx={{ p: 0 }}>
+            <Box sx={{ pl: 4 }}>
+              {(schemaObj.allOf || schemaObj.oneOf || schemaObj.anyOf)?.map((subSchema, idx) => (
+                <Box key={idx}>
+                  <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                    {schemaObj.allOf ? 'Must match all:' : 'Must match one:'}
+                  </Typography>
+                  <SchemaTable 
+                    schema={subSchema}
+                    level={level + 1}
+                    parentRefs={parentRefs}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <>
-   
-     
       <TableContainer component={Paper} sx={{ my: 2 }}>
         <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Type</TableCell>
-            <TableCell>Description</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {schema.properties && 
-            Object.entries(schema.properties).map(([name, fieldSchema]) =>
-              renderSchemaRow(name, fieldSchema, schema.required?.includes(name))
-            )}
-          {!schema.properties && renderSchemaRow('root', schema)}
-        </TableBody>
-      </Table>
-    </TableContainer>
-      
-    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
-      <Tooltip title="Copy JSON Schema">
-        <IconButton onClick={handleCopySchema} size="small">
-          {copySuccess ? <CheckIcon color="success" /> : <CopyIcon />}
-        </IconButton>
-      </Tooltip>
-    </Box>
-      
-    <Snackbar
-      open={copySuccess}
-      autoHideDuration={2000}
-      onClose={() => setCopySuccess(false)}
-      message="Schema copied to clipboard"
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-    />
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Type</TableCell>
+              <TableCell>Description</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {schema.properties && 
+              Object.entries(schema.properties).map(([name, fieldSchema]) =>
+                renderSchemaRow(name, fieldSchema, schema.required?.includes(name))
+              )}
+            {!schema.properties && renderSchemaRow('root', schema)}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {level === 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
+          <Tooltip title="Copy JSON Schema">
+            <IconButton onClick={handleCopySchema} size="small">
+              {copySuccess ? <CheckIcon color="success" /> : <CopyIcon />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
+
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={2000}
+        onClose={() => setCopySuccess(false)}
+        message="Schema copied to clipboard"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </>
   );
 };
