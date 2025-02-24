@@ -1,0 +1,40 @@
+{
+  "builderbot": {
+  "title": "Builder Bot",
+  "canvas_title": "Canvas - unsere Ergebnisse",
+  "initial_message": "Ich helfe Ihnen dabei, einen Taskbot aus den Agent aus Ihrem Team zu erstellen. Sagen Sie mir kurz, was Sie erreichen wollen.",
+  "type_message": "Geben Sie Ihre Nachricht hier ein...",
+  "error_message": "Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+  "buttons": {
+    "GETTING_STARTED": "Erste Schritte",
+    "INTERVIEW_PROCESS": "So funktioniert's",
+    "PRICING": "Preisinfo",
+    "TECHNICAL_ISSUES": "Technischer Support",
+    "PRIVACY": "Datenschutz",
+    "CONTACT": "Support kontaktieren"
+  },
+  "topics": {
+    "GETTING_STARTED": "Können Sie erklären, wie man mit nOblivion beginnt?",
+    "INTERVIEW_PROCESS": "Wie funktioniert der Interviewübungsprozess?",
+    "PRICING": "Welche Preisoptionen und Abonnements gibt es?",
+    "TECHNICAL_ISSUES": "Ich habe technische Probleme. Können Sie helfen?",
+    "PRIVACY": "Können Sie Ihre Datenschutzrichtlinien erklären?",
+    "CONTACT": "Wie kann ich den persönlichen Support kontaktieren?"
+  },
+  "profile_rating": {
+    "completeness": "Vollständigkeit",
+    "memories_stored": "Gespeicherte Erinnerungen:",
+    "memories_with_images": "Erinnerungen mit Bildern:",
+    "min_memories_note": "30 Erinnerungen für Buchdruck benötigt"
+  },
+  "bug_report": {
+    "severity": "Schweregrad",
+    "feature_request": "Feature-Anfrage",
+    "bug": "Fehler",
+    "severe_bug": "Schwerwiegender Fehler",
+    "subject": "Betreff",
+    "message": "Nachricht an den Support",
+    "submit": "Fehlerbericht senden",
+    "thank_you": "Vielen Dank, dass Sie sich Zeit für Feedback genommen haben. Wir werden uns bezüglich Ihrer Meldung in Kürze bei Ihnen melden."
+  }
+}}
