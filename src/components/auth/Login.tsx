@@ -162,12 +162,8 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <img src="/conch-logo.png" alt="Conch Logo" width="80px" />
+          <img src="/img/title-logo.jpg" alt="nginA Logo" width="220px" />
         </Box>
-
-        <Typography variant="h5" component="h1" gutterBottom align="center">
-          {t('common.welcomenoblivion')}
-        </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
@@ -254,7 +250,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="body2">
               {t('common.auth.new_account')}
-              <Link component={RouterLink} to="/register" variant="body2">
+              <Link sx={{ marginLeft: '8px' }} component={RouterLink} to="/register" variant="body2">
                 {t('common.auth.sign_up')}
               </Link>
             </Typography>

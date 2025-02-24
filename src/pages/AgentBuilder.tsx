@@ -204,7 +204,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   // Rest of your rendering code...
   return (
     <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ mt: 2, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 3 }}>
          
 
