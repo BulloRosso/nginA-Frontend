@@ -244,24 +244,24 @@ const BuilderBot: React.FC = () => {
             mb: 0,
             display: 'flex',
             alignItems: 'center',
-            pl: 8, // Space for the avatar
+            pl: 9, // Space for the avatar
             position: 'relative',
             borderBottom: '1px solid #e8e6dc'
           }}
         >
-          <Avatar
-            src="/img/avatar-builder.png"
+          <img
+            src="/img/builder-bot.png"
             alt="Builder Bot"
-            sx={{ 
-              width: 90,
+            style={{ 
+              width: 96,
               borderRadius: 0,
-              height: 90, 
+              
               position: 'absolute',
-              left: -40,
-              top: -45
+              marginLeft: -80,
+              top: -110
             }}
           />
-          <Typography variant="h6" sx={{ color: 'text.primary' }}>
+          <Typography variant="h6" sx={{ marginLeft: '22px', color: 'text.primary' }}>
             {t('builderbot.title')}
           </Typography>
         </Box>

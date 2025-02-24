@@ -20,6 +20,7 @@ import { TeamService } from '../services/teams';
 import { Agent } from '../types/agent';
 import { Team } from '../types/team';
 import { useNavigate } from 'react-router-dom';
+import AgentIcon from './agents/AgentIcon';
 
 const AgentsCatalog: React.FC = () => {
   const navigate = useNavigate();
@@ -133,7 +134,7 @@ const AgentsCatalog: React.FC = () => {
                     {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
                   </Typography>
                 </Box>
-
+                <AgentIcon agent={agent} isActive={true} size={60} />
                 <Box 
                   sx={{ 
                     display: 'flex', 

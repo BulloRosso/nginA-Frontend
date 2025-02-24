@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import AgentsCatalog from '../components/AgentsCatalog';
 import { AgentService } from '../services/agents';
 
+
 const DiscoveryModal: React.FC<{
   open: boolean;
   onClose: () => void;

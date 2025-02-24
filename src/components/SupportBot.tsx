@@ -249,20 +249,19 @@ const SupportBot: React.FC = () => {
             borderBottom: '1px solid #e8e6dc'
           }}
         >
-          <Avatar
-            src="/img/supportbot.png"
-            alt="SupportBot"
-            sx={{ 
-              width: 64, 
-              height: 64, 
-              position: 'absolute',
-              left: -10,
-              top: -35,
-              border: '3px solid white',
-              boxShadow: 2
-            }}
-          />
-          <Typography variant="h6" sx={{ color: 'text.primary' }}>
+            <img
+              src="/img/operator-bot.png"
+              alt="Operator Bot"
+              style={{ 
+                width: 90,
+                borderRadius: 0,
+
+                position: 'absolute',
+                marginLeft: -80,
+                top: -104
+              }}
+            />
+            <Typography variant="h6" sx={{ marginLeft: '22px', color: 'text.primary' }}>
             {t('supportbot.title')}
           </Typography>
         </Box>

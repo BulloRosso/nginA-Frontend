@@ -1,6 +1,6 @@
 {
   "builderbot": {
-  "title": "Builder Bot",
+  "title": "Bobby (Builder Bot)",
   "canvas_title": "Canvas - unsere Ergebnisse",
   "initial_message": "Ich helfe Ihnen dabei, einen Taskbot aus den Agent aus Ihrem Team zu erstellen. Sagen Sie mir kurz, was Sie erreichen wollen.",
   "type_message": "Geben Sie Ihre Nachricht hier ein...",
