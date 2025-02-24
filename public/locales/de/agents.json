@@ -1,5 +1,7 @@
 {
   "agents": {
+    "select_agent": "Das Hauptquartier Ihrer Agenten!",
+    "create_new": "Neuen Agenten erstellen",
     "catalog": "Katalog",
     "catalog_description": "Alle auf diesem System registrierten Agenten",
     "already_in_team": "Agent ist bereits im Team",
@@ -10,6 +12,10 @@
       "credentials": "API Keys & Tokens",
       "costs": "Kosten & Tags",
       "evals": "Evals"
+    },
+    "operator": {
+      "or": "ODER",
+      "no_agents": "Bitte wählen Sie einen oder mehrere Agenten im Katalog aus."
     },
     "is_online": "Ist online",
     "discover_new": "Neuen Agenten entdecken",

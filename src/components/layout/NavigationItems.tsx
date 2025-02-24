@@ -10,7 +10,7 @@ interface NavigationItem {
 }
 
 const navigationItems: NavigationItem[] = [
-  { icon: "/img/menu-icon-catalog.png", title: "Agent Catalog", route: "/agents" },
+  { icon: "/img/menu-icon-catalog2.png", title: "Agent Catalog", route: "/agents" },
   { icon: "/img/menu-icon-builder.png", title: "Agent Builder", route: "/builder" },
   { icon: "/img/menu-icon-operator.png", title: "Agent Operator", route: "/operator" },
   { icon: "/img/menu-icon-accountant.png", title: "Accountant", route: "/accountant" }
@@ -26,7 +26,7 @@ export const NavigationItems = () => {
         width: '100%',
         backgroundColor: '#f7f0dd',
         py: 2,
-        boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+        boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
       }}
     >
       <Stack

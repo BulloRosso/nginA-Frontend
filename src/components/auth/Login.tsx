@@ -85,7 +85,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
       }
 
       login(response.user);
-      navigate('/profile-selection');
+      navigate('/operator');
     } catch (error: AuthError | any) {
       // Detailed error logging
       console.error('Login error details:', {
@@ -143,7 +143,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
           onSuccess();
 
           // Navigate to profile selection
-          navigate('/profile-selection');
+          navigate('/operator');
       } catch (error) {
           console.error('Error completing MFA flow:', error);
           setError('Failed to complete authentication');

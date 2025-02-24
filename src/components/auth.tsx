@@ -88,7 +88,7 @@ export const Register = ({ onSuccess }) => {
 
       login(response.user);
       onSuccess?.();
-      navigate('/profile-selection');
+      navigate('/operator');
     } catch (error: any) {
       setError(error.response?.data?.detail || t('common.auth.signup_failed'));
     } finally {

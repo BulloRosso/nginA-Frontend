@@ -30,6 +30,9 @@ import InterviewWelcome from './pages/InterviewWelcome';
 import { ResetPassword } from './components/auth/ResetPassword';
 import AgentsCatalogPage from './pages/AgentsCatalogPage';
 import AgentInfoPage from './pages/AgentInfoPage';
+import AgentBuilder from './pages/AgentBuilder';
+import AgentOperator from './pages/AgentOperator';
+import Accountant from './pages/Accountant';
 
 const theme = createMuiTheme({
   palette: {
@@ -88,11 +91,31 @@ const App = () => {
 
               {/* Protected routes - with header */}
               <Route 
-                path="/profile-selection" 
+                path="/builder" 
                 element={
                   <ProtectedRoute>
                     <VerifiedRoute>
-                      <ProfileSelection />
+                      <AgentBuilder />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/operator" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <AgentOperator />
+                    </VerifiedRoute>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/accountant" 
+                element={
+                  <ProtectedRoute>
+                    <VerifiedRoute>
+                      <Accountant />
                     </VerifiedRoute>
                   </ProtectedRoute>
                 } 

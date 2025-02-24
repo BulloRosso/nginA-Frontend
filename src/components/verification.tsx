@@ -171,7 +171,7 @@ export const VerificationDialog: React.FC<VerificationDialogProps> = ({ open, on
 
         // Navigate after a short delay
         setTimeout(() => {
-          navigate('/profile-selection');
+          navigate('/operator');
         }, 100);
       } else {
         setError('Invalid verification code. Please try again.');
