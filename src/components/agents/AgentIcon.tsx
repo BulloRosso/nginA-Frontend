@@ -6,6 +6,8 @@ interface AgentIconProps {
   agent: Agent;
   isActive: boolean;
   size?: number;
+  onClick?: () => void;
+  disabled?: boolean;
 }
 
 // Default SVG to use when icon_svg is null
@@ -14,10 +16,13 @@ const DEFAULT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
 const AgentIcon: React.FC<AgentIconProps> = ({ 
   agent, 
   isActive, 
-  size = 40 
+  size = 40,
+  onClick,
+  disabled = false
 }) => {
   return (
     <Box
+      onClick={disabled ? undefined : onClick}
       sx={{
         width: size,
         height: size,
@@ -30,6 +35,11 @@ const AgentIcon: React.FC<AgentIconProps> = ({
         overflow: 'hidden',
         border: '2px solid',
         borderColor: isActive ? 'gold' : '#e0e0e0',
+        cursor: disabled ? 'default' : 'pointer',
+        transition: 'transform 0.2s ease-in-out',
+        '&:hover': {
+          transform: disabled ? 'none' : 'scale(1.05)'
+        },
       }}
     >
       <Box
