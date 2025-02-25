@@ -49,7 +49,7 @@ const getStatusColor = (status: string | null): "default" | "success" | "error" 
     case 'failed':
       return 'error';
     case 'running':
-      return 'warning';
+      return 'success'; // Changed from 'warning' to 'success' for dark green
     case null:
       return 'default';
     default:
@@ -343,10 +343,11 @@ export const TeamStatus: React.FC = () => {
                           </Typography>
                           <Chip 
                             size="small"
+                            color={active ? 'success' : undefined}
                             label={agentStatus.lastRun?.status || 'Never run'}
                             sx={{ 
-                              backgroundColor: '#ccc',
-                              color: 'rgba(0, 0, 0, 0.87)'
+                              backgroundColor: active ? '#006400' : '#ccc',
+                              color: active ? 'white' : 'rgba(0, 0, 0, 0.87)'
                             }}
                           />
                         </Box>
@@ -380,10 +381,11 @@ export const TeamStatus: React.FC = () => {
                               type="button"
                               size="small"
                               sx={{
-                                backgroundColor: '#ccc',
+                                color: active ? 'white' : 'inherit',
+                                backgroundColor: active ? '#006400' : '#ccc',
                                 padding: '8px',
                                 '&:hover': {
-                                  backgroundColor: 'gold',
+                                   backgroundColor: active ? '#004d00' : 'gold', 
                                 },
                               }}
                               onClick={(e) => {

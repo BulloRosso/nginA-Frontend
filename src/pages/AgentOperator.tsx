@@ -141,25 +141,6 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
         </Alert>
       </Snackbar>
 
-      <BuyProduct
-        open={buyModalOpen}
-        onClose={() => setBuyModalOpen(false)}
-        profileId={selectedProfile?.id || ''}
-        profileName={selectedProfile?.first_name || ''}
-      />
-
-      <InvitationDialog
-        open={inviteDialogOpen}
-        onClose={() => {
-          setInviteDialogOpen(false);
-          setSelectedProfileId(null);
-        }}
-        profile={profiles.find(p => p.id === selectedProfileId) || null}
-        onSuccess={() => {
-          setSuccessMessage(t('invitation.sent_success'));
-        }}
-      />
-
       <SupportBot />
       
     </Container>

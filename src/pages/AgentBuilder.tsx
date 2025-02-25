@@ -1,4 +1,4 @@
-// src/pages/ProfileSelection.tsx
+// src/pages/AgentBuilder.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   Container, 
@@ -21,7 +21,10 @@ import {
   DialogActions,
   Stack,
   Snackbar,
-  Alert
+  Alert,
+  Stepper,
+  Step,
+  StepLabel
 } from '@mui/material';
 import { 
   LogoutRounded,
@@ -67,8 +70,16 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState(0); // Added state for tracking active step
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['profile', 'invitation', 'interview', 'common']);
+
+  // Define the steps for the stepper
+  const steps = [
+    'Required Components',
+    'Parameter Transformations',
+    'Human in the Loop'
+  ];
 
   // Map i18n languages to date-fns locales
   const locales = {
@@ -80,7 +91,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const getCurrentLocale = () => {
     return locales[i18n.language] || enUS;  // fallback to English
   };
-  
+
   // Single effect for initialization
   useEffect(() => {
       const initializeProfileSelection = async () => {
@@ -132,7 +143,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       window.dispatchEvent(new CustomEvent('profileSelected'));
 
       setSelectedProfileId(profileId)
-     
+
     }
   };
 
@@ -162,7 +173,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       window.dispatchEvent(new CustomEvent('profileSelected'));
 
       onSelect?.(profileId);
-    
+
       navigate('/interview');
     }
   };
@@ -187,6 +198,12 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     }
   };
 
+  // Function to handle step navigation
+  const handleStepChange = (step: number) => {
+    setActiveStep(step);
+    // Additional logic for step change can be added here
+  };
+
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ 
@@ -206,16 +223,50 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     <Container maxWidth="lg">
       <Box sx={{ mt: 2, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 3 }}>
-         
-
           {error && (
             <Typography color="error" sx={{ mb: 2 }}>
               {error}
             </Typography>
           )}
-          
+
+          {/* Step Indicator - Compact Version */}
+          <Box sx={{ width: '100%', mb: 2 }}>
+            <Stepper 
+              activeStep={activeStep} 
+              alternativeLabel
+              sx={{ 
+                '& .MuiStepLabel-root': { 
+                  padding: '0px 8px',
+                },
+                '& .MuiStepConnector-line': {
+                  minHeight: '1px',
+                  marginTop: '-8px'
+                },
+                '& .MuiStepLabel-label': {
+                  fontSize: '0.85rem',
+                  marginTop: '-2px'
+                },
+                '& .MuiSvgIcon-root': {
+                  width: '1.5rem',
+                  height: '1.5rem'
+                }
+              }}
+            >
+              {steps.map((label, index) => (
+                <Step key={label}>
+                  <StepLabel 
+                    onClick={() => handleStepChange(index)} 
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {label}
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
+
           <BuilderCanvas />
-         
+
         </Paper>
       </Box>
 
@@ -270,7 +321,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
       />
 
       <BuilderBot />
-      
+
     </Container>
   );
 };
