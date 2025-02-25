@@ -55,6 +55,7 @@ interface ProfileSelectionProps {
 }
 
 const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
+  
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +68,7 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  
   const navigate = useNavigate();
   const { t, i18n } = useTranslation(['agents','profile', 'invitation', 'interview', 'common']);
 
@@ -83,109 +85,19 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   
   // Single effect for initialization
   useEffect(() => {
-      const initializeProfileSelection = async () => {
-          try {
-              // Clear local storage at component mount
-              localStorage.removeItem('profileId');
-              localStorage.removeItem('profiles');
-              window.dispatchEvent(new CustomEvent('profileSelected'));
-
-              // Get current user ID from localStorage
-              const userData = localStorage.getItem('user');
-              if (!userData) {
-                  setError('No user data found. Please log in again.');
-                  return;
-              }
-
-              const user = JSON.parse(userData);
-
-              // Use new method to fetch profiles for current user
-              const userProfiles = await ProfileService.getProfilesForUser(user.id);
-              setProfiles(userProfiles);
-
-              // If there are profiles, select the first one by default
-              if (userProfiles.length > 0) {
-                  const firstProfile = userProfiles[0];
-                  localStorage.setItem('profileId', firstProfile.id);
-                  localStorage.setItem('profiles', JSON.stringify(firstProfile));
-                  setSelectedProfileId(firstProfile.id);
-                  window.dispatchEvent(new CustomEvent('profileSelected'));
-              }
-
-          } catch (error) {
-              console.error('Error fetching profiles:', error);
-              setError('Failed to load profiles. Please try again.');
-          } finally {
-              setLoading(false);
-          }
+      const initializePage = async () => {
+         
+        setLoading(false)
       };
 
-      initializeProfileSelection();
+      initializePage();
   }, []);
 
-  const handleProfileSelect = (profileId: string) => {
-    const selectedProfile = profiles.find(p => p.id === profileId);
-
-    if (selectedProfile) {
-      localStorage.setItem('profileId', profileId);
-      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
-      window.dispatchEvent(new CustomEvent('profileSelected'));
-
-      setSelectedProfileId(profileId)
-     
-    }
-  };
 
   const handleCreateNew = () => {
-    navigate('/profile');
+    navigate('/builder');
   };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, profileId: string) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-    setSelectedProfileId(profileId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedProfileId(null);
-  };
-
-  const handleInterviewClick = async (event: React.MouseEvent<HTMLElement>, profileId: string) => {
-    event.stopPropagation();
-
-    const selectedProfile = profiles.find(p => p.id === profileId);
-
-    if (selectedProfile) {
-      localStorage.setItem('profileId', profileId);
-      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
-      window.dispatchEvent(new CustomEvent('profileSelected'));
-
-      onSelect?.(profileId);
-    
-      navigate('/interview');
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedProfileId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await ProfileService.deleteProfile(selectedProfileId);
-      setProfiles(profiles.filter(p => p.id !== selectedProfileId));
-      setSuccessMessage(t('profile.delete_success'));
-    } catch (error) {
-      console.error('Error deleting profile:', error);
-      setError(t('profile.delete_error'));
-    } finally {
-      setDeleteDialogOpen(false);
-      setLoading(false);
-      setSelectedProfileId(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -201,12 +113,11 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     );
   }
 
-  // Rest of your rendering code...
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 2, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom>
+        <Paper elevation={3} sx={{ p: 3  }}>
+          <Typography variant="h5" sx={{ mb: '24px' }}>
             {t('agents.select_agent')}
           </Typography>
 
@@ -215,20 +126,22 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               {error}
             </Typography>
           )}
+
+           <TeamStatus />
+          
           <Box sx={{
              display: 'flex',
-             justifyContent: 'start',
-             alignItems: 'end',
+             justifyContent: 'end',
+             alignItems: 'center',
              flexDirection: 'row'
           }}>
-            <img  onClick={handleCreateNew} src="/img/agent-profile.jpg" 
-                  style={{ cursor: 'pointer', width: '140px' }} alt="Noblivion Logo"></img>
+
             <Button
               variant="contained"
               startIcon={<PersonAddIcon />}
               onClick={handleCreateNew}
-              
-              sx={{ mb: 0, ml: 1, backgroundColor: 'gold', '&:hover': {
+
+              sx={{ mb: 0, mr: 1, backgroundColor: 'gold', '&:hover': {
                     backgroundColor: '#e2bf02',
                     color: 'white'
                   } }}
@@ -236,83 +149,14 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
               {t('agents.create_new')}
             </Button>
             
+            <img  onClick={handleCreateNew} src="/img/agent-profile.jpg" 
+                  style={{ cursor: 'pointer', marginTop: '10px',  width: '120px' }} alt="Noblivion Logo"></img>
+            
           </Box>
-          <Divider sx={{ my: 2 }}>{t('agents.operator.or')}</Divider>
 
-          <TeamStatus />
+         
 
-          {/* Actions Menu */}
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-          >
-            <MenuItem 
-              onClick={() => {
-                const profileToInvite = selectedProfileId;
-                handleMenuClose();
-                setSelectedProfileId(profileToInvite);
-                setInviteDialogOpen(true);
-              }}
-            >
-              <InviteIcon sx={{ mr: 1 }} />
-              {t('profile.invite_interview')}
-            </MenuItem>
-
-            <MenuItem 
-              onClick={() => {
-                const profileToPrint = selectedProfileId;
-                handleMenuClose();
-                navigate('/print');
-              }}
-            >
-              <PrintIcon sx={{ mr: 1 }} />
-              {t('profile.print_profile')}
-            </MenuItem>
-             
-            <MenuItem 
-              onClick={() => {
-                const profileToDelete = selectedProfileId;
-                handleMenuClose();
-                setSelectedProfileId(profileToDelete);
-                setDeleteDialogOpen(true);
-              }} 
-              sx={{ color: 'error.main' }}
-            >
-              <DeleteIcon sx={{ mr: 1 }} />
-              {t('profile.remove_profile')}
-            </MenuItem>
-          </Menu>
-
-          {/* Delete Confirmation Dialog */}
-          <Dialog
-            open={deleteDialogOpen}
-            onClose={() => !loading && setDeleteDialogOpen(false)}
-          >
-            <DialogTitle>{t('profile.confirm_delete')}</DialogTitle>
-            <DialogContent>
-              <Typography>
-                {t('profile.delete_warning')}
-              </Typography>
-            </DialogContent>
-            <DialogActions>
-              <Button 
-                onClick={() => setDeleteDialogOpen(false)}
-                disabled={loading}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button 
-                onClick={handleDeleteConfirm} 
-                color="error" 
-                variant="contained"
-                disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} /> : <DeleteIcon />}
-              >
-                {t('common.delete')}
-              </Button>
-            </DialogActions>
-          </Dialog>
+        
         </Paper>
       </Box>
 

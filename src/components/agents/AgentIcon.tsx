@@ -20,6 +20,7 @@ const AgentIcon: React.FC<AgentIconProps> = ({
   onClick,
   disabled = false
 }) => {
+  
   return (
     <Box
       onClick={disabled ? undefined : onClick}

@@ -1,8 +1,9 @@
 {
   "agents": {
-    "select_agent": "Das Hauptquartier Ihrer Agenten!",
+    "select_agent": "Agenten in Ihrem Team",
     "create_new": "Neuen Agenten erstellen",
     "catalog": "Katalog",
+    "no_agents_in_team": "Bitte wählen Sie fertige Agenten aus dem Katalog (empfohlen für erste Schritte) oder erstellen Sie einen neuen Agenten mit dem Builder.",
     "catalog_description": "Alle auf diesem System registrierten Agenten",
     "already_in_team": "Agent ist bereits im Team",
     "add_to_team": "Agent zum Team hinzufügen",

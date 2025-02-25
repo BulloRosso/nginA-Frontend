@@ -110,6 +110,7 @@ const AgentsCatalog: React.FC = () => {
                 onClick={() => navigate(`/agents/${agent.id}`)}
                 sx={{ 
                   height: '100%',
+                  minHeight: '220px',
                   display: 'flex',
                   flexDirection: 'column',
                   cursor: 'pointer',
