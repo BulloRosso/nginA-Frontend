@@ -23,26 +23,8 @@ import {
   Snackbar,
   Alert
 } from '@mui/material';
-import { 
-  LogoutRounded,
-  Menu as MenuIcon,
-  Home as HomeIcon,
-  People as PeopleIcon,
-  SmartToy as RobotIcon,
-  AutoFixHigh as MagicWandIcon,
-  Delete as DeleteIcon,
-  AccessTime as AccessTimeIcon,
-  ForumOutlined as ForumIcon,
-  PersonAdd as PersonAddIcon,
-  MailOutline as InviteIcon, 
-  MoreVert as MoreVertIcon,
-  Print as PrintIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { Profile, calculateAge } from '../types/profile';
-import { formatDistance } from 'date-fns';
+
 import { de, enUS } from 'date-fns/locale';
-import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
 import BuyProduct from '../components/modals/BuyProduct';
 import './styles/GoldButton.css';
@@ -68,8 +50,7 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [buyModalOpen, setBuyModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-  
-  const navigate = useNavigate();
+
   const { t, i18n } = useTranslation(['agents','profile', 'invitation', 'interview', 'common']);
 
   // Map i18n languages to date-fns locales
@@ -94,10 +75,7 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   }, []);
 
 
-  const handleCreateNew = () => {
-    navigate('/builder');
-  };
-
+  
 
   if (loading) {
     return (
@@ -116,7 +94,7 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 2, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 3  }}>
+        <Paper elevation={3} sx={{ p: 3, paddingBottom: 0  }}>
           <Typography variant="h5" sx={{ mb: '24px' }}>
             {t('agents.select_agent')}
           </Typography>
@@ -129,34 +107,6 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
            <TeamStatus />
           
-          <Box sx={{
-             display: 'flex',
-             justifyContent: 'end',
-             alignItems: 'center',
-             flexDirection: 'row'
-          }}>
-
-            <Button
-              variant="contained"
-              startIcon={<PersonAddIcon />}
-              onClick={handleCreateNew}
-
-              sx={{ mb: 0, mr: 1, backgroundColor: 'gold', '&:hover': {
-                    backgroundColor: '#e2bf02',
-                    color: 'white'
-                  } }}
-            >
-              {t('agents.create_new')}
-            </Button>
-            
-            <img  onClick={handleCreateNew} src="/img/agent-profile.jpg" 
-                  style={{ cursor: 'pointer', marginTop: '10px',  width: '120px' }} alt="Noblivion Logo"></img>
-            
-          </Box>
-
-         
-
-        
         </Paper>
       </Box>
 

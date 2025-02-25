@@ -1,6 +1,6 @@
 {
   "supportbot": {
-  "title": "Coggi (Operator Bot)",
+  "title": "Otto (Operator Bot)",
   "initial_message": "Wenn Sie Fragen zu einem Run haben oder einen Fehler melden möchten - ich bin Ihr Bot!",
   "type_message": "Geben Sie Ihre Nachricht hier ein...",
   "error_message": "Entschuldigung, es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",

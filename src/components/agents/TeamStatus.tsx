@@ -18,7 +18,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Tooltip
+  Tooltip,
+  Pagination
 } from '@mui/material';
 import { 
   DirectionsRun as RunIcon,
@@ -26,8 +27,10 @@ import {
   BackHand as BackHandIcon,
   FilePresent as FileIcon,
   MoreVert as MoreVertIcon,
+  PersonAdd as PersonAddIcon,
   Launch as LaunchIcon
 } from '@mui/icons-material';
+
 import { OperationService } from '../../services/operations';
 import { TeamStatus as TeamStatusType } from '../../types/operation';
 import { AgentService } from '../../services/agents';
@@ -37,6 +40,7 @@ import AgentIcon from './AgentIcon';
 import SchemaForm from './tabs/InputFormForSchema';
 import MonacoEditor from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const getStatusColor = (status: string | null): "default" | "success" | "error" | "warning" | "info" => {
   switch (status) {
@@ -64,10 +68,14 @@ const formatDateTime = (dateString: string): string => {
   return new Date(dateString).toLocaleString();
 };
 
-export const TeamStatus: React.FC = () => {
-  
-  const { t, i18n } = useTranslation(['agents']);
+// Number of items to display per page
+const ITEMS_PER_PAGE = 3;
 
+export const TeamStatus: React.FC = () => {
+
+  const { t, i18n } = useTranslation(['agents']);
+  const navigate = useNavigate();
+  
   // All useState hooks need to be called in the same order every render
   const [teamStatus, setTeamStatus] = useState<TeamStatusType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +89,8 @@ export const TeamStatus: React.FC = () => {
   const [currentResults, setCurrentResults] = useState<any>(null);
   const [currentAgent, setCurrentAgent] = useState<Agent | null>(null);
   const [isAddingOrRemoving, setIsAddingOrRemoving] = useState<string | null>(null);
+  // Pagination state
+  const [page, setPage] = useState(1);
 
   // Always define these functions outside of conditional blocks
   const isAgentInTeam = (agentId: string): boolean => {
@@ -185,6 +195,11 @@ export const TeamStatus: React.FC = () => {
     return lastRun && lastRun.results && Object.keys(lastRun.results).length > 0;
   };
 
+  // Handle page change
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
   // Single useEffect for data fetching
   useEffect(() => {
     const fetchData = async () => {
@@ -211,6 +226,18 @@ export const TeamStatus: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Calculate pagination values
+  const getPaginatedData = () => {
+    if (!teamStatus || !teamStatus.agents) return [];
+
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+
+    return teamStatus.agents.slice(startIndex, endIndex);
+  };
+
+  const totalPages = teamStatus?.agents ? Math.ceil(teamStatus.agents.length / ITEMS_PER_PAGE) : 0;
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" p={4}>
@@ -235,153 +262,212 @@ export const TeamStatus: React.FC = () => {
     );
   }
 
+  const paginatedAgents = getPaginatedData();
+  
+  const handleCreateNew = () => {
+    navigate('/builder');
+  };
+
+  
   return (
-    <Stack spacing={2}>
-      {teamStatus.agents.map((agentStatus) => {
-        const agent = getAgentForStatusItem(agentStatus.title);
-        const active = isActiveRun(agentStatus.lastRun);
-        const hasResults = hasValidResults(agentStatus.lastRun);
+    <Box sx={{ paddingBottom: '10px' }}>
+      <Stack spacing={2}>
+        {paginatedAgents.map((agentStatus) => {
+          const agent = getAgentForStatusItem(agentStatus.title);
+          const active = isActiveRun(agentStatus.lastRun);
+          const hasResults = hasValidResults(agentStatus.lastRun);
 
-        return (
-          <Box 
-            key={agentStatus.title} 
-            sx={{ 
-              position: 'relative', 
-              pl: '40px',
-              mb: 2
-            }}
-          >
-            {agent && (
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  left: 0, 
-                  top: '50%', 
-                  transform: 'translateY(-50%)',
-                  zIndex: 2
-                }}
-              >
-                <AgentIcon 
-                  agent={agent} 
-                  isActive={isAgentInTeam(agent.id)} 
-                  size={60} 
-                  onClick={(e) => handleAgentTeamToggle(agent.id, e)}
-                  disabled={isAddingOrRemoving === agent.id}
-                />
-                {isAddingOrRemoving === agent.id && (
-                  <CircularProgress 
+          return (
+            <Box 
+              key={agentStatus.title} 
+              sx={{ 
+                position: 'relative', 
+                pl: '40px',
+                mb: 2
+              }}
+            >
+              {agent && (
+                <Box 
+                  sx={{ 
+                    position: 'absolute', 
+                    left: 0, 
+                    top: '50%', 
+                    transform: 'translateY(-50%)',
+                    zIndex: 2
+                  }}
+                >
+                  <AgentIcon 
+                    agent={agent} 
+                    isActive={isAgentInTeam(agent.id)} 
                     size={60} 
-                    sx={{ 
-                      position: 'absolute', 
-                      top: 0, 
-                      left: 0 
-                    }} 
+                    onClick={(e) => handleAgentTeamToggle(agent.id, e)}
+                    disabled={isAddingOrRemoving === agent.id}
                   />
-                )}
-              </Box>
-            )}
-            <Card variant="outlined" sx={{ position: 'relative' }}>
-              <CardContent sx={{ p: 2 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box display="flex" alignItems="center" sx={{ width: '50%' }}>
-                    <Box sx={{ pl: '20px' }}>
-                      <Typography variant="h6" sx={{ ml: 1 }}>
-                        {agentStatus.title}
-                      </Typography>
-
-                      <Box display="flex" alignItems="center" gap={1} ml={1}>
-                        <Typography variant="body2" color="text.secondary">
-                          Status:
+                  {isAddingOrRemoving === agent.id && (
+                    <CircularProgress 
+                      size={60} 
+                      sx={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0 
+                      }} 
+                    />
+                  )}
+                </Box>
+              )}
+              <Card variant="outlined" sx={{ position: 'relative' }}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box display="flex" alignItems="center" sx={{ width: '50%' }}>
+                      <Box sx={{ pl: '20px' }}>
+                        <Typography variant="h6" sx={{ ml: 1 }}>
+                          {agentStatus.title}
                         </Typography>
-                        <Chip 
-                          size="small"
-                          label={agentStatus.lastRun?.status || 'Never run'}
-                          sx={{ 
-                            backgroundColor: '#ccc',
-                            color: 'rgba(0, 0, 0, 0.87)'
-                          }}
-                        />
+
+                        <Box display="flex" alignItems="center" gap={1} ml={1}>
+                          <Typography variant="body2" color="text.secondary">
+                            Status:
+                          </Typography>
+                          <Chip 
+                            size="small"
+                            label={agentStatus.lastRun?.status || 'Never run'}
+                            sx={{ 
+                              backgroundColor: '#ccc',
+                              color: 'rgba(0, 0, 0, 0.87)'
+                            }}
+                          />
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
 
-                  <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ width: '50%' }}>
-                    <Box sx={{ flex: 1 }}>
-                      {agentStatus.lastRun && (
-                        <Box display="flex" flexWrap="wrap" sx={{ gap: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Started: {formatDateTime(agentStatus.lastRun.startedAt)}
-                          </Typography>
-                          {agentStatus.lastRun.finishedAt && (
+                    <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ width: '50%' }}>
+                      <Box sx={{ flex: 1 }}>
+                        {agentStatus.lastRun && (
+                          <Box display="flex" flexWrap="wrap" sx={{ gap: 2 }}>
                             <Typography variant="body2" color="text.secondary">
-                              Finished: {formatDateTime(agentStatus.lastRun.finishedAt)}
+                              Started: {formatDateTime(agentStatus.lastRun.startedAt)}
                             </Typography>
-                          )}
-                          <Typography variant="body2" color="text.secondary">
-                            Duration: {formatDuration(agentStatus.lastRun.duration)}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-
-                    <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
-                      <Box textAlign="center">
-                        <Tooltip title={active ? "Manage Run" : "Start Run"}>
-                          <Fab
-                            color="default"
-                            aria-label="run"
-                            size="small"
-                            sx={{
-                              backgroundColor: '#ccc',
-                              '&:hover': {
-                                backgroundColor: 'gold',
-                              },
-                            }}
-                            onClick={() => {
-                              if (agent) {
-                                handleStartRun(agent);
-                              }
-                            }}
-                          >
-                            {getFabIcon(agentStatus.lastRun?.status)}
-                          </Fab>
-                        </Tooltip>
-
-                        {active && (
-                          <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                            started {formatDateTime(agentStatus.lastRun.startedAt).split(',')[1].trim()}
-                          </Typography>
+                            {agentStatus.lastRun.finishedAt && (
+                              <Typography variant="body2" color="text.secondary">
+                                Finished: {formatDateTime(agentStatus.lastRun.finishedAt)}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" color="text.secondary">
+                              Duration: {formatDuration(agentStatus.lastRun.duration)}
+                            </Typography>
+                          </Box>
                         )}
                       </Box>
 
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<FileIcon />}
-                        disabled={!active || !hasResults}
-                        onClick={() => hasResults && handleShowResults(agentStatus.lastRun.results)}
-                      >
-                        Results
-                      </Button>
+                      <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
+                        <Box textAlign="center">
+                          <Tooltip title={active ? "Manage Run" : "Start Run"}>
+                            <Fab
+                              color="default"
+                              aria-label="run"
+                              size="small"
+                              sx={{
+                                backgroundColor: '#ccc',
+                                '&:hover': {
+                                  backgroundColor: 'gold',
+                                },
+                              }}
+                              onClick={() => {
+                                if (agent) {
+                                  handleStartRun(agent);
+                                }
+                              }}
+                            >
+                              {getFabIcon(agentStatus.lastRun?.status)}
+                            </Fab>
+                          </Tooltip>
 
-                      <IconButton 
-                        size="small" 
-                        onClick={(e) => {
-                          if (agent) {
-                            handleMenuOpen(e, agent.id);
-                          }
-                        }}
-                      >
-                        <MoreVertIcon />
-                      </IconButton>
+                          {active && (
+                            <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                              started {formatDateTime(agentStatus.lastRun.startedAt).split(',')[1].trim()}
+                            </Typography>
+                          )}
+                        </Box>
+
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<FileIcon />}
+                          disabled={!active || !hasResults}
+                          onClick={() => hasResults && handleShowResults(agentStatus.lastRun.results)}
+                        >
+                          Results
+                        </Button>
+
+                        <IconButton 
+                          size="small" 
+                          onClick={(e) => {
+                            if (agent) {
+                              handleMenuOpen(e, agent.id);
+                            }
+                          }}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
-        );
-      })}
+                </CardContent>
+              </Card>
+            </Box>
+          );
+        })}
+      </Stack>
+
+      {/* Pagination Controls */}
+      <Box 
+        sx={{ 
+          mt: 0, 
+          mb: 2 , 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <Box>
+          <Pagination 
+            count={totalPages} 
+            page={page} 
+            onChange={handlePageChange} 
+            color="primary" 
+            size="medium"
+            showFirstButton
+            showLastButton
+          />
+          <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+            Showing {paginatedAgents.length} of {teamStatus.agents.length} agents
+          </Typography>
+        </Box>
+        <Box sx={{
+           display: 'flex',
+           justifyContent: 'end',
+           alignItems: 'center',
+           flexDirection: 'row',
+        }}>
+
+          <Button
+            variant="contained"
+            startIcon={<PersonAddIcon />}
+            onClick={handleCreateNew}
+
+            sx={{ mb: 0, mr: 1, backgroundColor: 'gold', '&:hover': {
+                  backgroundColor: '#e2bf02',
+                  color: 'white'
+                } }}
+          >
+            {t('agents.create_new')}
+          </Button>
+
+          <img  onClick={handleCreateNew} src="/img/agent-profile.jpg" 
+                style={{ cursor: 'pointer', marginTop: '10px',  width: '120px' }} alt="Noblivion Logo"></img>
+
+        </Box>
+      </Box>
 
       {/* Context Menu */}
       <Menu
@@ -488,7 +574,7 @@ export const TeamStatus: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Stack>
+    </Box>
   );
 };
 
