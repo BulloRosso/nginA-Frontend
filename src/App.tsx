@@ -2,8 +2,6 @@ import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProfileSetup from './pages/ProfileSetup';
-import MemoryCapture from './pages/MemoryCapture';
-import ProfileSelection from './pages/ProfileSelection';
 import { createTheme as createMuiTheme, ThemeProvider } from '@mui/material/styles';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
@@ -180,15 +178,6 @@ const App = () => {
                       <InvitationsDashboard />
                     </VerifiedRoute>
                   </ProtectedRoute>
-                } 
-              />
-
-              <Route 
-                path="/interview" 
-                element={
-                  <TokenProtectedRoute>
-                    <MemoryCapture />
-                  </TokenProtectedRoute>
                 } 
               />
 

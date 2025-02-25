@@ -19,15 +19,23 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
     setFormData({});
     setExpandedItems({});
   }
-  
+
   const handleChange = (path, value) => {
     setFormData(prev => {
       const newData = { ...prev };
+
+      // Handle empty path case (root level)
+      if (!path) {
+        return value;
+      }
+
       let current = newData;
       const parts = path.split('.');
-      const last = parts.pop();
+      // Filter out any empty string parts that might come from leading/trailing dots
+      const filteredParts = parts.filter(part => part !== '');
+      const last = filteredParts.pop();
 
-      for (const part of parts) {
+      for (const part of filteredParts) {
         if (!(part in current)) {
           current[part] = {};
         }
@@ -90,40 +98,41 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
   };
 
   const renderField = (fieldSchema, path) => {
-    const isRequired = schema.required?.includes(path.split('.').pop());
-    const fieldLabel = `${fieldSchema.title || path.split('.').pop()}`;
+      const pathPrefix = path === '' ? '' : `${path}.`;
+      const isRequired = schema.required?.includes(path.split('.').pop());
+      const fieldLabel = `${fieldSchema.title || (path === '' ? 'Root' : path.split('.').pop())}`;
 
-    switch (fieldSchema.type) {
-      case 'string':
-        return (
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              required={isRequired}
-              fullWidth
-              label={fieldLabel}
-              onChange={(e) => handleChange(path, e.target.value)}
-              value={getValueByPath(formData, path) || ''}
-              margin="none"
-              size="small"
-              sx={{ backgroundColor: 'white', borderRadius: 1 }}
-              variant="outlined"
-            />
-            {fieldSchema.description && (
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mt: 0, 
-                  p: "6px", 
-                  color: '#666666',
-                  bgcolor: "#f6f4ee",
-                  borderRadius: 0
-                }}
-              >
-                {fieldSchema.description}
-              </Typography>
-            )}
-          </Box>
-        );
+      switch (fieldSchema.type) {
+        case 'string':
+          return (
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                required={isRequired}
+                fullWidth
+                label={fieldLabel}
+                onChange={(e) => handleChange(path, e.target.value)}
+                value={getValueByPath(formData, path) || ''}
+                margin="none"
+                size="small"
+                sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                variant="outlined"
+              />
+              {fieldSchema.description && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    mt: 0, 
+                    p: "6px", 
+                    color: '#666666',
+                    bgcolor: "#f6f4ee",
+                    borderRadius: 0
+                  }}
+                >
+                  {fieldSchema.description}
+                </Typography>
+              )}
+            </Box>
+          );
 
       case 'number':
       case 'integer':
@@ -179,7 +188,8 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
 
       case 'array':
         const arrayValue = getValueByPath(formData, path) || [];
-        const arrayTitle = fieldSchema.title || path.split('.').pop();
+        const arrayTitle = fieldSchema.title || (path === '' ? 'Items' : path.split('.').pop());
+
         return (
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -256,25 +266,25 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
 
   const getValueByPath = (obj, path) => {
     if (!path) return obj;
-    return path.split('.').reduce((current, part) => {
+    // Filter out empty parts that might come from leading/trailing dots
+    const parts = path.split('.').filter(part => part !== '');
+    return parts.reduce((current, part) => {
       return current?.[part];
     }, obj);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmitData = () => {
     onSubmit(formData);
   };
 
   const notEmpty = (obj) => {
     return Object.entries(obj).length > 0
   };
-  
 
   return (
-    <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '1000px', margin: '0', paddingTop: '10px' }}>
+    <Box style={{ width: '100%', maxWidth: '1000px', margin: '0', paddingTop: '10px' }}>
       {renderField(schema, '')}
-      
+
       <Box sx={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -289,11 +299,12 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
             Reset
           </Button>
         )}
-      <Box>
-      </Box>
+        <Box>
+        </Box>
         <Button 
           variant="contained" 
-          type="submit"
+          type="button"
+          onClick={handleSubmitData}
           disabled={isLoading}
           startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
           sx={{
@@ -309,7 +320,7 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
           Call Agent
         </Button>
       </Box>
-    </form>
+    </Box>
   );
 };
 

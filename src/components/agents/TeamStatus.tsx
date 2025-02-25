@@ -92,6 +92,7 @@ export const TeamStatus: React.FC = () => {
   // Pagination state
   const [page, setPage] = useState(1);
 
+  
   // Always define these functions outside of conditional blocks
   const isAgentInTeam = (agentId: string): boolean => {
     return team?.agents?.members?.some(member => member.agentId === agentId) ?? false;
@@ -154,10 +155,22 @@ export const TeamStatus: React.FC = () => {
     setResultsDialogOpen(true);
   };
 
-  const handleStartRun = (agent: Agent) => {
-    setCurrentAgent(agent);
-    setRunParametersDialogOpen(true);
-  };
+  const handleStartRun = async (agent: Agent) => {
+    
+    try {
+      setLoading(true);
+
+      // Fetch complete agent details including input schema
+      const completeAgent = await AgentService.getAgent(agent.id);
+
+      setCurrentAgent(completeAgent);
+      setRunParametersDialogOpen(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch agent details');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleRunParametersSubmit = async (formData: any) => {
     if (!currentAgent) return;
@@ -222,8 +235,8 @@ export const TeamStatus: React.FC = () => {
 
     fetchData();
     // Refresh every minute
-    const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchData, 60000);
+    // return () => clearInterval(interval);
   }, []);
 
   // Calculate pagination values
@@ -343,7 +356,7 @@ export const TeamStatus: React.FC = () => {
                     <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ width: '50%' }}>
                       <Box sx={{ flex: 1 }}>
                         {agentStatus.lastRun && (
-                          <Box display="flex" flexWrap="wrap" sx={{ gap: 2 }}>
+                          <Box display="flex" flexWrap="wrap" sx={{ gap: 0 }}>
                             <Typography variant="body2" color="text.secondary">
                               Started: {formatDateTime(agentStatus.lastRun.startedAt)}
                             </Typography>
@@ -362,31 +375,29 @@ export const TeamStatus: React.FC = () => {
                       <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
                         <Box textAlign="center">
                           <Tooltip title={active ? "Manage Run" : "Start Run"}>
-                            <Fab
-                              color="default"
+                            <IconButton
                               aria-label="run"
+                              type="button"
                               size="small"
                               sx={{
                                 backgroundColor: '#ccc',
+                                padding: '8px',
                                 '&:hover': {
                                   backgroundColor: 'gold',
                                 },
                               }}
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 if (agent) {
                                   handleStartRun(agent);
                                 }
                               }}
                             >
                               {getFabIcon(agentStatus.lastRun?.status)}
-                            </Fab>
+                            </IconButton>
                           </Tooltip>
 
-                          {active && (
-                            <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                              started {formatDateTime(agentStatus.lastRun.startedAt).split(',')[1].trim()}
-                            </Typography>
-                          )}
                         </Box>
 
                         <Button
@@ -429,7 +440,10 @@ export const TeamStatus: React.FC = () => {
           alignItems: 'center'
         }}
       >
-        <Box>
+        <Box sx={{
+        display:'flex',
+        aligntItems:'center',
+        }}>
           <Pagination 
             count={totalPages} 
             page={page} 
@@ -439,7 +453,7 @@ export const TeamStatus: React.FC = () => {
             showFirstButton
             showLastButton
           />
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: '6px', ml: 2 }}>
             Showing {paginatedAgents.length} of {teamStatus.agents.length} agents
           </Typography>
         </Box>
@@ -534,9 +548,9 @@ export const TeamStatus: React.FC = () => {
                 Configure run parameters for {currentAgent.title.en}
               </Typography>
 
-              {currentAgent.input_schema ? (
+              {currentAgent.input ? (
                 <SchemaForm
-                  schema={currentAgent.input_schema}
+                  schema={currentAgent.input}
                   onSubmit={handleRunParametersSubmit}
                   isLoading={false}
                 />
