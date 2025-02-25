@@ -17,8 +17,8 @@ const BackgroundContainer = styled(Box)<{ backgroundImage?: string }>(({ backgro
   backgroundRepeat: 'repeat',
   width: '100%',
   height: '100%',
-  minHeight: '587px',
-  maxHeight: '587px',
+  minHeight: '503px',
+  maxHeight: '503px',
   position: 'relative',
   overflow: 'hidden',
 }));

@@ -21,7 +21,7 @@ i18n
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json', // Path to translation files
     },
-    ns:[ 'common', 'agents', 'builderbot', 'tagging','chat', 'about', 'supportbot','memory', 'buy', 'landing', 'profile', 'settings', 'profileSelection', 'invitation' ],
+    ns:[ 'common', 'agents', 'accountantbot', 'builderbot', 'tagging','chat', 'about', 'supportbot','memory', 'buy', 'landing', 'profile', 'settings', 'profileSelection', 'invitation' ],
     defaultNS: 'common',
     fallbackNS: 'common'
   });
