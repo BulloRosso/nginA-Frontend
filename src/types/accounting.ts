@@ -8,6 +8,7 @@ export interface AgentUsage {
   total_credits: number;
   run_count: number;
   avg_credits_per_run: number;
+  agent_title_en?: string;
 }
 
 export interface CreditReport {
@@ -16,6 +17,7 @@ export interface CreditReport {
   start_date: string;
   end_date: string;
   total_credits: number;
+  credits_remaining: number;
   agents: AgentUsage[];
 }
 
@@ -25,29 +27,13 @@ export interface BalanceResponse {
   timestamp: string;
 }
 
-export interface TransactionBase {
-  credits: number;
-  description?: string;
-}
-
-export interface ChargeRequest extends TransactionBase {
-  agent_id: UUID;
-  run_id?: UUID;
-}
-
-export interface RefillRequest extends TransactionBase {
-  // No additional fields specific to refill
-}
-
-export type TransactionType = 'run' | 'refill' | 'other';
-
-export interface Transaction {
+export interface TransactionType {
   id: UUID;
   timestamp: string;
   user_id: UUID;
   agent_id?: UUID;
   run_id?: UUID;
-  type: TransactionType;
+  type: 'run' | 'refill' | 'other';
   credits: number;
   balance: number;
   description?: string;

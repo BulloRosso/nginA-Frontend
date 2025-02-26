@@ -10,15 +10,20 @@ import {
   ToggleButton,
   Card,
   CardContent,
-  useTheme
+  useTheme,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { 
   Today as DayIcon, 
   CalendarMonth as MonthIcon, 
   CalendarToday as YearIcon,
   AccountBalanceWallet as WalletIcon,
-  ShoppingCart as SpendIcon
+  ShoppingCart as SpendIcon,
+  FiberManualRecord as DotIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { AccountingService } from '../../services/accounting';
@@ -26,136 +31,118 @@ import { AgentService } from '../../services/agents';
 import { CreditReport, IntervalType, AgentUsage, BalanceResponse } from '../../types/accounting';
 import { Agent } from '../../types/agent';
 
-// Donut chart component reused from ProfileRating
-interface DonutChartProps {
-  value: number;
-  maxValue?: number;
-  label: string;
-  sublabel: string;
+// Chart legend item component
+interface LegendItemProps {
   color: string;
+  name: string;
+  value: number;
 }
 
-const DonutChart: React.FC<DonutChartProps> = ({ value, maxValue = 1, label, sublabel, color }) => {
-  // Calculate percentage
-  const percentage = Math.min(Math.round((value / maxValue) * 100), 100);
-
-  // Prepare data for Recharts
-  const data = [
-    { value: percentage },
-    { value: 100 - percentage }
-  ];
-
+const LegendItem: React.FC<LegendItemProps> = ({ color, name, value }) => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: 160, height: 160 }}>
-        <PieChart width={160} height={160}>
-          <Pie
-            data={data}
-            cx={80}
-            cy={80}
-            innerRadius={60}
-            outerRadius={75}
-            startAngle={90}
-            endAngle={-270}
-            dataKey="value"
-          >
-            <Cell fill={color} />
-            <Cell fill="#f0f0f0" />
-          </Pie>
-        </PieChart>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 20,
-            left: 10,
-            right: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 'bold' }}
-          >
-            {percentage}%
+    <ListItem sx={{ py: 0.5 }}>
+      <ListItemIcon sx={{ minWidth: 32 }}>
+        <DotIcon sx={{ color }} />
+      </ListItemIcon>
+      <ListItemText 
+        primary={
+          <Typography variant="body2" noWrap>
+            {name.length > 30 ? `${name.substring(0, 30)}...` : name}
           </Typography>
-        </Box>
-      </Box>
-      <Typography variant="body1" sx={{ mt: 1, textAlign: 'center' }}>
-        {sublabel}
-      </Typography>
-    </Box>
+        }
+        secondary={`${value} credits`}
+      />
+    </ListItem>
   );
 };
 
-// Agent credit usage donut chart
-interface AgentCreditDonutProps {
-  agent: Agent;
-  usage: AgentUsage;
-  maxCredits: number;
+// Top agents donut chart
+interface TopAgentsChartProps {
+  agentUsages: AgentUsage[];
+  totalCredits: number;
 }
 
-const AgentCreditDonut: React.FC<AgentCreditDonutProps> = ({ agent, usage, maxCredits }) => {
+const TopAgentsChart: React.FC<TopAgentsChartProps> = ({ agentUsages, totalCredits }) => {
   const theme = useTheme();
 
+  // Chart colors - use theme palette with fallback colors
+  const COLORS = [
+    theme.palette.primary.main,
+    theme.palette.secondary.main,
+    theme.palette.success.main,
+    theme.palette.error.main,
+    theme.palette.warning.main,
+    theme.palette.info.main,
+    '#8884d8',
+    '#82ca9d'
+  ];
+
+  // Sort agents by credit usage and take top 8
+  const sortedAgents = [...agentUsages].sort((a, b) => b.total_credits - a.total_credits);
+  const topAgents = sortedAgents.slice(0, 8);
+
+  // Calculate sum of credits for agents outside top 8
+  const otherAgentsCredits = sortedAgents.length > 8 
+    ? sortedAgents.slice(8).reduce((sum, agent) => sum + agent.total_credits, 0) 
+    : 0;
+
+  // Prepare data for chart
+  const chartData = [
+    ...topAgents.map(agent => ({
+      name: agent.agent_title_en || `Agent ${agent.agent_id.toString().substring(0, 8)}`,
+      value: agent.total_credits
+    }))
+  ];
+
+  // Add "Other" category if there are more than 8 agents
+  if (otherAgentsCredits > 0) {
+    chartData.push({
+      name: 'Other Agents',
+      value: otherAgentsCredits
+    });
+  }
+
   return (
-    <Card sx={{ height: '100%' }}>
-      <CardContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography variant="h6" gutterBottom>
-            {agent.title.en}
-          </Typography>
-          <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', width: 160, height: 160 }}>
+    <Card sx={{ height: '100%', display: 'flex' }}>
+      <CardContent sx={{ width: '100%', p:0, pt: 2 }}>
+        <Box sx={{ display: 'flex', height: '100%' }}>
+          {/* Chart - larger size for better visualization */}
+          <Box sx={{ width: '60%', height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={[
-                    { value: usage.total_credits },
-                    { value: maxCredits - usage.total_credits }
-                  ]}
+                  data={chartData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={75}
-                  startAngle={90}
-                  endAngle={-270}
+                  innerRadius={70}
+                  outerRadius={110}
+                  paddingAngle={1}
                   dataKey="value"
                 >
-                  <Cell fill={theme.palette.primary.main} />
-                  <Cell fill="#f0f0f0" />
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
+                <Tooltip formatter={(value) => [`${value} credits`, '']} />
               </PieChart>
             </ResponsiveContainer>
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                {usage.total_credits}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                credits
-              </Typography>
-            </Box>
           </Box>
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              {usage.run_count} runs
+
+          {/* Legend - with more space and better formatting */}
+          <Box sx={{ width: '40%', pl: 3, overflowY: 'auto', maxHeight: 350 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Top Agents by Credit Usage
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Avg: {usage.avg_credits_per_run.toFixed(1)} credits/run
-            </Typography>
+            <List dense disablePadding>
+              {chartData.map((entry, index) => (
+                <LegendItem 
+                  key={`legend-${index}`} 
+                  color={COLORS[index % COLORS.length]} 
+                  name={entry.name} 
+                  value={entry.value} 
+                />
+              ))}
+            </List>
           </Box>
         </Box>
       </CardContent>
@@ -205,14 +192,11 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, color }) 
 
 // Main component
 export const CreditDashboard: React.FC = () => {
-
   const { t } = useTranslation();
   const theme = useTheme();
 
   const [interval, setInterval] = useState<IntervalType>('month');
   const [report, setReport] = useState<CreditReport | null>(null);
-  const [balance, setBalance] = useState<BalanceResponse | null>(null);
-  const [agents, setAgents] = useState<{ [key: string]: Agent }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -226,25 +210,6 @@ export const CreditDashboard: React.FC = () => {
     }
   };
 
-  // Fetch agent details to display names
-  useEffect(() => {
-    const fetchAgents = async () => {
-      try {
-        const agentsList = await AgentService.getAgents();
-        const agentsMap: { [key: string]: Agent } = {};
-        agentsList.forEach(agent => {
-          agentsMap[agent.id] = agent;
-        });
-        setAgents(agentsMap);
-      } catch (err) {
-        console.error('Error fetching agents:', err);
-        setError('Failed to load agent information');
-      }
-    };
-
-    fetchAgents();
-  }, []);
-
   // Fetch report data when interval changes
   useEffect(() => {
     const fetchData = async () => {
@@ -252,13 +217,9 @@ export const CreditDashboard: React.FC = () => {
       setError(null);
 
       try {
-        // Get usage report for the selected interval
+        // Get usage report for the selected interval (now includes credits_remaining)
         const reportData = await AccountingService.getReport(interval);
         setReport(reportData);
-
-        // Also fetch current balance
-        const balanceData = await AccountingService.getBalance(reportData.user_id);
-        setBalance(balanceData);
       } catch (err) {
         console.error('Error fetching credit data:', err);
         setError('Failed to load credit information');
@@ -334,55 +295,46 @@ export const CreditDashboard: React.FC = () => {
         </ToggleButtonGroup>
       </Box>
 
-      {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        
-        <Grid item xs={12} md={4} lg={4}>
-          <SummaryCard 
-            title="Credits Spent" 
-            value={report.total_credits} 
-            icon={<SpendIcon />} 
-            color={theme.palette.error.main} 
-          />
+      {/* Summary Cards and Chart in 33%/66% layout */}
+      <Grid container spacing={3} sx={{ mb: 0 }}>
+        {/* Left column: Summary Cards (33% width) */}
+        <Grid item xs={12} md={4}>
+          <Grid container direction="column" spacing={3}>
+            <Grid item>
+              <SummaryCard 
+                title="Credits Spent" 
+                value={report.total_credits} 
+                icon={<SpendIcon />} 
+                color={theme.palette.error.main} 
+              />
+            </Grid>
+            <Grid item>
+              <SummaryCard 
+                title="Credits Remaining" 
+                value={report.credits_remaining} 
+                icon={<WalletIcon />} 
+                color={theme.palette.success.main}
+              />
+            </Grid>
+          </Grid>
         </Grid>
-        
-        <Grid item xs={12} md={4} lg={4}>
-          {report.agents.length === 0 && (
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
+
+        {/* Right column: Top Agents Chart (66% width) */}
+        <Grid item xs={12} md={8}>
+          {report.agents.length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Typography color="text.secondary">
                 No agent usage data for this time period
               </Typography>
             </Paper>
-          ) } 
-          {report.agents.map((agentUsage) => {
-            const agent = agents[agentUsage.agent_id];
-            if (!agent) return null;
-
-            return (
-                 <AgentCreditDonut 
-                  agent={agent} 
-                  usage={agentUsage} 
-                  maxCredits={Math.max(agentUsage.total_credits * 1.5, 100)} 
-                />
-          
-            );
-          })}
-         
-          
-        </Grid>
-        
-        <Grid item xs={12} md={4} lg={4}>
-          <SummaryCard 
-            title="Credits Remaining" 
-            value={balance ? balance.balance : 'Unknown'} 
-            icon={<WalletIcon />} 
-            color={theme.palette.success.main}
-          />
+          ) : (
+            <TopAgentsChart 
+              agentUsages={report.agents} 
+              totalCredits={report.total_credits} 
+            />
+          )}
         </Grid>
       </Grid>
-
-
-      
     </Box>
   );
 };
