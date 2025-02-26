@@ -1,5 +1,5 @@
 // src/components/agents/tabs/InputFormForSchema.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TextField,
   Button,
@@ -14,28 +14,42 @@ import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } fr
 const SchemaForm = ({ schema, onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({});
   const [expandedItems, setExpandedItems] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    validateForm();
+  }, [formData]);
+
+  const validateForm = () => {
+    if (!schema.required) {
+      setIsFormValid(true);
+      return;
+    }
+
+    // Check if all required fields have values
+    const requiredFieldsHaveValues = schema.required.every(field => {
+      const value = getValueByPath(formData, field);
+      return value !== undefined && value !== '';
+    });
+
+    setIsFormValid(requiredFieldsHaveValues);
+  };
 
   const handleReset = () => {
     setFormData({});
     setExpandedItems({});
-  }
+  };
 
   const handleChange = (path, value) => {
     setFormData(prev => {
       const newData = { ...prev };
-
-      // Handle empty path case (root level)
-      if (!path) {
-        return value;
-      }
-
       let current = newData;
       const parts = path.split('.');
-      // Filter out any empty string parts that might come from leading/trailing dots
-      const filteredParts = parts.filter(part => part !== '');
-      const last = filteredParts.pop();
 
-      for (const part of filteredParts) {
+      // Handle the last part separately to set the value
+      const last = parts.pop();
+
+      for (const part of parts) {
         if (!(part in current)) {
           current[part] = {};
         }
@@ -97,42 +111,114 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
     }));
   };
 
-  const renderField = (fieldSchema, path) => {
-      const pathPrefix = path === '' ? '' : `${path}.`;
-      const isRequired = schema.required?.includes(path.split('.').pop());
-      const fieldLabel = `${fieldSchema.title || (path === '' ? 'Root' : path.split('.').pop())}`;
+  // This is a helper function to determine if a field should be rendered
+  // based on its schema. We want to render leaf nodes only.
+  const shouldRenderAsInputField = (fieldSchema) => {
+    // If it's not an object type or it's an object without properties, render it as input
+    if (fieldSchema.type !== 'object' || !fieldSchema.properties) {
+      return true;
+    }
 
-      switch (fieldSchema.type) {
-        case 'string':
-          return (
-            <Box sx={{ mb: 2 }}>
-              <TextField
-                required={isRequired}
-                fullWidth
-                label={fieldLabel}
-                onChange={(e) => handleChange(path, e.target.value)}
-                value={getValueByPath(formData, path) || ''}
-                margin="none"
-                size="small"
-                sx={{ backgroundColor: 'white', borderRadius: 1 }}
-                variant="outlined"
-              />
-              {fieldSchema.description && (
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    mt: 0, 
-                    p: "6px", 
-                    color: '#666666',
-                    bgcolor: "#f6f4ee",
-                    borderRadius: 0
-                  }}
-                >
-                  {fieldSchema.description}
-                </Typography>
-              )}
-            </Box>
-          );
+    // For objects with a "type" and "description" property, check if it's a special case
+    // from your example (representing a single value with metadata)
+    if (
+      Object.keys(fieldSchema.properties).length === 2 &&
+      fieldSchema.properties.type && 
+      fieldSchema.properties.description
+    ) {
+      return true;
+    }
+
+    // Otherwise, render as nested object
+    return false;
+  };
+
+  const renderField = (fieldSchema, path, parentRequired = []) => {
+    // Skip if no schema
+    if (!fieldSchema) return null;
+
+    const pathParts = path.split('.').filter(p => p !== '');
+    const fieldName = pathParts.length > 0 ? pathParts[pathParts.length - 1] : '';
+    const isRequired = schema.required?.includes(fieldName) || parentRequired.includes(fieldName);
+
+    // Handle special case for objects with type and description properties
+    // as shown in the example schema
+    if (
+      fieldSchema.type === 'object' && 
+      fieldSchema.properties &&
+      fieldSchema.properties.type &&
+      fieldSchema.properties.description
+    ) {
+      // Extract the actual type and description
+      const actualType = fieldSchema.properties.type?.description || '';
+      const description = fieldSchema.properties.description?.description || '';
+      const fieldLabel = fieldName;
+
+      return (
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            required={isRequired}
+            fullWidth
+            label={fieldLabel}
+            placeholder={description}
+            onChange={(e) => handleChange(fieldName, e.target.value)}
+            value={getValueByPath(formData, fieldName) || ''}
+            margin="none"
+            size="small"
+            sx={{ backgroundColor: 'white', borderRadius: 1 }}
+            variant="outlined"
+            type={actualType === 'number' ? 'number' : 'text'}
+          />
+          {description && (
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mt: 0, 
+                p: "6px", 
+                color: '#666666',
+                bgcolor: "#f6f4ee",
+                borderRadius: 0
+              }}
+            >
+              {description}
+            </Typography>
+          )}
+        </Box>
+      );
+    }
+
+    // Handle regular field types
+    switch (fieldSchema.type) {
+      case 'string':
+        return (
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              required={isRequired}
+              fullWidth
+              label={fieldSchema.title || fieldName}
+              onChange={(e) => handleChange(path, e.target.value)}
+              value={getValueByPath(formData, path) || ''}
+              margin="none"
+              size="small"
+              sx={{ backgroundColor: 'white', borderRadius: 1 }}
+              variant="outlined"
+            />
+            {fieldSchema.description && (
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  mt: 0, 
+                  p: "6px", 
+                  color: '#666666',
+                  bgcolor: "#f6f4ee",
+                  borderRadius: 0
+                }}
+              >
+                {fieldSchema.description}
+              </Typography>
+            )}
+          </Box>
+        );
 
       case 'number':
       case 'integer':
@@ -142,7 +228,7 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
               required={isRequired}
               fullWidth
               type="number"
-              label={fieldLabel}
+              label={fieldSchema.title || fieldName}
               onChange={(e) => {
                 const value = fieldSchema.type === 'integer' 
                   ? parseInt(e.target.value)
@@ -176,11 +262,13 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
         );
 
       case 'object':
+        if (!fieldSchema.properties) return null;
+
         return (
           <Box sx={{ mb: 2 }}>
             {Object.entries(fieldSchema.properties).map(([key, prop]) => (
               <div key={key}>
-                {renderField(prop, `${path}.${key}`)}
+                {renderField(prop, path ? `${path}.${key}` : key, fieldSchema.required || [])}
               </div>
             ))}
           </Box>
@@ -188,7 +276,7 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
 
       case 'array':
         const arrayValue = getValueByPath(formData, path) || [];
-        const arrayTitle = fieldSchema.title || (path === '' ? 'Items' : path.split('.').pop());
+        const arrayTitle = fieldSchema.title || fieldName;
 
         return (
           <Box sx={{ mb: 2 }}>
@@ -266,7 +354,6 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
 
   const getValueByPath = (obj, path) => {
     if (!path) return obj;
-    // Filter out empty parts that might come from leading/trailing dots
     const parts = path.split('.').filter(part => part !== '');
     return parts.reduce((current, part) => {
       return current?.[part];
@@ -278,12 +365,16 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
   };
 
   const notEmpty = (obj) => {
-    return Object.entries(obj).length > 0
+    return Object.entries(obj).length > 0;
   };
 
   return (
     <Box style={{ width: '100%', maxWidth: '1000px', margin: '0', paddingTop: '10px' }}>
-      {renderField(schema, '')}
+      {Object.entries(schema.properties || {}).map(([key, prop]) => (
+        <div key={key}>
+          {renderField(prop, key, schema.required || [])}
+        </div>
+      ))}
 
       <Box sx={{
         display: 'flex',
@@ -305,7 +396,7 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
           variant="contained" 
           type="button"
           onClick={handleSubmitData}
-          disabled={isLoading}
+          disabled={isLoading || !isFormValid}
           startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
           sx={{
             backgroundColor: 'gold',

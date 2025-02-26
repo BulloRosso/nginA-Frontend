@@ -28,7 +28,8 @@ import {
   FilePresent as FileIcon,
   MoreVert as MoreVertIcon,
   PersonAdd as PersonAddIcon,
-  Launch as LaunchIcon
+  Launch as LaunchIcon,
+  Close as CloseIcon 
 } from '@mui/icons-material';
 
 import { OperationService } from '../../services/operations';
@@ -542,12 +543,17 @@ export const TeamStatus: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Start Run</DialogTitle>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h6">Run parameters for agent <b>{currentAgent?.title.en}</b></Typography>
+            <IconButton onClick={() => setRunParametersDialogOpen(false)}><CloseIcon /></IconButton>
+          </Box>
+        </DialogTitle>
         <DialogContent>
           {currentAgent ? (
             <>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Configure run parameters for {currentAgent.title.en}
+                Configure run parameters:
               </Typography>
 
               {currentAgent.input ? (
@@ -584,11 +590,7 @@ export const TeamStatus: React.FC = () => {
             </Typography>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRunParametersDialogOpen(false)}>
-            Cancel
-          </Button>
-        </DialogActions>
+        
       </Dialog>
     </Box>
   );
