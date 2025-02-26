@@ -2,6 +2,7 @@
 import { UUID } from "./common";
 
 export interface AgentRun {
+  run_id: UUID;
   startedAt: string;
   finishedAt: string | null;
   duration: number;

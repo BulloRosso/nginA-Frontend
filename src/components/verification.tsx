@@ -103,10 +103,10 @@ export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ childre
       <Container maxWidth="sm" sx={{ mt: 4 }}>
         <Paper elevation={3} sx={{ p: 3 }}>
           <Typography variant="h5" gutterBottom>
-            Email Verification Required
+            Backend not available
           </Typography>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            Please verify your email address to access this page.
+            Please check wheather the backend providing the required APIs is running.
           </Typography>
         </Paper>
       </Container>

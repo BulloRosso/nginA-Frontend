@@ -19,7 +19,9 @@ import {
   DialogContent,
   DialogActions,
   Tooltip,
-  Pagination
+  Pagination,
+  Tabs,
+  Tab
 } from '@mui/material';
 import { 
   DirectionsRun as RunIcon,
@@ -42,6 +44,7 @@ import SchemaForm from './tabs/InputFormForSchema';
 import MonacoEditor from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import ScratchpadBrowser from '../ScratchpadBrowser';
 
 const getStatusColor = (status: string | null): "default" | "success" | "error" | "warning" | "info" => {
   switch (status) {
@@ -76,7 +79,7 @@ export const TeamStatus: React.FC = () => {
 
   const { t, i18n } = useTranslation(['agents']);
   const navigate = useNavigate();
-  
+
   // All useState hooks need to be called in the same order every render
   const [teamStatus, setTeamStatus] = useState<TeamStatusType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -92,8 +95,9 @@ export const TeamStatus: React.FC = () => {
   const [isAddingOrRemoving, setIsAddingOrRemoving] = useState<string | null>(null);
   // Pagination state
   const [page, setPage] = useState(1);
+  // New state for results dialog tabs
+  const [activeResultsTab, setActiveResultsTab] = useState(0);
 
-  
   // Always define these functions outside of conditional blocks
   const isAgentInTeam = (agentId: string): boolean => {
     return team?.agents?.members?.some(member => member.agentId === agentId) ?? false;
@@ -151,13 +155,22 @@ export const TeamStatus: React.FC = () => {
     handleMenuClose();
   };
 
-  const handleShowResults = (results: any) => {
-    setCurrentResults(results);
+  const handleShowResults = (results: any, run_id?: string) => {
+    console.log('handleShowResults called with:', { results, run_id });
+
+    // Ensure the run_id is included in the results object
+    const resultsWithRunId = {
+      ...results,
+      run_id: run_id || results.run_id
+    };
+
+    setCurrentResults(resultsWithRunId);
+    setActiveResultsTab(0);
     setResultsDialogOpen(true);
   };
 
   const handleStartRun = async (agent: Agent) => {
-    
+
     try {
       setLoading(true);
 
@@ -277,12 +290,12 @@ export const TeamStatus: React.FC = () => {
   }
 
   const paginatedAgents = getPaginatedData();
-  
+
   const handleCreateNew = () => {
     navigate('/builder');
   };
 
-  
+
   return (
     <Box sx={{ paddingBottom: '10px' }}>
       <Stack spacing={2}>
@@ -290,7 +303,7 @@ export const TeamStatus: React.FC = () => {
           const agent = getAgentForStatusItem(agentStatus.title);
           const active = isActiveRun(agentStatus.lastRun);
           const hasResults = hasValidResults(agentStatus.lastRun);
-
+console.log(JSON.stringify(agentStatus))
           return (
             <Box 
               key={agentStatus.title} 
@@ -408,7 +421,15 @@ export const TeamStatus: React.FC = () => {
                           size="small"
                           startIcon={<FileIcon />}
                           disabled={!active || !hasResults}
-                          onClick={() => hasResults && handleShowResults(agentStatus.lastRun.results)}
+                          onClick={() => {
+                            if (hasResults && agentStatus.lastRun) {
+                              // Pass both the results and the run_id to handleShowResults
+                              handleShowResults(
+                                agentStatus.lastRun.results, 
+                                agentStatus.lastRun.run_id  // Pass the run_id directly from lastRun
+                              );
+                            }
+                          }}
                         >
                           Results
                         </Button>
@@ -517,23 +538,51 @@ export const TeamStatus: React.FC = () => {
         maxWidth="lg"
         fullWidth
       >
-        <DialogTitle>Run Results</DialogTitle>
-        <DialogContent>
-          <Box sx={{ height: '60vh' }}>
-            <MonacoEditor
-              height="100%"
-              defaultLanguage="json"
-              defaultValue={JSON.stringify(currentResults, null, 2)}
-              options={{
-                readOnly: true,
-                minimap: { enabled: true }
-              }}
-            />
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0 }}>
+            <Typography variant="h6">Run Results</Typography>
+            <IconButton onClick={() => setResultsDialogOpen(false)}><CloseIcon /></IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ }}>
+          <Box sx={{ height: '50vh', display: 'flex', flexDirection: 'column' }}>
+            {/* Tab for switching between JSON results and Scratchpad Files */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0 }}>
+              <Tabs value={activeResultsTab} onChange={(_, newValue) => setActiveResultsTab(newValue)}>
+                <Tab label="Results" />
+                <Tab label="Scratchpad Files" />
+              </Tabs>
+            </Box>
+
+            {/* Results content based on selected tab */}
+            {activeResultsTab === 0 ? (
+              // JSON Results tab
+              <MonacoEditor
+                height="100%"
+                defaultLanguage="json"
+                defaultValue={JSON.stringify(currentResults, null, 2)}
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: true }
+                }}
+              />
+            ) : (
+              // Scratchpad Files tab
+              currentResults && (currentResults.run_id) ? (
+                <ScratchpadBrowser runId={currentResults.run_id} />
+              ) : (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="body1">
+                    No files available for this run. The run ID is missing from the results data.
+                  </Typography>
+                  <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
+                    To fix this issue, the backend API needs to include a run_id field in the lastRun object.
+                  </Typography>
+                </Alert>
+              )
+            )}
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setResultsDialogOpen(false)}>Close</Button>
-        </DialogActions>
       </Dialog>
 
       {/* Run Parameters Dialog */}
@@ -590,7 +639,7 @@ export const TeamStatus: React.FC = () => {
             </Typography>
           )}
         </DialogContent>
-        
+
       </Dialog>
     </Box>
   );
