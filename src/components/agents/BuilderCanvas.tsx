@@ -36,8 +36,11 @@ const ControlPanel = styled(Box)({
 
 // Default mermaid markdown if none is provided
 const DEFAULT_MERMAID = `flowchart LR
-    A[Agent A]
-    B[Agent B]
+    A[Christmas] -->|Get money| B(Go shopping)
+    B --> C{Let me think}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
     `;
 
 const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
@@ -99,26 +102,8 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
       startOnLoad: true,
       securityLevel: 'loose', // Adjust based on your security requirements
       fontFamily: 'Roboto, sans-serif',
-      theme: 'base', // Add theme setting
-        themeVariables: {
-          // Primary colors
-          primaryColor: '#fff',
-          primaryTextColor: '#00ff00',
-          primaryBorderColor: '#0000ff',
-
-          // Default node colors
-          nodeBorder: '#888',
-          nodeTextColor: '#333',
-
-          // Diagram background
-          tertiaryColor: 'transparent',
-
-          // Line colors
-          lineColor: '#666',
-
-          // Typography
-          fontSize: '24px',
-        },
+      theme: 'default', // Add theme setting
+        
         flowchart: {
           htmlLabels: true,
           curve: 'basis', // 'linear', 'basis', 'natural', 'step'
