@@ -69,12 +69,11 @@ const ControlPanel = styled(Box)({
 
 // Default mermaid markdown if none is provided
 const DEFAULT_MERMAID = `flowchart LR
-    A[Christmas] --> B(Go shopping)
-    B --> C{Let me think}
-    C --> D[Laptop]
-    C --> E[iPhone]
-    C --> F[fa:fa-car Car]
-    `;
+    A(Flux Image Creator) --> B(Image 2 Text)
+    B --> C{Content Spreader}
+    C --> D[Insta Post Agent]
+    C --> E[Facbook Post Agent]
+    C --> F[RSS Central Poster]`;
 
 // Default diagram style options
 const DEFAULT_DIAGRAM_STYLES = {

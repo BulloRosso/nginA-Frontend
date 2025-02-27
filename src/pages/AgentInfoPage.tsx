@@ -30,6 +30,7 @@ import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
 import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
 import InputFormForSchema from '../components/agents/tabs/InputFormForSchema';
+import AgentIcon from '../components/agents/AgentIcon';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -139,12 +140,10 @@ const AgentInfoPage: React.FC = () => {
       <Box sx={{ mt: 3 }}>
       
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, position: 'relative' }}>
-          <img 
-            src="/img/robot-head-outline.svg" 
-            alt="Robot head icon" 
-            style={{ width: '32px', height: '32px' }}
-          />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0, position: 'relative' }}>
+          
+          <AgentIcon agent={agent} size={60} />
+          
           <Typography variant="h4" component="h1">
             {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
           </Typography>
@@ -178,13 +177,18 @@ const AgentInfoPage: React.FC = () => {
           agent={agent}
         />
 
-        <Typography variant="body1" paragraph>
-          {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
-        </Typography>
 
-        <Paper sx={{ mt: 4 }}>
+        <Paper sx={{ mt: 2 }}>
 
-         
+          <Typography variant="body1" 
+            sx={{ padding: '20px', 
+                  paddingBottom: 0,
+                  color: '#999'
+                }}
+            paragraph>
+            {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
+          </Typography>
+
           
           <Tabs 
             value={tabValue} 
