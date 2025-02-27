@@ -106,7 +106,7 @@ export const VerifiedRoute: React.FC<{ children: React.ReactNode }> = ({ childre
             Backend not available
           </Typography>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            Please check wheather the backend providing the required APIs is running.
+            Please check whether the backend providing the required APIs is running.
           </Typography>
         </Paper>
       </Container>

@@ -38,6 +38,13 @@ export const AgentService = {
     return response.data;
   },
 
+  generateJsonSchema: async (data: any): Promise<any> => {
+    const response = await api.post('/api/v1/agents/generate-json-schema', {
+      data
+    });
+    return response.data;
+  },
+
   testAgent: async (url: string, data: TestAgentInput): Promise<any> => {
     const response = await api.post(url, data);
     return response.data;

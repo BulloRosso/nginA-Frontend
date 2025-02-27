@@ -20,6 +20,7 @@ export interface Agent {
   credits_per_run: number;
   workflow_id?: string;
   stars: number;
+  authenticaion: string;
   image_url?: string;
   max_execution_time_secs?: number;
   agent_endpoint?: string;
@@ -30,10 +31,11 @@ export interface AgentCreateDto {
   description: I18nContent;
   input?: Record<string, SchemaField>;
   output?: Record<string, SchemaField>;
+  authentication?: string;
   credits_per_run?: number;
   workflow_id?: string;
   stars?: number;
-  image_url?: string;
+  icon_svg?: string;
   max_execution_time_secs?: number;
   agent_endpoint?: string;
 }
