@@ -17,16 +17,7 @@ export const Disclaimer = () => {
     >
       <DialogTitle>{t('about.title')}</DialogTitle>
       <DialogContent>
-        <Typography paragraph>
-          {t('about.company')}
-        </Typography>
-        <img src="/e-ntegration-logo.png" alt="entegration logo" style={{ width: '220px', margin: '20px', }} />
-        <Typography paragraph>
-          {t('about.contact')}
-        </Typography>
-        <Typography>
-          {t('about.status')}
-        </Typography>
+       <img src="/img/splash-screen.jpg"></img>
       </DialogContent>
       <DialogActions>
         <Button onClick={closeDisclaimer}>{t('about.close')}</Button>
