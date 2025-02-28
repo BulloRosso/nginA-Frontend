@@ -3,7 +3,8 @@ import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProfileSetup from './pages/ProfileSetup';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import { createTheme } from '@mui/material';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -33,14 +34,27 @@ import AgentBuilder from './pages/AgentBuilder';
 import AgentOperator from './pages/AgentOperator';
 import Accountant from './pages/Accountant';
 
-// Create the theme directly without any variable renaming
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1eb3b7',
+// Create the theme with error handling
+let theme;
+try {
+  theme = createTheme({
+    palette: {
+      primary: {
+        main: '#1eb3b7',
+      },
     },
-  },
-});
+  });
+} catch (error) {
+  console.error('Failed to create theme:', error);
+  // Fallback to a simple theme object
+  theme = {
+    palette: {
+      primary: {
+        main: '#1eb3b7',
+      },
+    },
+  };
+}
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
