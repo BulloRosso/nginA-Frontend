@@ -1,8 +1,9 @@
+
 import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProfileSetup from './pages/ProfileSetup';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -32,6 +33,7 @@ import AgentBuilder from './pages/AgentBuilder';
 import AgentOperator from './pages/AgentOperator';
 import Accountant from './pages/Accountant';
 
+// Create the theme directly without any variable renaming
 const theme = createTheme({
   palette: {
     primary: {
@@ -52,156 +54,153 @@ const App = () => {
   return (
     <AuthProvider>
       <DisclaimerProvider>
-      <ThemeProvider theme={theme}>
-        <I18nextProvider i18n={i18n}>
-          <BrowserRouter>
-            <MFAWrapper>
-            <Routes>
-              {/* Public routes - no header */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/business" element={<LandingPageBusiness />} />
-              <Route path="/introduction" element={<IntroductionVideo />} />
-              <Route path="/interview-welcome" element={<InterviewWelcome />} />
-              <Route path="/interview-token" element={<TokenHandler />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
+        <ThemeProvider theme={theme}>
+          <I18nextProvider i18n={i18n}>
+            <BrowserRouter>
+              <MFAWrapper>
+                <Routes>
+                  {/* Public routes - no header */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/business" element={<LandingPageBusiness />} />
+                  <Route path="/introduction" element={<IntroductionVideo />} />
+                  <Route path="/interview-welcome" element={<InterviewWelcome />} />
+                  <Route path="/interview-token" element={<TokenHandler />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
 
+                  {/* Auth routes - no header */}
+                  <Route 
+                    path="/login" 
+                    element={
+                      <Login onSuccess={() => {}} /> // Providing required prop
+                    }
+                  />
+                  <Route 
+                    path="/register" 
+                    element={
+                      <Register onSuccess={() => {}} />
+                    }
+                  />
+                  <Route 
+                    path="/forgot-password" 
+                    element={
+                      <ForgotPassword onSuccess={() => {}} />
+                    }
+                  />
+                  <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-              {/* Auth routes - no header */}
-              <Route 
-                path="/login" 
-                element={
-                  <Login onSuccess={() => {}} /> // Providing required prop
-                }
-              />
-              <Route 
-                path="/register" 
-                element={
-                  <Register onSuccess={() => {}} />
-                }
-              />
-              <Route 
-                path="/forgot-password" 
-                element={
-                  <ForgotPassword onSuccess={() => {}} />
-                }
-              />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
+                  {/* Protected routes - with header */}
+                  <Route 
+                    path="/builder" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <AgentBuilder />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/operator" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <AgentOperator />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/accountant" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <Accountant />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              {/* Protected routes - with header */}
-              <Route 
-                path="/builder" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <AgentBuilder />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/operator" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <AgentOperator />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/accountant" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <Accountant />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
+                  <Route 
+                    path="/agents" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <AgentsCatalogPage />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } />
+                  <Route 
+                    path="/agents/:id" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <AgentInfoPage />  
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              <Route 
-                path="/agents" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <AgentsCatalogPage />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } />
-              <Route 
-                path="/agents/:id" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <AgentInfoPage />  
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
+                  <Route 
+                    path="/checkout" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <Checkout />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              <Route 
-                path="/checkout" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <Checkout />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <ProtectedRoute>
+                        <ProfileSetup />
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <ProfileSetup />
-                  </ProtectedRoute>
-                } 
-              />
+                  <Route 
+                    path="/print" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <PrintSettings />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              <Route 
-                path="/print" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <PrintSettings />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
+                  <Route 
+                    path="/invitations" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <InvitationsDashboard />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              <Route 
-                path="/invitations" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <InvitationsDashboard />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
+                  <Route 
+                    path="/chat" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <ChatRobot />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
 
-              <Route 
-                path="/chat" 
-                element={
-                  <ProtectedRoute>
-                    <VerifiedRoute>
-                      <ChatRobot />
-                    </VerifiedRoute>
-                  </ProtectedRoute>
-                } 
-              />
-
-              {/* Catch all - redirect to login */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
-
-              <Disclaimer /> 
-
-            </MFAWrapper>
-          </BrowserRouter>
-        </I18nextProvider>
-      </ThemeProvider>
+                  {/* Catch all - redirect to login */}
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+                <Disclaimer /> 
+              </MFAWrapper>
+            </BrowserRouter>
+          </I18nextProvider>
+        </ThemeProvider>
       </DisclaimerProvider>
     </AuthProvider>
   );
