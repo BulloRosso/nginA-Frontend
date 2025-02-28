@@ -2,7 +2,7 @@ import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProfileSetup from './pages/ProfileSetup';
-import { createTheme as createMuiTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -32,7 +32,7 @@ import AgentBuilder from './pages/AgentBuilder';
 import AgentOperator from './pages/AgentOperator';
 import Accountant from './pages/Accountant';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: '#1eb3b7',
@@ -64,8 +64,8 @@ const App = () => {
               <Route path="/interview-welcome" element={<InterviewWelcome />} />
               <Route path="/interview-token" element={<TokenHandler />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-             
-              
+
+
               {/* Auth routes - no header */}
               <Route 
                 path="/login" 
@@ -169,7 +169,7 @@ const App = () => {
                   </ProtectedRoute>
                 } 
               />
-              
+
               <Route 
                 path="/invitations" 
                 element={
@@ -195,9 +195,9 @@ const App = () => {
               {/* Catch all - redirect to login */}
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
-            
+
               <Disclaimer /> 
-            
+
             </MFAWrapper>
           </BrowserRouter>
         </I18nextProvider>
