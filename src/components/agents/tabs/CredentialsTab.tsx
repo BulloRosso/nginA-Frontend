@@ -29,6 +29,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useTranslation } from 'react-i18next';
 import { Agent } from '../../../types/agent';
 import { VaultService, Credential } from '../../../services/vault';
+import AuthenticationDisplay from '../AuthenticationDisplay';
 
 export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
   const { t } = useTranslation(['agents']);
@@ -115,6 +116,9 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
   return (
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {/* Display authentication type */}
+      <AuthenticationDisplay authType={agent.authentication || 'none'} />
 
       <TableContainer component={Paper}>
         <Table>
@@ -206,7 +210,7 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
         </Typography>
 
       </Box>
-      
+
       <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)}>
         <DialogTitle>{t('agents.credentials.modal.title')}</DialogTitle>
         <DialogContent>
