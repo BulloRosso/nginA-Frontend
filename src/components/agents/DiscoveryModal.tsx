@@ -52,7 +52,7 @@ interface DiscoveryModalProps {
 }
 
 const DiscoveryModal: React.FC<DiscoveryModalProps> = ({ open, onClose, onSuccess }) => {
-  const { t } = useTranslation(['agents', 'common']);
+  const { t } = useTranslation(['agents']);
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

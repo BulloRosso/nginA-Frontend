@@ -29,7 +29,7 @@ import { CostsTab } from '../components/agents/tabs/CostsTab';
 import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
 import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
-import InputFormForSchema from '../components/agents/tabs/InputFormForSchema';
+import ReflectionTab from '../components/agents/tabs/ReflectionTab';
 import AgentIcon from '../components/agents/AgentIcon';
 
 interface TabPanelProps {
@@ -235,7 +235,7 @@ const AgentInfoPage: React.FC = () => {
             <CostsTab agent={agent} />
           </TabPanel>
           <TabPanel value={tabValue} index={4}>
-            
+            <ReflectionTab agent={agent} />
           </TabPanel>
 
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'end', paddingRight: '24px', paddingBottom: '10px', gap: 2, right: 0 }}>

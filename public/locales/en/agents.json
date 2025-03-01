@@ -3,15 +3,22 @@
     "select_agent": "Das Hauptquartier Ihrer Agenten!",
     "create_new": "Neuen Agenten erstellen",
     "catalog": "Katalog",
+    "endpoint": "Endpoint (URL)",
+    "conventions": "Conventions",
+    "reflection_prompt_placeholder": "Enter the reasoning prompt to reflect on the outputs.",
+    "agent_discovery": "Discrover New Agent",
+    "reflection_description": "When the agent return its results, a LLM can evaluate the content.",
+    "agent_discovery_endpoint": "This URL must return an ADR (Agent Description Record) when called using the GET method.",
+    "agent_description_record": "ADR (meta data)",
     "catalog_description": "Alle auf diesem System registrierten Agenten",
     "already_in_team": "Agent ist bereits im Team",
     "add_to_team": "Agent zum Team hinzufügen",
     "tabs": {
-      "input": "Eingabe",
-      "output": "Ausgabe",
+      "input": "Input",
+      "output": "Output",
       "credentials": "API Keys & Tokens",
-      "costs": "Kosten & Tags",
-      "evals": "Evals"
+      "costs": "Costs & Tags",
+      "evals": "Reflection"
     },
     "operator": {
       "or": "ODER",
@@ -21,7 +28,7 @@
       "title": "Builder Bot"
     },
     "is_online": "Ist online",
-    "discover_new": "Neuen Agenten entdecken",
+    "discover_new": "Discover new agent",
     "discover_now": "Jetzt entdecken",
     "discovery_url": "Agent Discovery URL",
     "credentials": {

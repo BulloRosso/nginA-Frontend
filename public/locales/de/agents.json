@@ -4,6 +4,8 @@
     "create_new": "Neuen Agenten erstellen",
     "catalog": "Katalog",
     "endpoint": "Endpoint (URL)",
+    "reflection_prompt_placeholder": "Bitte geben Sie den Reasoning Prompt ein.",
+    "reflection_description": "Nachdem der Agent seine Ergebnisse geliefert hat, kann optional eine LLM die Qualität beurteilen.",
     "conventions": "Konventionen",
     "agent_discovery": "Neuen Agenten entdecken",
     "agent_discovery_endpoint": "Diese URL muss einen ADR (Agent Description Record) zurückliefern, wenn sie mit GET aufgerufen wird.",
@@ -17,7 +19,7 @@
       "output": "Ausgabe",
       "credentials": "API Keys & Tokens",
       "costs": "Kosten & Tags",
-      "evals": "Evals"
+      "evals": "Reflection"
     },
     "operator": {
       "or": "ODER",
