@@ -9,6 +9,8 @@
     "transformed_data": "Transformed data",
     "enter_data_input": "Enter test data",
     "test_transformation": "Test transformation",
+    "no_transformations": "No transformations required",
+    "select_agent_or_no_transformations": "Please select an agent (if available).",
     "reflection_prompt_placeholder": "Enter the reasoning prompt to reflect on the outputs.",
     "agent_discovery": "Discrover New Agent",
     "reflection_description": "When the agent return its results, a LLM can evaluate the content.",

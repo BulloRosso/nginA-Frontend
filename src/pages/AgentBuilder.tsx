@@ -111,37 +111,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     setActiveStep(step);
   };
 
-  const handleAddMockTransformations = async () => {
-    try {
-      setLoading(true);
-      // Get mock transformations
-      const transformations = await AgentService.getAgentTransformations();
-
-      // For each agent in the chain, add a transformation if one exists
-      currentAgentChain.forEach(chainItem => {
-        const agentId = chainItem.agent_id;
-        const existingTransformation = transformations.find(t => t.agent_id === agentId);
-
-        if (existingTransformation) {
-          updateAgentTransformation(
-            agentId, 
-            existingTransformation.post_process_transformations
-          );
-        }
-      });
-
-      setSuccessMessage(t('agents.mock_transformations_added'));
-      // Move to the next step after a short delay
-      setTimeout(() => handleStepChange(2), 1000);
-    } catch (error) {
-      console.error('Error adding mock transformations:', error);
-      setError(t('agents.error_adding_mock_transformations'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add mock agents to the workflow
+    // Add mock agents to the workflow
   const handleAddMockAgents = async () => {
     try {
       setLoading(true);
@@ -153,9 +123,20 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
         addAgentToChain(agent);
       });
 
-      setSuccessMessage(t('agents.mock_agents_added'));
-      // Move to the next step after a short delay
-      setTimeout(() => handleStepChange(1), 1000);
+      const transformations = await AgentService.getAgentTransformations();
+
+      // For each agent in the chain, add a transformation if one exists
+      mockAgents.slice(0, 3).forEach(agent => {
+        const existingTransformation = transformations.find(t => t.agent_id === agent.id);
+
+        if (existingTransformation) {
+          updateAgentTransformation(
+            agent.id, 
+            existingTransformation.post_process_transformations
+          );
+        }
+      });
+      
     } catch (error) {
       console.error('Error adding mock agents:', error);
       setError(t('agents.error_adding_mock_agents'));
@@ -189,7 +170,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
                 }}
                 onClick={handleAddMockAgents}
               >
-                {t('agents.add_agents_to_proceed')} (Click to add mock agents)
+                (Click to add mock agents)
               </Typography>
             )}
           </>
@@ -198,23 +179,6 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
         return (
           <>
             <BuilderCanvas activeStep={1} />
-            {!canProceedToHumanInLoop && (
-              <Typography 
-                sx={{ 
-                  mt: 2, 
-                  color: 'text.secondary', 
-                  fontStyle: 'italic',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  '&:hover': {
-                    color: 'primary.main'
-                  }
-                }}
-                onClick={handleAddMockTransformations}
-              >
-                {t('agents.add_transformations_to_proceed')} (Click to add mock transformations)
-              </Typography>
-            )}
           </>
         );
       case 2:

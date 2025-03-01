@@ -107,7 +107,7 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
   const generateMermaidFromAgentChain = () => {
     if (currentAgentChain.length === 0) {
       return `flowchart LR
-        A[No Agents] --- B[Add agents to create a workflow]`;
+        A[No Task / no agents...] --- B[Talk to Bobby to create a workflow]`;
     }
 
     let flowchartCode = 'flowchart LR\n';
