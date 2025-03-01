@@ -4,54 +4,27 @@ import {
   Container, 
   Paper, 
   Typography, 
-  List, 
-  ListItem,
-  Avatar,
   Button,
   Box,
   CircularProgress,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Stack,
   Snackbar,
   Alert,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  createTheme,
+  ThemeProvider,
+  CssBaseline
 } from '@mui/material';
-import { 
-  LogoutRounded,
-  Menu as MenuIcon,
-  Home as HomeIcon,
-  People as PeopleIcon,
-  SmartToy as RobotIcon,
-  AutoFixHigh as MagicWandIcon,
-  Delete as DeleteIcon,
-  AccessTime as AccessTimeIcon,
-  ForumOutlined as ForumIcon,
-  PersonAdd as PersonAddIcon,
-  MailOutline as InviteIcon, 
-  MoreVert as MoreVertIcon,
-  Print as PrintIcon,
-} from '@mui/icons-material';
+import { Global, css } from '@emotion/react';
 import { useNavigate } from 'react-router-dom';
-import { Profile, calculateAge } from '../types/profile';
-import { formatDistance } from 'date-fns';
-import { de, enUS } from 'date-fns/locale';
+import { Profile } from '../types/profile';
 import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
-import BuyProduct from '../components/modals/BuyProduct';
-import './styles/GoldButton.css';
-import InvitationDialog from '../components/modals/InvitationDialog';
 import BuilderBot from '../components/BuilderBot';
 import BuilderCanvas from '../components/agents/BuilderCanvas';
+import useAgentStore from '../../stores/agentStore';
+import { AgentService } from '../services/agents';
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
@@ -61,18 +34,21 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
     localStorage.getItem('profileId')
   );
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-  const [activeStep, setActiveStep] = useState(0); // Added state for tracking active step
+  const [activeStep, setActiveStep] = useState(0); // State for tracking active step
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(['profile', 'invitation', 'interview', 'common']);
+  const { t, i18n } = useTranslation(['profile', 'invitation', 'interview', 'common', 'agents']);
+
+  // Access agent store to monitor chain and transformations
+  const { 
+    currentAgentChain, 
+    currentAgentTransformations,
+    addAgentToChain,
+    updateAgentTransformation
+  } = useAgentStore();
 
   // Define the steps for the stepper
   const steps = [
@@ -83,125 +59,175 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
   // Map i18n languages to date-fns locales
   const locales = {
-    'de': de,
-    'en': enUS,
+    'de': 'de',
+    'en': 'enUS',
     // Add more locales as needed
-  };
-
-  const getCurrentLocale = () => {
-    return locales[i18n.language] || enUS;  // fallback to English
   };
 
   // Single effect for initialization
   useEffect(() => {
-      const initializeProfileSelection = async () => {
-          try {
-              // Clear local storage at component mount
-              localStorage.removeItem('profileId');
-              localStorage.removeItem('profiles');
-              window.dispatchEvent(new CustomEvent('profileSelected'));
+    const initializeProfileSelection = async () => {
+      try {
+        // Clear local storage at component mount
+        localStorage.removeItem('profileId');
+        localStorage.removeItem('profiles');
+        window.dispatchEvent(new CustomEvent('profileSelected'));
 
-              // Get current user ID from localStorage
-              const userData = localStorage.getItem('user');
-              if (!userData) {
-                  setError('No user data found. Please log in again.');
-                  return;
-              }
+        // Get current user ID from localStorage
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+          setError('No user data found. Please log in again.');
+          return;
+        }
 
-              const user = JSON.parse(userData);
+        const user = JSON.parse(userData);
 
-              // Use new method to fetch profiles for current user
-              const userProfiles = await ProfileService.getProfilesForUser(user.id);
-              setProfiles(userProfiles);
+        // Use new method to fetch profiles for current user
+        const userProfiles = await ProfileService.getProfilesForUser(user.id);
+        setProfiles(userProfiles);
 
-              // If there are profiles, select the first one by default
-              if (userProfiles.length > 0) {
-                  const firstProfile = userProfiles[0];
-                  localStorage.setItem('profileId', firstProfile.id);
-                  localStorage.setItem('profiles', JSON.stringify(firstProfile));
-                  setSelectedProfileId(firstProfile.id);
-                  window.dispatchEvent(new CustomEvent('profileSelected'));
-              }
+        // If there are profiles, select the first one by default
+        if (userProfiles.length > 0) {
+          const firstProfile = userProfiles[0];
+          localStorage.setItem('profileId', firstProfile.id);
+          localStorage.setItem('profiles', JSON.stringify(firstProfile));
+          setSelectedProfileId(firstProfile.id);
+          window.dispatchEvent(new CustomEvent('profileSelected'));
+        }
 
-          } catch (error) {
-              console.error('Error fetching profiles:', error);
-              setError('Failed to load profiles. Please try again.');
-          } finally {
-              setLoading(false);
-          }
-      };
+      } catch (error) {
+        console.error('Error fetching profiles:', error);
+        setError('Failed to load profiles. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      initializeProfileSelection();
+    initializeProfileSelection();
   }, []);
-
-  const handleProfileSelect = (profileId: string) => {
-    const selectedProfile = profiles.find(p => p.id === profileId);
-
-    if (selectedProfile) {
-      localStorage.setItem('profileId', profileId);
-      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
-      window.dispatchEvent(new CustomEvent('profileSelected'));
-
-      setSelectedProfileId(profileId)
-
-    }
-  };
-
-  const handleCreateNew = () => {
-    navigate('/profile');
-  };
-
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>, profileId: string) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-    setSelectedProfileId(profileId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedProfileId(null);
-  };
-
-  const handleInterviewClick = async (event: React.MouseEvent<HTMLElement>, profileId: string) => {
-    event.stopPropagation();
-
-    const selectedProfile = profiles.find(p => p.id === profileId);
-
-    if (selectedProfile) {
-      localStorage.setItem('profileId', profileId);
-      localStorage.setItem('profiles', JSON.stringify(selectedProfile));
-      window.dispatchEvent(new CustomEvent('profileSelected'));
-
-      onSelect?.(profileId);
-
-      navigate('/interview');
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedProfileId) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      await ProfileService.deleteProfile(selectedProfileId);
-      setProfiles(profiles.filter(p => p.id !== selectedProfileId));
-      setSuccessMessage(t('profile.delete_success'));
-    } catch (error) {
-      console.error('Error deleting profile:', error);
-      setError(t('profile.delete_error'));
-    } finally {
-      setDeleteDialogOpen(false);
-      setLoading(false);
-      setSelectedProfileId(null);
-    }
-  };
 
   // Function to handle step navigation
   const handleStepChange = (step: number) => {
     setActiveStep(step);
-    // Additional logic for step change can be added here
+  };
+
+  const handleAddMockTransformations = async () => {
+    try {
+      setLoading(true);
+      // Get mock transformations
+      const transformations = await AgentService.getAgentTransformations();
+
+      // For each agent in the chain, add a transformation if one exists
+      currentAgentChain.forEach(chainItem => {
+        const agentId = chainItem.agent_id;
+        const existingTransformation = transformations.find(t => t.agent_id === agentId);
+
+        if (existingTransformation) {
+          updateAgentTransformation(
+            agentId, 
+            existingTransformation.post_process_transformations
+          );
+        }
+      });
+
+      setSuccessMessage(t('agents.mock_transformations_added'));
+      // Move to the next step after a short delay
+      setTimeout(() => handleStepChange(2), 1000);
+    } catch (error) {
+      console.error('Error adding mock transformations:', error);
+      setError(t('agents.error_adding_mock_transformations'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add mock agents to the workflow
+  const handleAddMockAgents = async () => {
+    try {
+      setLoading(true);
+      // Fetch agents if not already available
+      const mockAgents = await AgentService.getAgents();
+
+      // Add a few agents to the chain
+      mockAgents.slice(0, 3).forEach(agent => {
+        addAgentToChain(agent);
+      });
+
+      setSuccessMessage(t('agents.mock_agents_added'));
+      // Move to the next step after a short delay
+      setTimeout(() => handleStepChange(1), 1000);
+    } catch (error) {
+      console.error('Error adding mock agents:', error);
+      setError(t('agents.error_adding_mock_agents'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Determine whether the user can proceed to the next step
+  const canProceedToTransformations = currentAgentChain.length > 0;
+  const canProceedToHumanInLoop = currentAgentTransformations.length > 0;
+
+  // Step content and navigation
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        return (
+          <>
+            <BuilderCanvas activeStep={0} />
+            {!canProceedToTransformations && (
+              <Typography 
+                sx={{ 
+                  mt: 2, 
+                  color: 'text.secondary', 
+                  fontStyle: 'italic',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  '&:hover': {
+                    color: 'primary.main'
+                  }
+                }}
+                onClick={handleAddMockAgents}
+              >
+                {t('agents.add_agents_to_proceed')} (Click to add mock agents)
+              </Typography>
+            )}
+          </>
+        );
+      case 1:
+        return (
+          <>
+            <BuilderCanvas activeStep={1} />
+            {!canProceedToHumanInLoop && (
+              <Typography 
+                sx={{ 
+                  mt: 2, 
+                  color: 'text.secondary', 
+                  fontStyle: 'italic',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  '&:hover': {
+                    color: 'primary.main'
+                  }
+                }}
+                onClick={handleAddMockTransformations}
+              >
+                {t('agents.add_transformations_to_proceed')} (Click to add mock transformations)
+              </Typography>
+            )}
+          </>
+        );
+      case 2:
+        return (
+          <Box sx={{ mt: 2, p: 3, minHeight: '503px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+              {t('agents.human_in_loop_coming_soon')}
+            </Typography>
+          </Box>
+        );
+      default:
+        return null;
+    }
   };
 
   if (loading) {
@@ -218,112 +244,100 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     );
   }
 
-  // Rest of your rendering code...
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 2, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 3 }}>
-          {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
-              {error}
-            </Typography>
-          )}
+      <Container maxWidth="lg">
+        <Box sx={{ mt: 2, mb: 4 }}>
+          <Paper elevation={3} sx={{ p: 3 }}>
+            {error && (
+              <Typography color="error" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+            )}
 
-          {/* Step Indicator - Compact Version */}
-          <Box sx={{ width: '100%', mb: 2 }}>
-            <Stepper 
-              activeStep={activeStep} 
-              alternativeLabel
-              sx={{ 
-                '& .MuiStepLabel-root': { 
-                  padding: '0px 8px',
-                },
-                '& .MuiStepConnector-line': {
-                  minHeight: '1px',
-                  marginTop: '-8px'
-                },
-                '& .MuiStepLabel-label': {
-                  fontSize: '0.85rem',
-                  marginTop: '-2px'
-                },
-                '& .MuiSvgIcon-root': {
-                  width: '1.5rem',
-                  height: '1.5rem'
-                }
-              }}
-            >
-              {steps.map((label, index) => (
-                <Step key={label}>
-                  <StepLabel 
-                    onClick={() => handleStepChange(index)} 
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    {label}
-                  </StepLabel>
-                </Step>
-              ))}
-            </Stepper>
-          </Box>
+            {/* Step Indicator with Navigation */}
+            <Box sx={{ width: '100%', mb: 2 }}>
+              <Stepper 
+                activeStep={activeStep} 
+                alternativeLabel
+                sx={{ 
+                  '& .MuiStepLabel-root': { 
+                    padding: '0px 8px',
+                  },
+                  '& .MuiStepConnector-line': {
+                    minHeight: '1px',
+                    marginTop: '-8px'
+                  },
+                  '& .MuiStepLabel-label': {
+                    fontSize: '0.85rem',
+                    marginTop: '-2px'
+                  },
+                  '& .MuiSvgIcon-root': {
+                    width: '1.5rem',
+                    height: '1.5rem'
+                  }
+                }}
+              >
+                {steps.map((label, index) => {
+                  // Determine if step is enabled based on prerequisites
+                  const isStepDisabled = (index === 1 && !canProceedToTransformations) || 
+                                        (index === 2 && !canProceedToHumanInLoop);
 
-          <BuilderCanvas />
+                  return (
+                    <Step key={label}>
+                      <StepLabel 
+                        onClick={() => !isStepDisabled && handleStepChange(index)} 
+                        sx={{ 
+                          cursor: isStepDisabled ? 'not-allowed' : 'pointer',
+                          opacity: isStepDisabled ? 0.5 : 1
+                        }}
+                      >
+                        {label}
+                      </StepLabel>
+                    </Step>
+                  );
+                })}
+              </Stepper>
+            </Box>
 
-        </Paper>
-      </Box>
+            {/* Step Content */}
+            {renderStepContent()}
 
-      {/* Feedback Messages */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={4000}
-        onClose={() => setSuccessMessage(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
+          </Paper>
+        </Box>
+
+        {/* Feedback Messages */}
+        <Snackbar
+          open={!!successMessage}
+          autoHideDuration={4000}
           onClose={() => setSuccessMessage(null)}
-          severity="success"
-          variant="filled"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          {successMessage}
-        </Alert>
-      </Snackbar>
+          <Alert 
+            onClose={() => setSuccessMessage(null)}
+            severity="success"
+            variant="filled"
+          >
+            {successMessage}
+          </Alert>
+        </Snackbar>
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={4000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
+        <Snackbar
+          open={!!error}
+          autoHideDuration={4000}
           onClose={() => setError(null)}
-          severity="error"
-          variant="filled"
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          {error}
-        </Alert>
-      </Snackbar>
+          <Alert 
+            onClose={() => setError(null)}
+            severity="error"
+            variant="filled"
+          >
+            {error}
+          </Alert>
+        </Snackbar>
 
-      <BuyProduct
-        open={buyModalOpen}
-        onClose={() => setBuyModalOpen(false)}
-        profileId={selectedProfile?.id || ''}
-        profileName={selectedProfile?.first_name || ''}
-      />
-
-      <InvitationDialog
-        open={inviteDialogOpen}
-        onClose={() => {
-          setInviteDialogOpen(false);
-          setSelectedProfileId(null);
-        }}
-        profile={profiles.find(p => p.id === selectedProfileId) || null}
-        onSuccess={() => {
-          setSuccessMessage(t('invitation.sent_success'));
-        }}
-      />
-
-      <BuilderBot />
-
-    </Container>
-  );
-};
+        <BuilderBot />
+      </Container>
+)};
 
 export default AgentBuilder;

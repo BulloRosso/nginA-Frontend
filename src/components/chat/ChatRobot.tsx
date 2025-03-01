@@ -60,7 +60,6 @@ declare global {
   }
 }
 
-import { ChatService } from '../../services/chat';
 import { useTranslation } from 'react-i18next';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';

@@ -1,4 +1,4 @@
-// src/components/builderbot.tsx
+// src/components/BuilderBot.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
@@ -18,6 +18,7 @@ import { ProfileRating } from './answer-modules/ProfileRating';
 import { SupportBotService } from '../services/supportbot';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import useAgentStore from '../../stores/agentStore';
 
 interface Message {
   text: string;
@@ -32,6 +33,12 @@ const BuilderBot: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Access the agent store
+  const { 
+    setCurrentAgentChain, 
+    setCurrentAgentTransformations 
+  } = useAgentStore();
 
   // Custom styles for Markdown elements
   const markdownStyles = {
@@ -79,7 +86,7 @@ const BuilderBot: React.FC = () => {
       overflow: 'auto'
     }
   };
-  
+
   useEffect(() => {
     const initialMessage = t('builderbot.initial_message');
     const messageWithButtons = initialMessage + ' <TopicButton cmd="GETTING_STARTED" /> <TopicButton cmd="TECHNICAL_ISSUES" />';
@@ -129,7 +136,7 @@ const BuilderBot: React.FC = () => {
       window.removeEventListener('builderbot:topic', handleTopicClick as EventListener);
     };
   }, []); // Empty dependency array as we don't need to re-create this listener
-  
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -187,6 +194,9 @@ const BuilderBot: React.FC = () => {
       const data = await SupportBotService.sendMessage(text, i18n.language);
       const [cleanText, modules] = parseModules(data.answer);
 
+      // Check if response contains agent chain or transformation data
+      parseAgentDataFromResponse(data);
+
       return {
         text: cleanText,
         modules: modules
@@ -197,6 +207,25 @@ const BuilderBot: React.FC = () => {
         text: t('builderbot.error_message'),
         modules: []
       };
+    }
+  };
+
+  // Parse any agent-related data from bot responses
+  const parseAgentDataFromResponse = (data: any) => {
+    try {
+      // Check if the response has agent chain data
+      if (data.agentChain && Array.isArray(data.agentChain)) {
+        console.log('Updating agent chain:', data.agentChain);
+        setCurrentAgentChain(data.agentChain);
+      }
+
+      // Check if the response has transformation data
+      if (data.agentTransformations && Array.isArray(data.agentTransformations)) {
+        console.log('Updating agent transformations:', data.agentTransformations);
+        setCurrentAgentTransformations(data.agentTransformations);
+      }
+    } catch (error) {
+      console.error('Error parsing agent data from response:', error);
     }
   };
 
@@ -255,7 +284,7 @@ const BuilderBot: React.FC = () => {
             style={{ 
               width: 96,
               borderRadius: 0,
-              
+
               position: 'absolute',
               marginLeft: -80,
               top: -110

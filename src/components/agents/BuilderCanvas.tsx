@@ -1,3 +1,15 @@
+// src/components/agents/BuilderCanvas.tsx
+import React, { useEffect, useRef, useState } from 'react';
+import mermaid from 'mermaid';
+import { Box, styled, IconButton, Slider, Stack } from '@mui/material';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import { Svg2Roughjs } from 'svg2roughjs';
+import TransformationTester from './TransformationTester';
+import useAgentStore from '../../../stores/agentStore';
+import { AgentService } from '../../services/agents';
+
 // Default RoughJS options
 const DEFAULT_ROUGH_OPTIONS = {
   roughness: 1.5,
@@ -7,40 +19,46 @@ const DEFAULT_ROUGH_OPTIONS = {
   strokeWidth: 1.5,
   disableMultiStroke: false,
   disableMultiStrokeFill: false
-};import React, { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
-import { Box, styled, IconButton, Slider, Stack } from '@mui/material';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { Svg2Roughjs, OutputType } from 'svg2roughjs';
+};
+
+// Default diagram style options
+const DEFAULT_DIAGRAM_STYLES = {
+  fontFamily: 'Annie Use Your Telescope, cursive',
+  boxBorderWidth: 2,
+  boxBorderColor: '#1eb3b7',
+  boxBgColor: '#f2f0e8',
+  edgeLabelBgColor: '#ffffff',
+  nodeLabelColor: '#333333',
+  edgeLabelColor: '#333333'
+};
 
 // Define the props interface
 interface BuilderCanvasProps {
+  activeStep?: number;
   mermaid_markdown?: string;
   backgroundImage?: string;
   // RoughJS configuration parameters
   roughOptions?: {
-    roughness?: number;       // Roughness level (0 to 3) - controls how rough the drawing is
-    bowing?: number;          // How much to curve the lines (0 to 3)
-    fill?: string;            // Fill color
-    fillStyle?: string;       // Fill style ('hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'sunburst', 'dashed', 'zigzag-line')
-    fillWeight?: number;      // Weight of the fill strokes
-    stroke?: string;          // Stroke color
-    strokeWidth?: number;     // Width of the stroke
-    disableMultiStroke?: boolean; // Disable multi-stroke
-    disableMultiStrokeFill?: boolean; // Disable multi-stroke for fills
-    seed?: number;            // Set a specific seed for randomness
+    roughness?: number;
+    bowing?: number;
+    fill?: string;
+    fillStyle?: string;
+    fillWeight?: number;
+    stroke?: string;
+    strokeWidth?: number;
+    disableMultiStroke?: boolean;
+    disableMultiStrokeFill?: boolean;
+    seed?: number;
   };
   // Diagram style customization
   diagramStyles?: {
-    fontFamily?: string;         // Font for text elements
-    boxBorderWidth?: number;     // Width of box borders
-    boxBorderColor?: string;     // Color of box borders
-    boxBgColor?: string;         // Background color of boxes
-    edgeLabelBgColor?: string;   // Background color of edge labels
-    nodeLabelColor?: string;     // Color of node labels
-    edgeLabelColor?: string;     // Color of edge labels
+    fontFamily?: string;
+    boxBorderWidth?: number;
+    boxBorderColor?: string;
+    boxBgColor?: string;
+    edgeLabelBgColor?: string;
+    nodeLabelColor?: string;
+    edgeLabelColor?: string;
   };
 }
 
@@ -67,37 +85,91 @@ const ControlPanel = styled(Box)({
   zIndex: 10,
 });
 
-// Default mermaid markdown if none is provided
-const DEFAULT_MERMAID = `flowchart LR
-    A(Flux Image Creator) --> B(Image 2 Text)
-    B --> C{Content Spreader}
-    C --> D[Insta Post Agent]
-    C --> E[Facbook Post Agent]
-    C --> F[RSS Central Poster]`;
-
-// Default diagram style options
-const DEFAULT_DIAGRAM_STYLES = {
-  fontFamily: 'Comic Sans MS, cursive',
-  boxBorderWidth: 2,
-  boxBorderColor: '#1eb3b7',
-  boxBgColor: '#f2f0e8',
-  edgeLabelBgColor: '#ffffff',
-  nodeLabelColor: '#333333',
-  edgeLabelColor: '#333333'
-};
-
 const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
+  activeStep = 0,
   mermaid_markdown,
   backgroundImage = '/img/builder-background-grey.jpg',
   roughOptions = {},
   diagramStyles = {}
 }) => {
+  const { currentAgentChain, currentAgentTransformations } = useAgentStore();
+  const [agents, setAgents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const mermaidRef = useRef<HTMLDivElement>(null);
   const roughOutputRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState<number>(1.2);
   const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Generate mermaid diagram from agent chain
+  const generateMermaidFromAgentChain = () => {
+    if (currentAgentChain.length === 0) {
+      return `flowchart LR
+        A[No Agents] --- B[Add agents to create a workflow]`;
+    }
+
+    let flowchartCode = 'flowchart LR\n';
+
+    // Add nodes for each agent
+    currentAgentChain.forEach((agent, index) => {
+      const nodeId = `A${index}`;
+      const nodeLabel = agent.agent_title;
+
+      // Determine node shape based on its position in the chain
+      let nodeShape = '(';
+      let nodeEndShape = ')';
+
+      if (index === 0) {
+        // First node - rounded rectangle
+        nodeShape = '(';
+        nodeEndShape = ')';
+      } else if (index === currentAgentChain.length - 1) {
+        // Last node - rounded rectangle
+        nodeShape = '(';
+        nodeEndShape = ')';
+      } else if (index % 3 === 0) {
+        // Every 3rd node - diamond
+        nodeShape = '{';
+        nodeEndShape = '}';
+      } else if (index % 2 === 0) {
+        // Every 2nd node - hexagon
+        nodeShape = '{{';
+        nodeEndShape = '}}';
+      } else {
+        // Other nodes - rectangle
+        nodeShape = '[';
+        nodeEndShape = ']';
+      }
+
+      flowchartCode += `    ${nodeId}${nodeShape}${nodeLabel}${nodeEndShape}\n`;
+    });
+
+    // Add connections between nodes
+    for (let i = 0; i < currentAgentChain.length - 1; i++) {
+      flowchartCode += `    A${i} --> A${i+1}\n`;
+    }
+
+    return flowchartCode;
+  };
+
+  // Load agents when the component mounts
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        setLoading(true);
+        const fetchedAgents = await AgentService.getAgents();
+        setAgents(fetchedAgents);
+      } catch (error) {
+        console.error('Failed to fetch agents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAgents();
+  }, []);
 
   // Handle zoom changes
   const handleZoom = (newScale: number) => {
@@ -152,7 +224,7 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
     const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     styleEl.textContent = `
       /* Font styles for all text */
-      text {
+      #${svgElement.id} text {
         font-family: ${styles.fontFamily} !important;
       }
 
@@ -192,8 +264,6 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
       // Clear previous content
       roughOutputRef.current.innerHTML = '';
 
-      // Creating Svg2Roughjs instance
-
       // First apply custom styles to the SVG
       applyCustomStylesToSvg(svgElement);
 
@@ -214,12 +284,10 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
       // Set the custom font family
       svg2rough.fontFamily = diagramStyles.fontFamily || DEFAULT_DIAGRAM_STYLES.fontFamily;
 
-      // Set the SVG to be converted - this triggers the processing
-      // Setting SVG to Svg2Roughjs
+      // Set the SVG to be converted
       svg2rough.svg = svgElement;
 
       // Trigger the sketch rendering
-      // Starting sketch process
       svg2rough.sketch().catch(error => {
         console.error("Error in sketch process:", error);
       });
@@ -236,7 +304,10 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
     }
   };
 
+  // Render the mermaid diagram and apply RoughJS
   useEffect(() => {
+    if (activeStep !== 0) return;
+
     // Initialize mermaid
     mermaid.initialize({
       startOnLoad: true,
@@ -258,7 +329,9 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
       try {
         mermaidRef.current.innerHTML = '';
         const uniqueId = 'mermaid-diagram-' + Date.now();
-        const markdownToRender = mermaid_markdown || DEFAULT_MERMAID;
+
+        // Use agent chain data or fallback to provided markdown or default
+        const markdownToRender = mermaid_markdown || generateMermaidFromAgentChain();
 
         // Use the async render method with proper error handling
         mermaid.render(uniqueId, markdownToRender)
@@ -300,65 +373,81 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
         }
       }
     }
-  }, [mermaid_markdown, roughOptions, diagramStyles]);
+  }, [
+    mermaid_markdown, 
+    roughOptions, 
+    diagramStyles, 
+    activeStep, 
+    currentAgentChain
+  ]);
 
   return (
-    <BackgroundContainer 
-      backgroundImage={backgroundImage}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-    >
-      {/* Original mermaid rendering div - hidden */}
-      <div 
-        ref={mermaidRef} 
-        style={{ 
-          display: 'none', // Hidden
-          position: 'absolute',
-          top: 0,
-          left: 0
-        }}
-      />
-
-      {/* Output container for the RoughJS SVG */}
-      <div
-        ref={roughOutputRef}
-        style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          padding: '20px',
-          height: '100%',
-          transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-          transformOrigin: 'center center',
-          transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-        }}
-      />
-
-      <ControlPanel>
-        <Stack spacing={1} direction="row" alignItems="center" sx={{ width: 200 }}>
-          <IconButton size="small" onClick={() => handleZoom(scale - 0.1)}>
-            <ZoomOutIcon fontSize="small" />
-          </IconButton>
-          <Slider
-            size="small"
-            value={scale}
-            min={0.5}
-            max={3}
-            step={0.1}
-            onChange={(_, value) => handleZoom(value as number)}
+    <>
+      {activeStep === 0 && (
+        <BackgroundContainer 
+          backgroundImage={backgroundImage}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
+          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        >
+          {/* Original mermaid rendering div - hidden */}
+          <div 
+            ref={mermaidRef} 
+            style={{ 
+              display: 'none', // Hidden
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
           />
-          <IconButton size="small" onClick={() => handleZoom(scale + 0.1)}>
-            <ZoomInIcon fontSize="small" />
-          </IconButton>
-          <IconButton size="small" onClick={resetView}>
-            <RestartAltIcon fontSize="small" />
-          </IconButton>
-        </Stack>
-      </ControlPanel>
-    </BackgroundContainer>
+
+          {/* Output container for the RoughJS SVG */}
+          <div
+            ref={roughOutputRef}
+            style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              padding: '20px',
+              height: '100%',
+              transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+              transformOrigin: 'center center',
+              transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+            }}
+          />
+
+          <ControlPanel>
+            <Stack spacing={1} direction="row" alignItems="center" sx={{ width: 200 }}>
+              <IconButton size="small" onClick={() => handleZoom(scale - 0.1)}>
+                <ZoomOutIcon fontSize="small" />
+              </IconButton>
+              <Slider
+                size="small"
+                value={scale}
+                min={0.5}
+                max={3}
+                step={0.1}
+                onChange={(_, value) => handleZoom(value as number)}
+              />
+              <IconButton size="small" onClick={() => handleZoom(scale + 0.1)}>
+                <ZoomInIcon fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={resetView}>
+                <RestartAltIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+          </ControlPanel>
+        </BackgroundContainer>
+      )}
+
+      {activeStep === 1 && (
+        <Box sx={{ height: '503px', width: '100%' }}>
+          <TransformationTester agents={agents} />
+        </Box>
+      )}
+    </>
   );
 };
 
