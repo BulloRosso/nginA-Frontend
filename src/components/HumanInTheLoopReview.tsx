@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import { HumanFeedbackService, HumanFeedbackData } from '../services/human-feedback';
+import ScratchpadBrowser from '../components/ScratchpadBrowser';
+import { Box, Typography, Paper, TextField, Button, CircularProgress, Alert } from '@mui/material';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 
 const HumanInTheLoopReview = () => {
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [feedback, setFeedback] = useState('');
+  const [success, setSuccess] = useState<boolean>(false);
+  const [feedback, setFeedback] = useState<string>('');
   const [reviewData, setReviewData] = useState<HumanFeedbackData | null>(null);
 
   // Get ID from URL path
@@ -52,90 +56,103 @@ const HumanInTheLoopReview = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="ml-4">Loading review request...</p>
-      </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Loading review request...</Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      </div>
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
     );
   }
 
   if (success) {
     return (
-      <div className="p-4">
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+      <Box sx={{ p: 2 }}>
+        <Alert severity="success">
           Thank you for your review! Your feedback has been submitted successfully.
-        </div>
-      </div>
+        </Alert>
+      </Box>
     );
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-4">Review Request</h1>
+    <Box sx={{ p: 4, maxWidth: '1200px', mx: 'auto' }}>
+      <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
+        <Typography variant="h6" sx={{ mb: 4 }}><b>nginA</b>: Please Review the Agents output</Typography>
 
         {reviewData?.reason && (
-          <div className="mb-6">
-            <h2 className="text-lg font-medium">Reason for Review:</h2>
-            <div className="mt-2 p-3 bg-gray-100 rounded">{reviewData.reason}</div>
-          </div>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6">Reason for Review:</Typography>
+            <Paper variant="outlined" sx={{ p: 2, mt: 1, bgcolor: 'background.default' }}>
+              <Typography>{reviewData.reason}</Typography>
+            </Paper>
+          </Box>
         )}
 
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="feedback">
-            Your Feedback
-          </label>
-          <textarea
-            id="feedback"
+        {/* Scratchpad Browser Section */}
+        {reviewData?.run_id && (
+          <Box sx={{ mb: 4, 
+                    minHeight:'325px',
+                    maxHeight: '325px', 
+                    overflowY: 'auto', 
+                    borderBottom: '1px solid #ccc',
+                    borderTop: '1px solid #ccc'
+                   }}>
+            <ScratchpadBrowser runId={reviewData.run_id} />
+          </Box>
+        )}
+
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>Your Feedback</Typography>
+          <TextField
+            multiline
             rows={4}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            fullWidth
+            variant="outlined"
+            placeholder="Enter your feedback here..."
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-          ></textarea>
-        </div>
+          />
+        </Box>
 
-        <div className="flex justify-between">
-          <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-48 flex items-center justify-center"
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<ThumbDownIcon />}
             onClick={() => handleSubmit(false)}
             disabled={submitting}
+            sx={{ minWidth: 120 }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.105-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z" />
-            </svg>
             Reject
-          </button>
+          </Button>
 
-          <button
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-48 flex items-center justify-center"
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<ThumbUpIcon />}
             onClick={() => handleSubmit(true)}
             disabled={submitting}
+            sx={{ minWidth: 120 }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4l-1.4 1.866a4 4 0 00-.8 2.4z" />
-            </svg>
             Approve
-          </button>
-        </div>
+          </Button>
+        </Box>
 
         {submitting && (
-          <div className="mt-4 flex justify-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="ml-2">Submitting your response...</p>
-          </div>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <CircularProgress size={24} />
+            <Typography sx={{ ml: 1 }}>Submitting your response...</Typography>
+          </Box>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 };
 
