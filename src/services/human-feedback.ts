@@ -21,7 +21,7 @@ export interface HumanFeedbackData {
 
 export interface FeedbackSubmission {
   status: 'approved' | 'rejected';
-  feedback?: string;
+  reason?: string;  // Changed from 'feedback' to 'reason'
 }
 
 export const HumanFeedbackService = {
@@ -37,6 +37,8 @@ export const HumanFeedbackService = {
    * Update human feedback status (approve/reject)
    */
   updateHumanFeedback: async (id: string, data: FeedbackSubmission): Promise<any> => {
+    // The API expects 'reason', which is already in our data object
+    console.log('Sending update with data:', data);
     const response = await api.post(`/api/v1/operations/human-feedback/${id}/update`, data);
     return response.data;
   },

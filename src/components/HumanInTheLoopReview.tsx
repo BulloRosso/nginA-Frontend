@@ -41,13 +41,21 @@ const HumanInTheLoopReview = () => {
       if (!id) throw new Error('No review ID found');
 
       setSubmitting(true);
-      await HumanFeedbackService.updateHumanFeedback(id, {
+      console.log(`Submitting feedback: ${approved ? 'approved' : 'rejected'}`);
+
+      // The backend expects 'reason', not 'feedback'
+      const data = {
         status: approved ? 'approved' : 'rejected',
-        feedback: feedback || undefined
-      });
+        reason: feedback // Send the feedback text as 'reason'
+      };
+      console.log("Sending data:", data);
+
+      await HumanFeedbackService.updateHumanFeedback(id, data);
+      console.log("Feedback submitted successfully");
 
       setSuccess(true);
     } catch (err) {
+      console.error("Error submitting feedback:", err);
       setError(err instanceof Error ? err.message : 'Failed to submit review');
     } finally {
       setSubmitting(false);
