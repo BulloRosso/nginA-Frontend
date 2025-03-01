@@ -171,17 +171,31 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
     if (isImageFile(fileExtension)) {
       return (
         <Box 
-          component="img"
-          src={file.metadata.url}
-          alt={file.filename}
           sx={{
             width: 80,
-            height: 80,
-            objectFit: 'cover',
+            height: 60, // 4:3 aspect ratio for the container
+            position: 'relative',
+            overflow: 'hidden',
             borderRadius: 1,
-            cursor: 'pointer'
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            bgcolor: '#f0f0f0', // Light background for image container
           }}
-        />
+        >
+          <Box 
+            component="img"
+            src={file.metadata.url}
+            alt={file.filename}
+            sx={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover', // This maintains aspect ratio and crops if needed
+              cursor: 'pointer'
+            }}
+          />
+        </Box>
       );
     }
 

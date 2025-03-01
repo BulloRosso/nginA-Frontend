@@ -161,13 +161,13 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
   <React.Fragment>
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <img src="/img/title-logo.jpg" alt="nginA Logo" width="220px" />
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 0 }}>
+          <img src="/img/title-logo.jpg" alt="nginA Logo" width="320px" />
         </Box>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <TextField
             fullWidth
             label="Email"

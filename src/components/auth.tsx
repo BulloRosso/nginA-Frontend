@@ -100,7 +100,7 @@ export const Register = ({ onSuccess }) => {
     <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <img src="/img/title-logo.jpg" alt="nginA Logo" width="220px" />
+          <img src="/img/title-logo.jpg" alt="nginA Logo" width="320px" />
         </Box>
 
         <Typography variant="h5" component="h1" gutterBottom align="center">

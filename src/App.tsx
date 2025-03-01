@@ -1,10 +1,9 @@
 
 import './App.css';
 import React from 'react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProfileSetup from './pages/ProfileSetup';
-import { ThemeProvider } from '@mui/material/styles';
-import { createTheme } from '@mui/material';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -33,6 +32,7 @@ import AgentInfoPage from './pages/AgentInfoPage';
 import AgentBuilder from './pages/AgentBuilder';
 import AgentOperator from './pages/AgentOperator';
 import Accountant from './pages/Accountant';
+import HumanInTheLoopReview from './components/HumanInTheLoopReview';
 
 // Create the theme with error handling
 let theme;
@@ -66,9 +66,10 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => {
   return (
-    <AuthProvider>
+  <ThemeProvider theme={theme}>
+    <AuthProvider>    
       <DisclaimerProvider>
-        <ThemeProvider theme={theme}>
+       
           <I18nextProvider i18n={i18n}>
             <BrowserRouter>
               <MFAWrapper>
@@ -80,6 +81,7 @@ const App = () => {
                   <Route path="/interview-welcome" element={<InterviewWelcome />} />
                   <Route path="/interview-token" element={<TokenHandler />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/human-in-the-loop/:id" element={<HumanInTheLoopReview />} />
 
                   {/* Auth routes - no header */}
                   <Route 
@@ -214,9 +216,10 @@ const App = () => {
               </MFAWrapper>
             </BrowserRouter>
           </I18nextProvider>
-        </ThemeProvider>
+       
       </DisclaimerProvider>
     </AuthProvider>
+  </ThemeProvider>
   );
 };
 
