@@ -52,8 +52,8 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
   // Define the steps for the stepper
   const steps = [
-    'Required Components',
-    'Parameter Transformations',
+    'Required Agents',
+    'JSON Post-Processing',
     'Human in the Loop'
   ];
 
