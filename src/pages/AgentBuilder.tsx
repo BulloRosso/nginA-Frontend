@@ -31,12 +31,10 @@ interface ProfileSelectionProps {
 }
 
 const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
+ 
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
-    localStorage.getItem('profileId')
-  );
+ 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0); // State for tracking active step
   const navigate = useNavigate();
@@ -63,48 +61,6 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     'en': 'enUS',
     // Add more locales as needed
   };
-
-  // Single effect for initialization
-  useEffect(() => {
-    const initializeProfileSelection = async () => {
-      try {
-        // Clear local storage at component mount
-        localStorage.removeItem('profileId');
-        localStorage.removeItem('profiles');
-        window.dispatchEvent(new CustomEvent('profileSelected'));
-
-        // Get current user ID from localStorage
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-          setError('No user data found. Please log in again.');
-          return;
-        }
-
-        const user = JSON.parse(userData);
-
-        // Use new method to fetch profiles for current user
-        const userProfiles = await ProfileService.getProfilesForUser(user.id);
-        setProfiles(userProfiles);
-
-        // If there are profiles, select the first one by default
-        if (userProfiles.length > 0) {
-          const firstProfile = userProfiles[0];
-          localStorage.setItem('profileId', firstProfile.id);
-          localStorage.setItem('profiles', JSON.stringify(firstProfile));
-          setSelectedProfileId(firstProfile.id);
-          window.dispatchEvent(new CustomEvent('profileSelected'));
-        }
-
-      } catch (error) {
-        console.error('Error fetching profiles:', error);
-        setError('Failed to load profiles. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeProfileSelection();
-  }, []);
 
   // Function to handle step navigation
   const handleStepChange = (step: number) => {

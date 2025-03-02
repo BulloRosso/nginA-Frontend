@@ -38,19 +38,8 @@ interface ProfileSelectionProps {
 
 const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
-    localStorage.getItem('profileId')
-  );
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [buyModalOpen, setBuyModalOpen] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-
+  const loading = false;
+  const error = null;
   const { t, i18n } = useTranslation(['agents','profile', 'invitation', 'interview', 'common']);
 
   // Map i18n languages to date-fns locales
@@ -64,19 +53,6 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     return locales[i18n.language] || enUS;  // fallback to English
   };
   
-  // Single effect for initialization
-  useEffect(() => {
-      const initializePage = async () => {
-         
-        setLoading(false)
-      };
-
-      initializePage();
-  }, []);
-
-
-  
-
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ 
@@ -109,37 +85,6 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           
         </Paper>
       </Box>
-
-      {/* Feedback Messages */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={4000}
-        onClose={() => setSuccessMessage(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={() => setSuccessMessage(null)}
-          severity="success"
-          variant="filled"
-        >
-          {successMessage}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={4000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={() => setError(null)}
-          severity="error"
-          variant="filled"
-        >
-          {error}
-        </Alert>
-      </Snackbar>
 
       <SupportBot />
       
