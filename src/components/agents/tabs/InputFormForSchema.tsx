@@ -7,7 +7,12 @@ import {
   Box,
   Typography,
   Collapse,
-  CircularProgress
+  CircularProgress,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
@@ -15,6 +20,46 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
   const [formData, setFormData] = useState({});
   const [expandedItems, setExpandedItems] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    // Initialize enum fields with first value if available
+    if (schema && schema.properties) {
+      const initialData = {};
+
+      const initializeEnumValues = (properties, parentPath = '') => {
+        Object.entries(properties).forEach(([key, fieldSchema]) => {
+          const currentPath = parentPath ? `${parentPath}.${key}` : key;
+
+          if (fieldSchema.type === 'string' && fieldSchema.enum && fieldSchema.enum.length > 0) {
+            // Pre-select the first enum value
+            let current = initialData;
+            const parts = currentPath.split('.');
+
+            // Handle nested paths
+            for (let i = 0; i < parts.length - 1; i++) {
+              if (!current[parts[i]]) current[parts[i]] = {};
+              current = current[parts[i]];
+            }
+
+            // Set the enum value
+            current[parts[parts.length - 1]] = fieldSchema.enum[0];
+          } else if (fieldSchema.type === 'object' && fieldSchema.properties) {
+            // Recursively handle nested objects
+            initializeEnumValues(fieldSchema.properties, currentPath);
+          }
+        });
+      };
+
+      initializeEnumValues(schema.properties);
+
+      if (Object.keys(initialData).length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          ...initialData
+        }));
+      }
+    }
+  }, [schema]);
 
   useEffect(() => {
     validateForm();
@@ -111,6 +156,23 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
     }));
   };
 
+  // Helper function to generate length constraint text
+  const getLengthConstraintText = (fieldSchema) => {
+    if (fieldSchema.type !== 'string') return '';
+
+    const constraints = [];
+
+    if (fieldSchema.minLength !== undefined) {
+      constraints.push(`Min length: ${fieldSchema.minLength}`);
+    }
+
+    if (fieldSchema.maxLength !== undefined) {
+      constraints.push(`Max length: ${fieldSchema.maxLength}`);
+    }
+
+    return constraints.length > 0 ? constraints.join(' • ') : '';
+  };
+
   // This is a helper function to determine if a field should be rendered
   // based on its schema. We want to render leaf nodes only.
   const shouldRenderAsInputField = (fieldSchema) => {
@@ -190,35 +252,88 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
     // Handle regular field types
     switch (fieldSchema.type) {
       case 'string':
-        return (
-          <Box sx={{ mb: 2 }}>
-            <TextField
-              required={isRequired}
-              fullWidth
-              label={fieldSchema.title || fieldName}
-              onChange={(e) => handleChange(path, e.target.value)}
-              value={getValueByPath(formData, path) || ''}
-              margin="none"
-              size="small"
-              sx={{ backgroundColor: 'white', borderRadius: 1 }}
-              variant="outlined"
-            />
-            {fieldSchema.description && (
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  mt: 0, 
-                  p: "6px", 
-                  color: '#666666',
-                  bgcolor: "#f6f4ee",
-                  borderRadius: 0
-                }}
+        // If enum is present, render dropdown
+        if (fieldSchema.enum && fieldSchema.enum.length > 0) {
+          const description = fieldSchema.description || '';
+          const lengthConstraint = getLengthConstraintText(fieldSchema);
+          const fullDescription = description + (description && lengthConstraint ? ' • ' : '') + lengthConstraint;
+
+          return (
+            <Box sx={{ mb: 2 }}>
+              <FormControl 
+                fullWidth 
+                required={isRequired}
+                size="small"
+                sx={{ backgroundColor: 'white', borderRadius: 1 }}
               >
-                {fieldSchema.description}
-              </Typography>
-            )}
-          </Box>
-        );
+                <InputLabel>{fieldSchema.title || fieldName}</InputLabel>
+                <Select
+                  value={getValueByPath(formData, path) || ''}
+                  onChange={(e) => handleChange(path, e.target.value)}
+                  label={fieldSchema.title || fieldName}
+                >
+                  {fieldSchema.enum.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fullDescription && (
+                  <FormHelperText
+                    sx={{ 
+                      mt: 0, 
+                      p: "6px", 
+                      color: '#666666',
+                      bgcolor: "#f6f4ee",
+                      borderRadius: 0
+                    }}
+                  >
+                    {fullDescription}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </Box>
+          );
+        } else {
+          // Regular text field
+          const description = fieldSchema.description || '';
+          const lengthConstraint = getLengthConstraintText(fieldSchema);
+          const fullDescription = description + (description && lengthConstraint ? ' • ' : '') + lengthConstraint;
+
+          return (
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                required={isRequired}
+                fullWidth
+                label={fieldSchema.title || fieldName}
+                onChange={(e) => handleChange(path, e.target.value)}
+                value={getValueByPath(formData, path) || ''}
+                margin="none"
+                size="small"
+                sx={{ backgroundColor: 'white', borderRadius: 1 }}
+                variant="outlined"
+                inputProps={{
+                  minLength: fieldSchema.minLength,
+                  maxLength: fieldSchema.maxLength
+                }}
+              />
+              {fullDescription && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    mt: 0, 
+                    p: "6px", 
+                    color: '#666666',
+                    bgcolor: "#f6f4ee",
+                    borderRadius: 0
+                  }}
+                >
+                  {fullDescription}
+                </Typography>
+              )}
+            </Box>
+          );
+        }
 
       case 'number':
       case 'integer':
@@ -241,7 +356,9 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
               sx={{ backgroundColor: 'white', borderRadius: 1 }}
               variant="outlined"
               inputProps={{
-                step: fieldSchema.type === 'integer' ? 1 : 'any'
+                step: fieldSchema.type === 'integer' ? 1 : 'any',
+                min: fieldSchema.minimum,
+                max: fieldSchema.maximum
               }}
             />
             {fieldSchema.description && (
@@ -256,6 +373,14 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
                 }}
               >
                 {fieldSchema.description}
+                {(fieldSchema.minimum !== undefined || fieldSchema.maximum !== undefined) && (
+                  <>
+                    {fieldSchema.description ? ' • ' : ''}
+                    {fieldSchema.minimum !== undefined && `Min: ${fieldSchema.minimum}`}
+                    {fieldSchema.minimum !== undefined && fieldSchema.maximum !== undefined && ' • '}
+                    {fieldSchema.maximum !== undefined && `Max: ${fieldSchema.maximum}`}
+                  </>
+                )}
               </Typography>
             )}
           </Box>

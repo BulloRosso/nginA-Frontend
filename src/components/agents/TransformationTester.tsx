@@ -15,12 +15,20 @@ import {
   Paper,
   IconButton
 } from '@mui/material';
-import { ArrowForward, Code as CodeIcon } from '@mui/icons-material';
+import { 
+  ArrowForward, 
+  Code as CodeIcon, 
+  Info as InfoIcon,
+  ThumbUp as ThumbUpIcon,
+  ThumbDown as ThumbDownIcon,
+  Warning as WarningIcon
+} from '@mui/icons-material';
 import Editor from '@monaco-editor/react';
 import useAgentStore from '../../../stores/agentStore';
 import AgentIcon from './AgentIcon';
 import { Agent } from '../../types/agent';
 import SchemaForm from './tabs/InputFormForSchema';
+import SchemaTable from './SchemaTable';
 import { useTranslation } from 'react-i18next';
 
 interface TransformationTesterProps {
@@ -40,33 +48,43 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
   const [transformedData, setTransformedData] = useState('{}');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCodeDialogOpen, setIsCodeDialogOpen] = useState(false);
+  const [isSchemaDialogOpen, setIsSchemaDialogOpen] = useState(false);
+  const [schemaDialogType, setSchemaDialogType] = useState<'input' | 'output'>('input');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [transformationCode, setTransformationCode] = useState('');
   const [draftTransformationCode, setDraftTransformationCode] = useState('');
+  const [isValidOutput, setIsValidOutput] = useState<boolean | null>(null);
 
   const inputEditorRef = useRef(null);
   const outputEditorRef = useRef(null);
   const codeEditorRef = useRef(null);
 
-  // Get agents with transformations
-  const agentsWithTransformations = agents.filter(agent => 
-    currentAgentTransformations.some(transform => transform.agent_id === agent.id)
-  );
+  // Get agents for the transformation chain
+  // We need at least 2 agents for a transformation chain
+  const agentsInChain = agents.length >= 2 ? agents : [];
 
-  // Find current selected agent
-  const selectedAgent = agents.find(agent => agent.id === selectedTransformationAgentId);
+  // Get the index of the selected agent
+  const selectedAgentIndex = selectedTransformationAgentId 
+    ? agents.findIndex(agent => agent.id === selectedTransformationAgentId)
+    : 1; // Default to the second agent if none selected
+
+  // The selected agent (destination of transformation)
+  const selectedAgent = selectedAgentIndex >= 0 ? agents[selectedAgentIndex] : null;
+
+  // The source agent (source of transformation, previous agent in chain)
+  const sourceAgent = selectedAgentIndex > 0 ? agents[selectedAgentIndex - 1] : null;
 
   // Find transformation function code for selected agent
-  const selectedTransformation = currentAgentTransformations.find(
-    transform => transform.agent_id === selectedTransformationAgentId
-  );
+  const selectedTransformation = selectedAgent 
+    ? currentAgentTransformations.find(transform => transform.agent_id === selectedAgent.id)
+    : null;
 
   useEffect(() => {
-    // Initialize the first agent as selected if none is selected and there are transformations
-    if (!selectedTransformationAgentId && agentsWithTransformations.length > 0) {
-      setSelectedTransformationAgentId(agentsWithTransformations[0].id);
+    // Initialize the second agent as selected if none is selected and there are at least 2 agents
+    if (!selectedTransformationAgentId && agents.length >= 2) {
+      setSelectedTransformationAgentId(agents[1].id);
     }
 
     // Update transformation code when selectedTransformation changes
@@ -74,12 +92,22 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
       setTransformationCode(selectedTransformation.post_process_transformations);
       setDraftTransformationCode(selectedTransformation.post_process_transformations);
     }
-  }, [agentsWithTransformations, selectedTransformationAgentId, setSelectedTransformationAgentId, selectedTransformation]);
-  
+  }, [agents, selectedTransformationAgentId, setSelectedTransformationAgentId, selectedTransformation]);
+
+  useEffect(() => {
+    // Validate transformed data whenever it changes
+    if (transformedData && transformedData !== '{}') {
+      validateTransformedData();
+    } else {
+      setIsValidOutput(null);
+    }
+  }, [transformedData]);
+
   const handleAgentSelect = (agentId: string) => {
     setSelectedTransformationAgentId(agentId);
     setInputData('{}');
     setTransformedData('{}');
+    setIsValidOutput(null);
   };
 
   const handleShowInputForm = () => {
@@ -119,7 +147,9 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
       setSuccessMessage(t('agents.transformation_success'));
     } catch (err) {
       console.error('Transformation error:', err);
-      setError(err instanceof Error ? err.message : String(err));
+      // Extract only the error message without the stack trace
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -128,6 +158,10 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
   // Handle Monaco editor updates
   const handleInputChange = (value: string = '{}') => {
     setInputData(value);
+  };
+
+  const handleOutputChange = (value: string = '{}') => {
+    setTransformedData(value);
   };
 
   const handleSaveCode = () => {
@@ -141,6 +175,70 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
       setIsCodeDialogOpen(false);
       setSuccessMessage(t('agents.transformation_code_updated'));
     }
+  };
+
+  const handleShowSchemaDialog = (type: 'input' | 'output') => {
+    setSchemaDialogType(type);
+    setIsSchemaDialogOpen(true);
+  };
+
+  const validateTransformedData = () => {
+    if (!selectedAgent?.input || !transformedData || transformedData === '{}') {
+      setIsValidOutput(null);
+      return;
+    }
+
+    try {
+      const parsedData = JSON.parse(transformedData);
+      const isValid = isValidInputForTarget(parsedData, selectedAgent.input);
+      setIsValidOutput(isValid);
+    } catch (err) {
+      console.error('Validation error:', err);
+      setIsValidOutput(false);
+    }
+  };
+
+  // Function to validate if transformed data matches the target input schema
+  const isValidInputForTarget = (data: any, schema: any): boolean => {
+    // This is a simplified validation approach
+    // In a real implementation, you might want to use a JSON Schema validator library
+
+    // Check if required properties exist
+    if (schema.required && Array.isArray(schema.required)) {
+      for (const requiredProp of schema.required) {
+        if (data[requiredProp] === undefined) {
+          return false;
+        }
+      }
+    }
+
+    // Check property types (basic validation)
+    if (schema.properties) {
+      for (const [propName, propSchema] of Object.entries(schema.properties)) {
+        if (data[propName] !== undefined) {
+          const schemaType = (propSchema as any).type;
+
+          // Skip validation if type is not specified
+          if (!schemaType) continue;
+
+          // Check if type matches
+          if (typeof data[propName] === 'object' && data[propName] !== null && schemaType === 'object') {
+            // Recursively validate nested objects
+            if ((propSchema as any).properties && !isValidInputForTarget(data[propName], propSchema)) {
+              return false;
+            }
+          } else if (Array.isArray(data[propName]) && schemaType === 'array') {
+            // Basic array validation
+            continue;
+          } else if (typeof data[propName] !== schemaType && 
+                    !(schemaType === 'number' && typeof data[propName] === 'number')) {
+            return false;
+          }
+        }
+      }
+    }
+
+    return true;
   };
 
   return (
@@ -159,18 +257,23 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
         }}
       >
         <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', p: 1 }}>
-          {agentsWithTransformations.length === 0 ? (
+          {agents.length < 2 ? (
             <Typography sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-              {t('agents.no_transformations')}
+              {t('agents.need_two_agents')}
             </Typography>
           ) : (
-            agentsWithTransformations.map(agent => (
+            agents.map((agent, index) => (
               <Box key={agent.id} sx={{ textAlign: 'center' }}>
                 <AgentIcon 
                   agent={agent}
                   isActive={agent.id === selectedTransformationAgentId}
-                  onClick={() => handleAgentSelect(agent.id)}
+                  onClick={() => index > 0 ? handleAgentSelect(agent.id) : null}
                   size={36}
+                  sx={{ 
+                    opacity: index === 0 ? 0.5 : 1,
+                    cursor: index === 0 ? 'not-allowed' : 'pointer',
+                    backgroundColor: index === 0 ? 'transparent' : undefined
+                  }}
                 />
               </Box>
             ))
@@ -197,9 +300,20 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
               {/* Input Editor Column */}
               <Grid item xs={6}>
                 <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                    {t('agents.input_data')}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="subtitle1">
+                      Receives output of <b>{sourceAgent?.title?.en || ''}</b>
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleShowSchemaDialog('input')}
+                      sx={{ ml: 1 }}
+                      aria-label="Show source agent output schema"
+                      title={`View output schema of ${sourceAgent?.title?.en || ''}`}
+                    >
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                   <Box sx={{ flex: 1, border: '1px solid #ddd', borderRadius: 1 }}>
                     <Editor
                       height="100%"
@@ -222,27 +336,47 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
                     >
                       {t('agents.enter_data_input')}
                     </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleTestTransformation}
-                      disabled={inputData === '{}' || isLoading}
-                      sx={{
-                        backgroundColor: 'gold',
-                        color: 'black',
-                        '&:hover': {
-                          backgroundColor: '#DAA520',
-                        },
-                        '&.Mui-disabled': {
-                          backgroundColor: 'rgba(218, 165, 32, 0.5)',
-                        }
-                      }}
-                    >
-                      {isLoading ? (
-                        <CircularProgress size={24} sx={{ color: 'black' }} />
-                      ) : (
-                        t('agents.test_transformation')
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      {error && (
+                        <Tooltip title={error} placement="left">
+                          <WarningIcon 
+                            sx={{ 
+                              color: 'red', 
+                              mr: 1,
+                              animation: 'pulse 1.5s infinite',
+                              '@keyframes pulse': {
+                                '0%': { opacity: 0.7 },
+                                '50%': { opacity: 1 },
+                                '100%': { opacity: 0.7 }
+                              }
+                            }} 
+                          />
+                        </Tooltip>
                       )}
-                    </Button>
+                      <Button
+                        variant="contained"
+                        onClick={handleTestTransformation}
+                        disabled={inputData === '{}' || isLoading}
+                        sx={{
+                          backgroundColor: error ? 'red' : 'gold',
+                          color: error ? 'white' : 'black',
+                          '&:hover': {
+                            backgroundColor: error ? '#b71c1c' : '#DAA520',
+                          },
+                          '&.Mui-disabled': {
+                            backgroundColor: error 
+                              ? 'rgba(183, 28, 28, 0.5)' 
+                              : 'rgba(218, 165, 32, 0.5)',
+                          }
+                        }}
+                      >
+                        {isLoading ? (
+                          <CircularProgress size={24} sx={{ color: error ? 'white' : 'black' }} />
+                        ) : (
+                          t('agents.test_transformation')
+                        )}
+                      </Button>
+                    </Box>
                   </Box>
                 </Box>
               </Grid>
@@ -250,17 +384,28 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
               {/* Output Editor Column */}
               <Grid item xs={6}>
                 <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                    {t('agents.transformed_data')}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="subtitle1">
+                      Transformed input for <b>{selectedAgent?.title?.en || ''}</b>
+                    </Typography>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => handleShowSchemaDialog('output')}
+                      sx={{ ml: 1 }}
+                      aria-label="Show target agent input schema"
+                      title={`View input schema of ${selectedAgent?.title?.en || ''}`}
+                    >
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                   <Box sx={{ flex: 1, border: '1px solid #ddd', borderRadius: 1 }}>
                     <Editor
                       height="100%"
                       defaultLanguage="json"
                       theme="vs-dark"
                       value={transformedData}
+                      onChange={handleOutputChange}
                       options={{ 
-                        readOnly: true, 
                         minimap: { enabled: false },
                         fontSize: 12
                       }}
@@ -291,6 +436,32 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
             >
               <ArrowForward color="primary" />
             </Box>
+
+            {/* Validation circle for output data */}
+            {isValidOutput !== null && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  right: '24px',
+                  top: '43%',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  backgroundColor: isValidOutput ? 'green' : 'red',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
+                  zIndex: 10
+                }}
+              >
+                {isValidOutput ? (
+                  <ThumbUpIcon sx={{ color: 'white' }} />
+                ) : (
+                  <ThumbDownIcon sx={{ color: 'white' }} />
+                )}
+              </Box>
+            )}
           </>
         ) : (
           <Box sx={{ 
@@ -317,9 +488,9 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
       >
         <DialogTitle>{t('agents.enter_input_data')}</DialogTitle>
         <DialogContent>
-          {selectedAgent?.input ? (
+          {sourceAgent?.output ? (
             <SchemaForm 
-              schema={selectedAgent.input} 
+              schema={sourceAgent.output} 
               onSubmit={handleFormSubmit}
               isLoading={isLoading}
             />
@@ -330,6 +501,38 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
         <DialogActions>
           <Button onClick={() => setIsDialogOpen(false)}>
             {t('common.cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={isSchemaDialogOpen}
+        onClose={() => setIsSchemaDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { height: '80vh' }
+        }}
+      >
+        <DialogTitle>
+          {schemaDialogType === 'input' 
+            ? `${t('agents.output_schema')} - ${sourceAgent?.title?.en || ''}` 
+            : `${t('agents.input_schema')} - ${selectedAgent?.title?.en || ''}`}
+        </DialogTitle>
+        <DialogContent>
+          {schemaDialogType === 'input' && sourceAgent?.output ? (
+            <SchemaTable schema={sourceAgent.output} />
+          ) : schemaDialogType === 'output' && selectedAgent?.input ? (
+            <SchemaTable schema={selectedAgent.input} />
+          ) : (
+            <Typography sx={{ color: 'text.secondary' }}>
+              {t('agents.no_schema_available')}
+            </Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsSchemaDialogOpen(false)}>
+            {t('common.close')}
           </Button>
         </DialogActions>
       </Dialog>
