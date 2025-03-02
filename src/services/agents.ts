@@ -1,5 +1,6 @@
 // src/services/agents.ts
 import { Agent, AgentCreateDto } from '../types/agent';
+import api from './api';
 
 // Mock data for demonstration purposes
 const mockAgents: Agent[] = [
@@ -413,72 +414,166 @@ const mockTransformations = [
 ];
 
 export class AgentService {
-  static async getAgents(): Promise<Agent[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockAgents;
-  }
-
-  static async getAgent(id: string): Promise<Agent | null> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockAgents.find(agent => agent.id === id) || null;
-  }
-
-  static async createAgent(agentData: AgentCreateDto): Promise<Agent> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 700));
-
-    const newAgent: Agent = {
-      id: Math.random().toString(36).substring(2, 9),
-      created_at: new Date().toISOString(),
-      title: agentData.title,
-      description: agentData.description,
-      input: agentData.input ? { type: 'object', properties: agentData.input } : undefined,
-      output: agentData.output ? { type: 'object', properties: agentData.output } : undefined,
-      credits_per_run: agentData.credits_per_run || 1,
-      stars: agentData.stars || 0,
-      authenticaion: agentData.authentication || 'none',
-      icon_svg: agentData.icon_svg,
-      max_execution_time_secs: agentData.max_execution_time_secs,
-      agent_endpoint: agentData.agent_endpoint
-    };
-
-    return newAgent;
-  }
-
-  static async updateAgent(id: string, agentData: Partial<AgentCreateDto>): Promise<Agent | null> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    const agentIndex = mockAgents.findIndex(agent => agent.id === id);
-    if (agentIndex === -1) return null;
-
-    const updatedAgent = {
-      ...mockAgents[agentIndex],
-      ...agentData,
-      id: id, // Ensure ID doesn't change
-      created_at: mockAgents[agentIndex].created_at // Ensure created_at doesn't change
-    };
-
-    return updatedAgent;
-  }
-
-  static async deleteAgent(id: string): Promise<boolean> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return true; // Always successful in mock
-  }
-
-  static async getAgentTransformations(agentId?: string): Promise<any[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    if (agentId) {
-      return mockTransformations.filter(t => t.agent_id === agentId);
+  static async getAgents(mockData: boolean = false): Promise<Agent[]> {
+    if (mockData) {
+      return mockAgents;
     }
 
-    return mockTransformations;
+    const response = await api.get('/api/v1/agents');
+    return response.data;
+  }
+
+  static async getAgent(id: string, mockData: boolean = false): Promise<Agent | null> {
+    if (mockData) {
+      return mockAgents.find(agent => agent.id === id) || null;
+    }
+
+    try {
+      const response = await api.get(`/api/v1/agents/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  static async createAgent(agentData: AgentCreateDto, mockData: boolean = false): Promise<Agent> {
+    if (mockData) {
+      const newAgent: Agent = {
+        id: Math.random().toString(36).substring(2, 9),
+        created_at: new Date().toISOString(),
+        title: agentData.title,
+        description: agentData.description,
+        input: agentData.input ? { type: 'object', properties: agentData.input } : undefined,
+        output: agentData.output ? { type: 'object', properties: agentData.output } : undefined,
+        credits_per_run: agentData.credits_per_run || 1,
+        stars: agentData.stars || 0,
+        authenticaion: agentData.authentication || 'none',
+        icon_svg: agentData.icon_svg,
+        max_execution_time_secs: agentData.max_execution_time_secs,
+        agent_endpoint: agentData.agent_endpoint
+      };
+
+      return newAgent;
+    }
+
+    const response = await api.post('/api/v1/agents', agentData);
+    return response.data;
+  }
+
+  static async updateAgent(id: string, agentData: Partial<AgentCreateDto>, mockData: boolean = false): Promise<Agent | null> {
+    if (mockData) {
+      const agentIndex = mockAgents.findIndex(agent => agent.id === id);
+      if (agentIndex === -1) return null;
+
+      const updatedAgent = {
+        ...mockAgents[agentIndex],
+        ...agentData,
+        id: id, // Ensure ID doesn't change
+        created_at: mockAgents[agentIndex].created_at // Ensure created_at doesn't change
+      };
+
+      return updatedAgent;
+    }
+
+    try {
+      const response = await api.put(`/api/v1/agents/${id}`, agentData);
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  static async deleteAgent(id: string, mockData: boolean = false): Promise<boolean> {
+    if (mockData) {
+      return true; // Always successful in mock
+    }
+
+    await api.delete(`/api/v1/agents/${id}`);
+    return true;
+  }
+
+  static async getAgentTransformations(agentId?: string, mockData: boolean = false): Promise<any[]> {
+    if (mockData) {
+      if (agentId) {
+        return mockTransformations.filter(t => t.agent_id === agentId);
+      }
+      return mockTransformations;
+    }
+
+    let url = '/api/v1/transformations';
+    if (agentId) {
+      url += `?agent_id=${agentId}`;
+    }
+
+    const response = await api.get(url);
+    return response.data;
+  }
+
+  static async discoverAgent(discoveryUrl: string, mockData: boolean = false): Promise<Agent> {
+    if (mockData) {
+      // For mock data, we'll create a new agent based on a template
+      const newAgent: Agent = {
+        id: Math.random().toString(36).substring(2, 9),
+        created_at: new Date().toISOString(),
+        title: { en: 'Discovered Agent', de: 'Entdeckter Agent' },
+        description: { 
+          en: 'Agent discovered from external source', 
+          de: 'Agent aus externer Quelle entdeckt' 
+        },
+        credits_per_run: 1,
+        stars: 0,
+        authenticaion: 'none',
+        type: 'atom',
+        agent_endpoint: discoveryUrl
+      };
+
+      return newAgent;
+    }
+
+    const response = await api.post('/api/v1/agents/discover', { agentDiscoveryUrl: discoveryUrl });
+    return response.data;
+  }
+
+  static async testAgent(agentId: string, inputData: any, mockData: boolean = false): Promise<any> {
+    if (mockData) {
+      // For mock data, return a simple success response
+      return {
+        success: true,
+        message: 'Agent test successful',
+        result: {
+          processed: true,
+          inputData
+        }
+      };
+    }
+
+    const response = await api.post(`/api/v1/agents/${agentId}/test`, { input: inputData });
+    return response.data;
+  }
+
+  static async generateJsonSchema(exampleData: any, mockData: boolean = false): Promise<any> {
+    if (mockData) {
+      // For mock data, return a simple schema based on the example data
+      const schemaType = typeof exampleData;
+      return {
+        type: schemaType === 'object' ? 'object' : schemaType,
+        properties: schemaType === 'object' ? 
+          Object.keys(exampleData).reduce((schema, key) => {
+            schema[key] = { type: typeof exampleData[key] };
+            return schema;
+          }, {}) : 
+          {}
+      };
+    }
+
+    const response = await api.post('/api/v1/agents/generate-json-schema', { data: exampleData });
+    return response.data;
   }
 }
 

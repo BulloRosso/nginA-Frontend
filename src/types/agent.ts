@@ -21,6 +21,8 @@ export interface Agent {
   workflow_id?: string;
   stars: number;
   authenticaion: string;
+  type: string;
+  configuration?: any;
   image_url?: string;
   max_execution_time_secs?: number;
   agent_endpoint?: string;
@@ -35,6 +37,8 @@ export interface AgentCreateDto {
   credits_per_run?: number;
   workflow_id?: string;
   stars?: number;
+  type: string;
+  configuration?: any;
   icon_svg?: string;
   max_execution_time_secs?: number;
   agent_endpoint?: string;

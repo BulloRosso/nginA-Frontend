@@ -331,7 +331,7 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
                       onClick={handleShowInputForm}
                       disabled={!selectedAgent?.input}
                     >
-                      {t('agents.enter_data_input')}
+                      {t('agents.enter_input_data')}
                     </Button>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       {error && (
