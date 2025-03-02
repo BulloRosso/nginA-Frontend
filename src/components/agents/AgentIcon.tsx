@@ -8,6 +8,7 @@ interface AgentIconProps {
   size?: number;
   onClick?: () => void;
   disabled?: boolean;
+  backgroundColor?: string; // Added optional backgroundColor property
 }
 
 // Default SVG to use when icon_svg is null
@@ -18,9 +19,10 @@ const AgentIcon: React.FC<AgentIconProps> = ({
   isActive, 
   size = 40,
   onClick,
-  disabled = false
+  disabled = false,
+  backgroundColor
 }) => {
-  
+
   return (
     <Box
       onClick={disabled ? undefined : onClick}
@@ -28,7 +30,7 @@ const AgentIcon: React.FC<AgentIconProps> = ({
         width: size,
         height: size,
         borderRadius: '50%',
-        backgroundColor: isActive ? 'gold' : 'white',
+        backgroundColor: backgroundColor !== undefined ? backgroundColor : (isActive ? 'gold' : 'white'),
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

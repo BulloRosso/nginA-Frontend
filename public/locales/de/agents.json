@@ -6,7 +6,7 @@
     "endpoint": "Endpoint (URL)",
     "input_data": "Output (des gewählten Agenten)",
       "transformed_data": "Input (für den folgenden Agenten)",
-      "enter_data_input": "Enter test data",
+      "enter_input_data": "Enter test data",
       "test_transformation": "Test transformation",
       "no_transformations": "No transformations required",
       "select_agent_or_no_transformations": "Please select an agent (if available).",

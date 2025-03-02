@@ -269,11 +269,8 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
                   isActive={agent.id === selectedTransformationAgentId}
                   onClick={() => index > 0 ? handleAgentSelect(agent.id) : null}
                   size={36}
-                  sx={{ 
-                    opacity: index === 0 ? 0.5 : 1,
-                    cursor: index === 0 ? 'not-allowed' : 'pointer',
-                    backgroundColor: index === 0 ? 'transparent' : undefined
-                  }}
+                  disabled={index === 0}
+                  backgroundColor={index === 0 ? 'transparent' : undefined}
                 />
               </Box>
             ))

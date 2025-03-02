@@ -7,7 +7,7 @@
     "conventions": "Conventions",
     "input_data": "Output data (of selected agent)",
     "transformed_data": "Transformed data (input data for next agent)",
-    "enter_data_input": "Enter test data",
+    "enter_input_data": "Enter test data",
     "test_transformation": "Test transformation",
     "no_transformations": "No transformations required",
     "select_agent_or_no_transformations": "Please select an agent (if available).",
