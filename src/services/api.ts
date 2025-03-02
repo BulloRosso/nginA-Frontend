@@ -13,6 +13,8 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Important: This ensures cookies are sent with requests
+  withCredentials: true,
 });
 
 // Request interceptor
@@ -29,16 +31,22 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      const refreshToken = localStorage.getItem('refresh_token');
+    // Only proceed if this isn't already a refresh request
+    const isRefreshRequest = error.config.url?.includes('/api/v1/auth/refresh');
+
+    if (error.response?.status === 401 && !isRefreshRequest) {
       try {
-        const response = await api.post('/api/v1/auth/refresh', {
-          refresh_token: refreshToken
-        });
+        // The refresh token will be included automatically as a cookie
+        // because we set withCredentials: true above
+        const response = await api.post('/api/v1/auth/refresh', {});
+
         localStorage.setItem('token', response.data.access_token);
         error.config.headers.Authorization = `Bearer ${response.data.access_token}`;
+
+        // Retry the original request with the new token
         return api(error.config);
       } catch (refreshError) {
+        // Clear auth data and redirect to login on refresh failure
         localStorage.clear();
         window.location.href = '/login';
         return Promise.reject(refreshError);
