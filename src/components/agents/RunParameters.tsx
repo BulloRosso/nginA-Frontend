@@ -1,169 +1,406 @@
 // src/components/agents/RunParameters.tsx
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Typography,
+  Box, 
   Button,
-  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
+  IconButton,
+  Typography,
+  TextField,
+  Tabs,
+  Tab,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  Divider,
+  Paper,
   Snackbar,
   Alert
 } from '@mui/material';
-import { DirectionsRun as RunIcon } from '@mui/icons-material';
+import {
+  Close as CloseIcon,
+  Add as AddIcon,
+  Delete as DeleteIcon
+} from '@mui/icons-material';
 import { Agent } from '../../types/agent';
 import SchemaForm from './tabs/InputFormForSchema';
-import { useTranslation } from 'react-i18next';
 import { OperationService } from '../../services/operations';
+import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 
-interface RunParametersProps {
-  agent: Agent;
-  open: boolean;
-  onClose: () => void;
-  onRunStarted?: () => void;
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
 }
 
-const RunParameters: React.FC<RunParametersProps> = ({
-  agent,
-  open,
-  onClose,
-  onRunStarted
-}) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const { t } = useTranslation(['agents', 'common']);
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
 
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`run-parameters-tabpanel-${index}`}
+      aria-labelledby={`run-parameters-tab-${index}`}
+      {...other}
+      style={{ padding: '16px 0' }}
+    >
+      {value === index && (
+        <Box sx={{ p: 0 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `run-parameters-tab-${index}`,
+    'aria-controls': `run-parameters-tabpanel-${index}`,
+  };
+}
+
+interface CommChannel {
+  type: 'email' | 'teams' | 'whatsapp';
+  recipients: { address: string }[];
+}
+
+interface RunParametersProps {
+  open: boolean;
+  onClose: () => void;
+  agent: Agent | null;
+  onRunCreated: () => void;
+}
+
+const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onRunCreated }) => {
+  const { t } = useTranslation(['agents']);
+  const [activeTab, setActiveTab] = useState(0);
+  const [inputFormValid, setInputFormValid] = useState(false);
+  const [inputFormData, setInputFormData] = useState<any>({});
+  const [acceptLanguage, setAcceptLanguage] = useState('en');
+  const [commChannels, setCommChannels] = useState<CommChannel[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
+  // Reset form state when dialog opens with a new agent
   useEffect(() => {
-    // Reset state when dialog opens
-    if (open) {
-      setLoading(false);
-      setError(null);
-      setSuccess(null);
+    if (open && agent) {
+      setActiveTab(0);
+      setInputFormValid(!agent.input || Object.keys(agent.input).length === 0);
+      setInputFormData({});
+      setAcceptLanguage('en');
+      setCommChannels([]);
     }
-  }, [open]);
+  }, [open, agent]);
 
-  const handleSubmit = async (formData: any) => {
-    setLoading(true);
-    setError(null);
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
+  const handleInputFormChange = (valid: boolean, data: any) => {
+    setInputFormValid(valid);
+    setInputFormData(data);
+  };
+
+  const handleAddCommChannel = () => {
+    setCommChannels([
+      ...commChannels,
+      {
+        type: 'email',
+        recipients: [{ address: '' }]
+      }
+    ]);
+  };
+
+  const handleRemoveCommChannel = (index: number) => {
+    const updatedChannels = [...commChannels];
+    updatedChannels.splice(index, 1);
+    setCommChannels(updatedChannels);
+  };
+
+  const handleChangeChannelType = (index: number, value: 'email' | 'teams' | 'whatsapp') => {
+    const updatedChannels = [...commChannels];
+    updatedChannels[index].type = value;
+    setCommChannels(updatedChannels);
+  };
+
+  const handleAddRecipient = (channelIndex: number) => {
+    const updatedChannels = [...commChannels];
+    updatedChannels[channelIndex].recipients.push({ address: '' });
+    setCommChannels(updatedChannels);
+  };
+
+  const handleRemoveRecipient = (channelIndex: number, recipientIndex: number) => {
+    const updatedChannels = [...commChannels];
+    updatedChannels[channelIndex].recipients.splice(recipientIndex, 1);
+    setCommChannels(updatedChannels);
+  };
+
+  const handleChangeRecipientAddress = (channelIndex: number, recipientIndex: number, value: string) => {
+    const updatedChannels = [...commChannels];
+    updatedChannels[channelIndex].recipients[recipientIndex].address = value;
+    setCommChannels(updatedChannels);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  // Pre-flight check to verify agent endpoint is available
+  const preFlightCheck = async (): Promise<boolean> => {
+    if (!agent || !agent.agent_endpoint) {
+      setSnackbarMessage('Error: Agent endpoint URL not configured');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return false;
+    }
 
     try {
-      await OperationService.startRun(agent.id, formData);
-      setSuccess(t('agents.run_started_success'));
+      // Send a HEAD request to the agent endpoint
+      const response = await axios.head(agent.agent_endpoint, {
+        timeout: 5000 // 5 second timeout
+      });
 
-      // Allow time for the success message to be seen
-      setTimeout(() => {
+      // Check if the response status is 200
+      if (response.status === 200) {
+        setSnackbarMessage('Agent is online');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        return true;
+      } else {
+        setSnackbarMessage(`Error: Agent endpoint returned status ${response.status}`);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+        return false;
+      }
+    } catch (error) {
+      setSnackbarMessage('Error: Agent endpoint not available - HEAD request failed!');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      console.error('Pre-flight check failed:', error);
+      return false;
+    }
+  };
+
+  const handleCreateRun = async () => {
+    if (!agent) return;
+
+    try {
+      setIsLoading(true);
+
+      // Perform pre-flight check
+      const isAgentAvailable = await preFlightCheck();
+
+      // Only proceed if the agent is available
+      if (isAgentAvailable) {
+        // Prepare the run parameters
+        const runParams = {
+          ...inputFormData,
+          'Accept-Language': acceptLanguage
+        };
+
+        // Only add commChannels if there are any defined
+        if (commChannels.length > 0) {
+          runParams.commChannels = commChannels;
+        }
+
+        // Call the API to start a new run
+        await OperationService.startRun(agent.id, runParams);
+
+        // Close the dialog first to prevent UI freezing
         onClose();
-        if (onRunStarted) onRunStarted();
-      }, 1500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('agents.run_start_error'));
+
+        // Then notify parent component to refresh data
+        onRunCreated();
+      }
+    } catch (error) {
+      console.error('Failed to start run:', error);
+      setSnackbarMessage(`Error starting run: ${error.message || 'Unknown error'}`);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <Dialog
-        open={open}
-        onClose={() => !loading && onClose()}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          {t('agents.start_run_for', { agent: agent.title.en })}
-        </DialogTitle>
-        <DialogContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body1" color="text.secondary">
-              {t('agents.provide_run_parameters')}
-            </Typography>
-          </Box>
-
-          {agent.input_schema ? (
-            <>
-              <Typography variant="caption" sx={{ display: 'block', mb: 1, color: 'text.secondary' }}>
-                Debug schema: {JSON.stringify(agent.input_schema, null, 2)}
-              </Typography>
-              <SchemaForm
-                schema={agent.input_schema}
-                onSubmit={handleSubmit}
-                isLoading={loading}
-              />
-            </>
-          ) : (
-            <Box display="flex" justifyContent="center" p={4}>
-              <Typography>
-                {t('agents.no_parameters_required')}
-              </Typography>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+    >
+      <DialogTitle>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6">
+            Run parameters for agent <b>{agent?.title.en}</b>
+          </Typography>
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+      <DialogContent>
+        {agent ? (
+          <Box sx={{ width: '100%' }}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs value={activeTab} onChange={handleTabChange} aria-label="run parameters tabs">
+                <Tab label="Input" {...a11yProps(0)} />
+                <Tab label="Content" {...a11yProps(1)} />
+                <Tab label="Human Feedback" {...a11yProps(2)} />
+              </Tabs>
             </Box>
-          )}
-        </DialogContent>
 
-        {!agent.input_schema && (
-          <DialogActions>
-            <Button 
-              onClick={onClose}
-              disabled={loading}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={loading ? <CircularProgress size={20} /> : <RunIcon />}
-              onClick={() => handleSubmit({})}
-              disabled={loading}
-              sx={{
-                backgroundColor: 'gold',
-                '&:hover': {
-                  backgroundColor: '#DAA520',
-                },
-                '&:disabled': {
-                  backgroundColor: 'rgba(218, 165, 32, 0.5)',
-                }
-              }}
-            >
-              {t('agents.start_run')}
-            </Button>
-          </DialogActions>
+            {/* Input Tab */}
+            <TabPanel value={activeTab} index={0}>
+              {agent.input ? (
+                <SchemaForm
+                  schema={agent.input}
+                  onSubmit={() => {}}
+                  onChange={handleInputFormChange}
+                  isLoading={false}
+                  hideSubmit={true}
+                />
+              ) : (
+                <Typography color="text.secondary">
+                  This agent doesn't require any input parameters.
+                </Typography>
+              )}
+            </TabPanel>
+
+            {/* Content Tab */}
+            <TabPanel value={activeTab} index={1}>
+              <TextField
+                label="Accept-Language"
+                fullWidth
+                value={acceptLanguage}
+                onChange={(e) => setAcceptLanguage(e.target.value)}
+                margin="normal"
+              />
+              <FormHelperText>
+                The agent should produce new content in this language and indicate it by returning a corresponding 'Content-Language' parameter.
+              </FormHelperText>
+            </TabPanel>
+
+            {/* Human Feedback Tab */}
+            <TabPanel value={activeTab} index={2}>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle1">Communication Channels</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Configure how the agent will communicate with humans during execution.
+                </Typography>
+
+                {commChannels.length > 0 ? (
+                  <List>
+                    {commChannels.map((channel, channelIndex) => (
+                      <Paper key={channelIndex} sx={{ mb: 2, p: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <FormControl sx={{ width: '60%' }}>
+                            <InputLabel id={`channel-type-label-${channelIndex}`}>Channel Type</InputLabel>
+                            <Select
+                              labelId={`channel-type-label-${channelIndex}`}
+                              value={channel.type}
+                              label="Channel Type"
+                              onChange={(e) => handleChangeChannelType(channelIndex, e.target.value as 'email' | 'teams' | 'whatsapp')}
+                            >
+                              <MenuItem value="email">Email</MenuItem>
+                              <MenuItem value="teams">Teams</MenuItem>
+                              <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <IconButton 
+                            edge="end" 
+                            aria-label="delete channel" 
+                            onClick={() => handleRemoveCommChannel(channelIndex)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+
+                        <Typography variant="subtitle2" sx={{ mb: 1 }}>Recipients</Typography>
+                        {channel.recipients.map((recipient, recipientIndex) => (
+                          <Box key={recipientIndex} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <TextField
+                              label={`${channel.type === 'email' ? 'Email Address' : channel.type === 'teams' ? 'Teams ID' : 'WhatsApp Number'}`}
+                              value={recipient.address}
+                              onChange={(e) => handleChangeRecipientAddress(channelIndex, recipientIndex, e.target.value)}
+                              sx={{ flex: 1, mr: 1 }}
+                            />
+                            <IconButton 
+                              edge="end" 
+                              aria-label="delete recipient" 
+                              onClick={() => handleRemoveRecipient(channelIndex, recipientIndex)}
+                              disabled={channel.recipients.length <= 1}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        ))}
+                        <Button 
+                          startIcon={<AddIcon />} 
+                          onClick={() => handleAddRecipient(channelIndex)}
+                          sx={{ mt: 1 }}
+                        >
+                          Add Recipient
+                        </Button>
+                      </Paper>
+                    ))}
+                  </List>
+                ) : (
+                  <Typography color="text.secondary" sx={{ my: 2 }}>
+                    No communication channels configured.
+                  </Typography>
+                )}
+
+                <Button 
+                  variant="outlined" 
+                  startIcon={<AddIcon />} 
+                  onClick={handleAddCommChannel}
+                >
+                  Add Communication Channel
+                </Button>
+              </Box>
+            </TabPanel>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <Button 
+                variant="contained"
+                onClick={handleCreateRun}
+                disabled={!inputFormValid || isLoading}
+                sx={{
+                  backgroundColor: 'gold',
+                  '&:hover': {
+                    backgroundColor: '#DAA520',
+                  },
+                  '&.Mui-disabled': {
+                    backgroundColor: '#f9f0c8',
+                  }
+                }}
+              >
+                Create Run
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <Typography color="error">
+            No agent selected. Please try again.
+          </Typography>
         )}
-      </Dialog>
-
-      {/* Success Message */}
-      <Snackbar
-        open={!!success}
-        autoHideDuration={3000}
-        onClose={() => setSuccess(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={() => setSuccess(null)}
-          severity="success"
-          variant="filled"
-        >
-          {success}
-        </Alert>
-      </Snackbar>
-
-      {/* Error Message */}
-      <Snackbar
-        open={!!error}
-        autoHideDuration={5000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={() => setError(null)}
-          severity="error"
-          variant="filled"
-        >
-          {error}
-        </Alert>
-      </Snackbar>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 };
 

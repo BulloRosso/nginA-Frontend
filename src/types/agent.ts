@@ -20,7 +20,7 @@ export interface Agent {
   credits_per_run: number;
   workflow_id?: string;
   stars: number;
-  authenticaion: string;
+  authentication: string;
   type: string;
   configuration?: any;
   image_url?: string;

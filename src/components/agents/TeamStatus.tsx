@@ -1,5 +1,5 @@
 // src/components/agents/TeamStatus.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
   Box, 
   Card, 
@@ -10,23 +10,18 @@ import {
   CircularProgress,
   Alert,
   IconButton,
-  Fab,
   Button,
   Menu,
   MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Tooltip,
   Pagination,
   Tabs,
   Tab
 } from '@mui/material';
 import { 
-  DirectionsRun as RunIcon,
-  Pause as PauseIcon,
-  BackHand as BackHandIcon,
   FilePresent as FileIcon,
   MoreVert as MoreVertIcon,
   PersonAdd as PersonAddIcon,
@@ -40,7 +35,8 @@ import { AgentService } from '../../services/agents';
 import { TeamService } from '../../services/teams';
 import { Agent } from '../../types/agent';
 import AgentIcon from './AgentIcon';
-import SchemaForm from './tabs/InputFormForSchema';
+import RunParameters from './RunParameters';
+import RunButton from './RunButton';
 import MonacoEditor from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -61,6 +57,7 @@ const getStatusColor = (status: string | null): "default" | "success" | "error" 
   }
 };
 
+
 const formatDuration = (seconds: number): string => {
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
@@ -75,7 +72,7 @@ const formatDateTime = (dateString: string): string => {
 // Number of items to display per page
 const ITEMS_PER_PAGE = 3;
 
-export const TeamStatus: React.FC = () => {
+const TeamStatusComponent: React.FC = () => {
 
   const { t, i18n } = useTranslation(['agents']);
   const navigate = useNavigate();
@@ -169,39 +166,29 @@ export const TeamStatus: React.FC = () => {
     setResultsDialogOpen(true);
   };
 
-  const handleStartRun = async (agent: Agent) => {
-
+  // Use useCallback to create stable function references
+  const handleStartRun = useCallback(async (agent: Agent) => {
     try {
-      setLoading(true);
-
       // Fetch complete agent details including input schema
       const completeAgent = await AgentService.getAgent(agent.id);
 
+      // Update state
       setCurrentAgent(completeAgent);
       setRunParametersDialogOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch agent details');
-    } finally {
-      setLoading(false);
     }
-  }
+  }, []);
 
-  const handleRunParametersSubmit = async (formData: any) => {
-    if (!currentAgent) return;
-
+  const handleRunCreated = useCallback(async () => {
     try {
-      // Implement the API call to start a new run with the parameters
-      await OperationService.startRun(currentAgent.id, formData);
-
-      // Refresh the team status to show the new run
+      // Refresh the team status data
       const statusData = await OperationService.getTeamStatus();
       setTeamStatus(statusData);
-
-      setRunParametersDialogOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start run');
+      setError(err instanceof Error ? err.message : 'Failed to refresh team status');
     }
-  };
+  }, []);
 
   const getFabIcon = (status: string | null) => {
     switch (status) {
@@ -303,7 +290,7 @@ export const TeamStatus: React.FC = () => {
           const agent = getAgentForStatusItem(agentStatus.title);
           const active = isActiveRun(agentStatus.lastRun);
           const hasResults = hasValidResults(agentStatus.lastRun);
-console.log(JSON.stringify(agentStatus))
+
           return (
             <Box 
               key={agentStatus.title} 
@@ -389,31 +376,12 @@ console.log(JSON.stringify(agentStatus))
 
                       <Box display="flex" alignItems="center" sx={{ gap: 2 }}>
                         <Box textAlign="center">
-                          <Tooltip title={active ? "Manage Run" : "Start Run"}>
-                            <IconButton
-                              aria-label="run"
-                              type="button"
-                              size="small"
-                              sx={{
-                                color: active ? 'white' : 'inherit',
-                                backgroundColor: active ? '#006400' : '#ccc',
-                                padding: '8px',
-                                '&:hover': {
-                                   backgroundColor: active ? '#004d00' : 'gold', 
-                                },
-                              }}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (agent) {
-                                  handleStartRun(agent);
-                                }
-                              }}
-                            >
-                              {getFabIcon(agentStatus.lastRun?.status)}
-                            </IconButton>
-                          </Tooltip>
-
+                          <RunButton 
+                            agent={agent}
+                            active={active}
+                            status={agentStatus.lastRun?.status}
+                            onStartRun={handleStartRun}
+                          />
                         </Box>
 
                         <Button
@@ -458,15 +426,15 @@ console.log(JSON.stringify(agentStatus))
       <Box 
         sx={{ 
           mt: 0, 
-          mb: 2 , 
+          mb: 2, 
           display: 'flex', 
           justifyContent: 'space-between',
           alignItems: 'center'
         }}
       >
         <Box sx={{
-        display:'flex',
-        aligntItems:'center',
+          display: 'flex',
+          alignItems: 'center',
         }}>
           <Pagination 
             count={totalPages} 
@@ -492,7 +460,6 @@ console.log(JSON.stringify(agentStatus))
             variant="contained"
             startIcon={<PersonAddIcon />}
             onClick={handleCreateNew}
-
             sx={{ mb: 0, mr: 1, backgroundColor: 'gold', '&:hover': {
                   backgroundColor: '#e2bf02',
                   color: 'white'
@@ -501,7 +468,7 @@ console.log(JSON.stringify(agentStatus))
             {t('agents.create_new')}
           </Button>
 
-          <img  onClick={handleCreateNew} src="/img/agent-profile.jpg" 
+          <img onClick={handleCreateNew} src="/img/agent-profile.jpg" 
                 style={{ cursor: 'pointer', marginTop: '10px',  width: '120px' }} alt="Noblivion Logo"></img>
 
         </Box>
@@ -585,64 +552,15 @@ console.log(JSON.stringify(agentStatus))
         </DialogContent>
       </Dialog>
 
-      {/* Run Parameters Dialog */}
-      <Dialog
+      {/* Run Parameters Dialog - Now using the new RunParameters component */}
+      <RunParameters
         open={runParametersDialogOpen}
         onClose={() => setRunParametersDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6">Run parameters for agent <b>{currentAgent?.title.en}</b></Typography>
-            <IconButton onClick={() => setRunParametersDialogOpen(false)}><CloseIcon /></IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {currentAgent ? (
-            <>
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                Configure run parameters:
-              </Typography>
-
-              {currentAgent.input ? (
-                <SchemaForm
-                  schema={currentAgent.input}
-                  onSubmit={handleRunParametersSubmit}
-                  isLoading={false}
-                />
-              ) : (
-                <>
-                  <Typography color="text.secondary">
-                    This agent doesn't require any input parameters.
-                  </Typography>
-                  <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button 
-                      variant="contained"
-                      onClick={() => handleRunParametersSubmit({})}
-                      sx={{
-                        backgroundColor: 'gold',
-                        '&:hover': {
-                          backgroundColor: '#DAA520',
-                        }
-                      }}
-                    >
-                      Start Run
-                    </Button>
-                  </Box>
-                </>
-              )}
-            </>
-          ) : (
-            <Typography color="error">
-              No agent selected. Please try again.
-            </Typography>
-          )}
-        </DialogContent>
-
-      </Dialog>
+        agent={currentAgent}
+        onRunCreated={handleRunCreated}
+      />
     </Box>
   );
 };
 
-export default TeamStatus;
+export default TeamStatusComponent;

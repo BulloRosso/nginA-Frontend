@@ -16,7 +16,15 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 
-const SchemaForm = ({ schema, onSubmit, isLoading }) => {
+interface SchemaFormProps {
+  schema: any;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+  hideSubmit?: boolean;
+  onChange?: (isValid: boolean, formData: any) => void;
+}
+
+const SchemaForm: React.FC<SchemaFormProps> = ({ schema, onSubmit, isLoading, hideSubmit = false, onChange }) => {
   const [formData, setFormData] = useState({});
   const [expandedItems, setExpandedItems] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
@@ -63,7 +71,12 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
 
   useEffect(() => {
     validateForm();
-  }, [formData]);
+
+    // Call onChange if provided to pass data and validity to parent component
+    if (onChange) {
+      onChange(isFormValid, formData);
+    }
+  }, [formData, isFormValid]);
 
   const validateForm = () => {
     if (!schema.required) {
@@ -501,41 +514,43 @@ const SchemaForm = ({ schema, onSubmit, isLoading }) => {
         </div>
       ))}
 
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        flex: 1
-      }}>
-        {notEmpty(formData) && (
+      {!hideSubmit && (
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          flex: 1
+        }}>
+          {notEmpty(formData) && (
+            <Button 
+              variant="outlined"
+              color="secondary"
+              onClick={handleReset}
+            >
+              Reset
+            </Button>
+          )}
+          <Box>
+          </Box>
           <Button 
-            variant="outlined"
-            color="secondary"
-            onClick={handleReset}
+            variant="contained" 
+            type="button"
+            onClick={handleSubmitData}
+            disabled={isLoading || !isFormValid}
+            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
+            sx={{
+              backgroundColor: 'gold',
+              '&:hover': {
+                backgroundColor: '#DAA520', // Darker gold (goldenrod)
+              },
+              '&:disabled': {
+                backgroundColor: 'rgba(218, 165, 32, 0.5)', // Semi-transparent goldenrod
+              }
+            }}
           >
-            Reset
+            Call Agent
           </Button>
-        )}
-        <Box>
         </Box>
-        <Button 
-          variant="contained" 
-          type="button"
-          onClick={handleSubmitData}
-          disabled={isLoading || !isFormValid}
-          startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-          sx={{
-            backgroundColor: 'gold',
-            '&:hover': {
-              backgroundColor: '#DAA520', // Darker gold (goldenrod)
-            },
-            '&:disabled': {
-              backgroundColor: 'rgba(218, 165, 32, 0.5)', // Semi-transparent goldenrod
-            }
-          }}
-        >
-          Call Agent
-        </Button>
-      </Box>
+      )}
     </Box>
   );
 };
