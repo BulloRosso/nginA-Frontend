@@ -20,7 +20,7 @@ const RunButton: React.FC<RunButtonProps> = ({ agent, active, status, onStartRun
 
   const getFabIcon = (status: string | null) => {
     switch (status) {
-      case 'running':
+      case 'pending':
         return <PauseIcon />;
       case 'human-in-the-loop':
         return <BackHandIcon />;
@@ -49,7 +49,7 @@ const RunButton: React.FC<RunButtonProps> = ({ agent, active, status, onStartRun
         size="small"
         sx={{
           color: active ? 'white' : 'inherit',
-          backgroundColor: active ? '#006400' : '#ccc',
+          backgroundColor: active ? 'darkorange' : 'gold',
           padding: '8px',
           '&:hover': {
              backgroundColor: active ? '#004d00' : 'gold', 

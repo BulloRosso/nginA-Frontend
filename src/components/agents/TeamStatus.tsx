@@ -47,16 +47,31 @@ import ScratchpadBrowser from '../ScratchpadBrowser';
 import { supabase, subscribeToAgentRuns, initSupabaseAuth } from '../../services/supabase-client';
 import { useAuth } from '../../hooks/useAuth';
 
-const getStatusColor = (status: string | null): "default" | "success" | "error" | "warning" | "info" => {
+const getStatusColor = (status: string | null) => {
   switch (status) {
-    case 'completed':
-      return 'success';
-    case 'failed':
-      return 'error';
-    case 'running':
-      return 'success'; // Changed from 'warning' to 'success' for dark green
+    case 'success':
+      return 'darkgreen';
+    case 'failure':
+      return 'darkred';
+    case 'pending':
+      return 'darkorange'; // Changed from 'warning' to 'success' for dark green
     case null:
-      return 'default';
+      return '#ccc';
+    default:
+      return 'info';
+  }
+};
+
+const getStatusFontColor = (status: string | null) => {
+  switch (status) {
+    case 'success':
+      return 'white';
+    case 'failure':
+      return 'white';
+    case 'pending':
+      return 'white'; // Changed from 'warning' to 'success' for dark green
+    case null:
+      return 'black';
     default:
       return 'info';
   }
@@ -193,7 +208,7 @@ const TeamStatusComponent: React.FC = () => {
 
   const getFabIcon = (status: string | null) => {
     switch (status) {
-      case 'running':
+      case 'pending':
         return <PauseIcon />;
       case 'human-in-the-loop':
         return <BackHandIcon />;
@@ -376,7 +391,7 @@ const TeamStatusComponent: React.FC = () => {
                 >
                   <AgentIcon 
                     agent={agent} 
-                    isActive={isAgentInTeam(agent.id)} 
+                    isActive={false} 
                     size={60} 
                     onClick={(e) => handleAgentTeamToggle(agent.id, e)}
                     disabled={isAddingOrRemoving === agent.id}
@@ -403,18 +418,20 @@ const TeamStatusComponent: React.FC = () => {
                         </Typography>
 
                         <Box display="flex" alignItems="center" gap={1} ml={1}>
-                          <Typography variant="body2" color="text.secondary">
-                            Status:
-                          </Typography>
                           <Chip 
                             size="small"
                             color={active ? 'success' : undefined}
                             label={agentStatus.lastRun?.status || 'Never run'}
                             sx={{ 
-                              backgroundColor: active ? '#006400' : '#ccc',
-                              color: active ? 'white' : 'rgba(0, 0, 0, 0.87)'
+                              backgroundColor: getStatusColor(agentStatus.lastRun?.status),
+                              color: getStatusFontColor(agentStatus.lastRun?.status)
                             }}
                           />
+                          {agentStatus.lastRun && (
+                          <Typography variant="div" color="text.secondary">
+                            &#128336;{formatDuration(agentStatus.lastRun.duration)}
+                          </Typography>
+                          )}
                         </Box>
                       </Box>
                     </Box>
@@ -423,17 +440,15 @@ const TeamStatusComponent: React.FC = () => {
                       <Box sx={{ flex: 1 }}>
                         {agentStatus.lastRun && (
                           <Box display="flex" flexWrap="wrap" sx={{ gap: 0 }}>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="div" color="text.secondary">
                               Started: {formatDateTime(agentStatus.lastRun.startedAt)}
-                            </Typography>
+                            </Typography><br />
                             {agentStatus.lastRun.finishedAt && (
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="div" color="text.secondary">
                                 Finished: {formatDateTime(agentStatus.lastRun.finishedAt)}
                               </Typography>
                             )}
-                            <Typography variant="body2" color="text.secondary">
-                              Duration: {formatDuration(agentStatus.lastRun.duration)}
-                            </Typography>
+                            
                           </Box>
                         )}
                       </Box>
