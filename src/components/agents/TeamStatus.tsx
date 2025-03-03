@@ -26,7 +26,10 @@ import {
   MoreVert as MoreVertIcon,
   PersonAdd as PersonAddIcon,
   Launch as LaunchIcon,
-  Close as CloseIcon 
+  Close as CloseIcon,
+  PlayArrow as RunIcon,
+  Pause as PauseIcon,
+  BackHand as BackHandIcon
 } from '@mui/icons-material';
 
 import { OperationService } from '../../services/operations';
@@ -41,6 +44,8 @@ import MonacoEditor from '@monaco-editor/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import ScratchpadBrowser from '../ScratchpadBrowser';
+import { supabase, subscribeToAgentRuns, initSupabaseAuth } from '../../services/supabase-client';
+import { useAuth } from '../../hooks/useAuth';
 
 const getStatusColor = (status: string | null): "default" | "success" | "error" | "warning" | "info" => {
   switch (status) {
@@ -57,7 +62,6 @@ const getStatusColor = (status: string | null): "default" | "success" | "error" 
   }
 };
 
-
 const formatDuration = (seconds: number): string => {
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
@@ -73,9 +77,9 @@ const formatDateTime = (dateString: string): string => {
 const ITEMS_PER_PAGE = 3;
 
 const TeamStatusComponent: React.FC = () => {
-
-  const { t, i18n } = useTranslation(['agents']);
+  const { t } = useTranslation(['agents']);
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // All useState hooks need to be called in the same order every render
   const [teamStatus, setTeamStatus] = useState<TeamStatusType | null>(null);
@@ -147,14 +151,11 @@ const TeamStatusComponent: React.FC = () => {
 
   const handleOpenWorkflow = (workflowId: string) => {
     const n8nUrl = import.meta.env.VITE_N8N_URL;
-    console.log("n8nURL", `${n8nUrl}/workflow/${workflowId}`)
     window.open(`${n8nUrl}/workflow/${workflowId}`, '_blank');
     handleMenuClose();
   };
 
   const handleShowResults = (results: any, run_id?: string) => {
-    console.log('handleShowResults called with:', { results, run_id });
-
     // Ensure the run_id is included in the results object
     const resultsWithRunId = {
       ...results,
@@ -214,7 +215,74 @@ const TeamStatusComponent: React.FC = () => {
     setPage(value);
   };
 
-  // Single useEffect for data fetching
+  // Update a specific agent run in the team status
+  const updateAgentRun = useCallback((payload: any) => {
+    if (!teamStatus || !payload.new) return;
+
+    setTeamStatus(prevStatus => {
+      if (!prevStatus) return prevStatus;
+
+      // Find the agent that corresponds to this run
+      const updatedAgents = prevStatus.agents.map(agent => {
+        // Check if this agent's lastRun should be updated (by matching agent_id)
+        if (agent.lastRun && agent.lastRun.run_id === payload.new.id) {
+          return {
+            ...agent,
+            lastRun: {
+              ...agent.lastRun,
+              status: payload.new.status,
+              results: payload.new.results,
+              finishedAt: payload.new.finished_at,
+              duration: payload.new.finished_at 
+                ? Math.round((new Date(payload.new.finished_at).getTime() - new Date(agent.lastRun.startedAt).getTime()) / 1000)
+                : agent.lastRun.duration
+            }
+          };
+        }
+        return agent;
+      });
+
+      return {
+        ...prevStatus,
+        agents: updatedAgents
+      };
+    });
+  }, [teamStatus]);
+
+  // Set up Supabase real-time subscription
+  useEffect(() => {
+    if (!user || !user.id) return;
+
+    // Get current JWT token
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('No auth token found for real-time subscription');
+      return;
+    }
+
+    // Initialize Supabase auth with our JWT token
+    const authInitialized = initSupabaseAuth(token);
+    if (!authInitialized) {
+      console.error('Failed to initialize Supabase auth');
+      return;
+    }
+
+    // Create handler for updates
+    const handleAgentRunsUpdate = (payload: any) => {
+      console.log('Supabase real-time update:', payload);
+      updateAgentRun(payload);
+    };
+
+    // Subscribe to agent runs updates using the helper function
+    const unsubscribe = subscribeToAgentRuns(user.id, handleAgentRunsUpdate);
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
+  }, [user, updateAgentRun]);
+
+  // Initial data fetching
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -235,9 +303,6 @@ const TeamStatusComponent: React.FC = () => {
     };
 
     fetchData();
-    // Refresh every minute
-    // const interval = setInterval(fetchData, 60000);
-    // return () => clearInterval(interval);
   }, []);
 
   // Calculate pagination values
@@ -281,7 +346,6 @@ const TeamStatusComponent: React.FC = () => {
   const handleCreateNew = () => {
     navigate('/builder');
   };
-
 
   return (
     <Box sx={{ paddingBottom: '10px' }}>
@@ -388,13 +452,13 @@ const TeamStatusComponent: React.FC = () => {
                           variant="outlined"
                           size="small"
                           startIcon={<FileIcon />}
-                          disabled={!active || !hasResults}
+                          disabled={!hasResults}
                           onClick={() => {
                             if (hasResults && agentStatus.lastRun) {
                               // Pass both the results and the run_id to handleShowResults
                               handleShowResults(
                                 agentStatus.lastRun.results, 
-                                agentStatus.lastRun.run_id  // Pass the run_id directly from lastRun
+                                agentStatus.lastRun.run_id
                               );
                             }
                           }}
