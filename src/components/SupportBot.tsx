@@ -79,7 +79,7 @@ const SupportBot: React.FC = () => {
       overflow: 'auto'
     }
   };
-  
+
   useEffect(() => {
     const initialMessage = t('supportbot.initial_message');
     const messageWithButtons = initialMessage + ' <TopicButton cmd="GETTING_STARTED" /> <TopicButton cmd="TECHNICAL_ISSUES" />';
@@ -129,7 +129,7 @@ const SupportBot: React.FC = () => {
       window.removeEventListener('supportbot:topic', handleTopicClick as EventListener);
     };
   }, []); // Empty dependency array as we don't need to re-create this listener
-  
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -293,8 +293,8 @@ const SupportBot: React.FC = () => {
                     color: message.isUser ? '#fff' : 'inherit',
                     '& .markdown-content': {
                       ...markdownStyles,
-                      '& *:first-child': { marginTop: 0 },
-                      '& *:last-child': { marginBottom: 0 }
+                      '& *:first-of-type': { marginTop: 0 },
+                      '& *:last-of-type': { marginBottom: 0 }
                     }
                   }}
                 >
