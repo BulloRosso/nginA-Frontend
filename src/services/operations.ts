@@ -23,6 +23,11 @@ export const OperationService = {
     return response.data;
   },
 
+  getAgentRunHistory: async (agentId: UUID): Promise<Operation[]> => {
+    const response = await api.get(`/api/v1/operations/history/${agentId}`);
+    return response.data;
+  },
+
   // Method to start a run for a specific agent
   startRun: async (agentId: UUID, parameters: any): Promise<Operation> => {
     // Create the run object according to the expected backend API structure

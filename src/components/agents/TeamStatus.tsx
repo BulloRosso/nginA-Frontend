@@ -25,13 +25,14 @@ import {
   FilePresent as FileIcon,
   MoreVert as MoreVertIcon,
   PersonAdd as PersonAddIcon,
+  History as HistoryIcon,
   Launch as LaunchIcon,
   Close as CloseIcon,
   PlayArrow as RunIcon,
   Pause as PauseIcon,
   BackHand as BackHandIcon
 } from '@mui/icons-material';
-
+import RunHistory from './RunHistory';
 import { OperationService } from '../../services/operations';
 import { TeamStatus as TeamStatusType } from '../../types/operation';
 import { AgentService } from '../../services/agents';
@@ -113,7 +114,17 @@ const TeamStatusComponent: React.FC = () => {
   const [page, setPage] = useState(1);
   // New state for results dialog tabs
   const [activeResultsTab, setActiveResultsTab] = useState(0);
+  const [runHistoryOpen, setRunHistoryOpen] = useState(false);
+  const [historyAgentId, setHistoryAgentId] = useState<string | null>(null);
+  const [historyAgentTitle, setHistoryAgentTitle] = useState('');
 
+  const handleOpenRunHistory = (agentId: string, agentTitle: string) => {
+    setHistoryAgentId(agentId);
+    setHistoryAgentTitle(agentTitle);
+    setRunHistoryOpen(true);
+    handleMenuClose();
+  };
+  
   // Always define these functions outside of conditional blocks
   const isAgentInTeam = (agentId: string): boolean => {
     return team?.agents?.members?.some(member => member.agentId === agentId) ?? false;
@@ -575,6 +586,19 @@ const TeamStatusComponent: React.FC = () => {
           <LaunchIcon fontSize="small" sx={{ mr: 1 }} />
           Show n8n workflow
         </MenuItem>
+        <MenuItem 
+          onClick={() => {
+            const agent = teamStatus.agents.find(a => 
+              getAgentForStatusItem(a.title)?.id === activeAgentId
+            );
+            if (agent && activeAgentId) {
+              handleOpenRunHistory(activeAgentId, agent.title);
+            }
+          }}
+        >
+          <HistoryIcon fontSize="small" sx={{ mr: 1 }} />
+          Run History
+        </MenuItem>
       </Menu>
 
       {/* Results Dialog */}
@@ -637,6 +661,14 @@ const TeamStatusComponent: React.FC = () => {
         onClose={() => setRunParametersDialogOpen(false)}
         agent={currentAgent}
         onRunCreated={handleRunCreated}
+      />
+      {/* Run History Drawer */}
+      <RunHistory
+        open={runHistoryOpen}
+        onClose={() => setRunHistoryOpen(false)}
+        agentId={historyAgentId}
+        agentTitle={historyAgentTitle}
+        onShowResults={handleShowResults}
       />
     </Box>
   );
