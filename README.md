@@ -36,6 +36,15 @@ This React/Vite/MUI frontend offers four main features
 ### The Authentication
 All users must be authenticated with a valid JWT issued by Supabase.
 
+![Login screen](/docs/login-screen.jpg)
+
+Depending on the use case of your company (external/internal) many more authentication methods can be supported (e. g. social login).
+
+### Multi language support
+nginA is prepared to support any language:
+
+![Language selector](/docs/multi-lang.jpg) 
+
 ## The Backend
 
 [Python/FastAPI backend](https://github.com/BulloRosso/ngina-backend)
