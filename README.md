@@ -1,14 +1,20 @@
-## nginA 
+# nginA 
 
 Self-hostable agentic workflows.
 
 ![nginA Use Case](/docs/high-level-overview.jpg) 
 
+nginA is based on n8n (workflow engine for technical teams) and Supabase (data storage as a service).
+
 ### The Use Case
 
-- Edit ![nginA Use Case](/docs/ngina-usecase.jpg) 
+The main use of nginA provide a user interface for n8n workflows based on AI agents (you can use non-AI services as well).
 
-### The Frontend
+For compliance reasons nginA is **self-hostable** (one of the main reasons for building it).
+
+![nginA Use Case](/docs/ngina-usecase.jpg) 
+
+## The Frontend
 This React/Vite/MUI frontend offers four main features
 * the **Agent Catalog**
 * the AI assisted **Agent Builder**
@@ -30,6 +36,6 @@ This React/Vite/MUI frontend offers four main features
 ### The Authentication
 All users must be authenticated with a valid JWT issued by Supabase.
 
-### The Backend
+## The Backend
 
 [Python/FastAPI backend](https://github.com/BulloRosso/ngina-backend)
