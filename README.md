@@ -1,13 +1,35 @@
-## Running React on Replit
+## nginA 
 
-[React](https://reactjs.org/) is a popular JavaScript library for building user interfaces.
+Self-hostable agentic workflows.
 
-[Vite](https://vitejs.dev/) is a blazing fast frontend build tool that includes features like Hot Module Reloading (HMR), optimized builds, and TypeScript support out of the box.
+![nginA Use Case](/docs/high-level-overview.jpg) 
 
-Using the two in conjunction is one of the fastest ways to build a web app.
+### The Use Case
 
-### Getting Started
-- Hit run
-- Edit [App.tsx](#src/App.tsx) and watch it live update!
+- Edit ![nginA Use Case](/docs/ngina-usecase.jpg) 
 
-By default, Replit runs the `dev` script, but you can configure it by changing the `run` field in the [configuration file](#.replit). Here are the vite docs for [serving production websites](https://vitejs.dev/guide/build.html)
+### The Frontend
+This React/Vite/MUI frontend offers four main features
+* the **Agent Catalog**
+* the AI assisted **Agent Builder**
+* the main component **Agent Operator** which manages n8n workflow instances
+* an complementary **Accounting Agent** to control the costs
+
+### Agent Catalog
+![nginA Use Case](/docs/ngina-main1.jpg) 
+
+### Agent Builder
+![nginA Use Case](/docs/ngina-main2.jpg) 
+
+### Agent Operator
+![nginA Use Case](/docs/ngina-main3.jpg) 
+
+### Accounting Agent
+![nginA Use Case](/docs/ngina-main4.jpg) 
+
+### The Authentication
+All users must be authenticated with a valid JWT issued by Supabase.
+
+### The Backend
+
+[Python/FastAPI backend](https://github.com/BulloRosso/ngina-backend)
