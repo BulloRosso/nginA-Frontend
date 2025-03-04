@@ -177,7 +177,7 @@ const TeamStatusComponent: React.FC = () => {
 
   const handleOpenWorkflow = (workflowId: string) => {
     const n8nUrl = import.meta.env.VITE_N8N_URL;
-    window.open(`${n8nUrl}/workflow/${workflowId}`, '_blank');
+    window.open(`${n8nUrl}${workflowId}`, '_blank');
     handleMenuClose();
   };
 
@@ -575,11 +575,28 @@ const TeamStatusComponent: React.FC = () => {
             const agent = teamStatus.agents.find(a => 
               getAgentForStatusItem(a.title)?.id === activeAgentId
             );
-            if (agent?.lastRun?.workflowId) {
-              handleOpenWorkflow(agent.workflowId);
+
+            // Get the corresponding full agent object to access workflow_id
+            const fullAgent = agents.find(a => a.id === activeAgentId);
+
+            let workflowId = null;
+
+            // Try to get the workflow ID from the full agent object
+            if (fullAgent && fullAgent.workflow_id) {
+              workflowId = fullAgent.workflow_id;
+            }
+            // Fallback to lastRun.workflowId if available
+            else if (agent?.lastRun?.workflowId) {
+              workflowId = agent.lastRun.workflowId;
+            }
+
+            if (workflowId) {
+              // Strip any existing path prefixes if they exist in the ID
+              workflowId = workflowId.replace(/^\/workflow\/|^workflow\//, '');
+              handleOpenWorkflow(workflowId);
             } else {
-              // For testing purposes, assume a test ID if none exists
-              handleOpenWorkflow('test-workflow-id');
+              // Show a notification or alert that no workflow ID is available
+              setError("No workflow ID available for this agent");
             }
           }}
         >
