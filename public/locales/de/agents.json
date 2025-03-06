@@ -52,7 +52,7 @@
         "submit": "Neuen API Key/Token"
       }
     },
-    "create_wrapper": "+ Create Wrapper for existing Agent",
+    "create_wrapper": "Create Wrapper",
     "create_wrapper_title": "Create Agent Wrapper",
     "agent_url": "Agent URL",
     "enter_agent_url": "Enter the URL of the existing agent you want to wrap",

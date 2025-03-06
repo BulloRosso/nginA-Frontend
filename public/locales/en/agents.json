@@ -51,7 +51,16 @@
         "submit": "Neuen API Key/Token"
       }
     },
-    "create_wrapper": "+ Create Wrapper for existing Agent",
+    "footer": {
+      "discover_title": "Discover Agents",
+      "discover_description": "Simply add the URL of any agents supporting the nginA discovery specifications",
+      "wrapper_title": "Create Wrapper",
+      "wrapper_description": "For an easy start wrap your existing agents in a nginA discovery shell",
+      "build_title": "Build From Scratch",
+      "build_description": "Compose an agent with sub-agents"
+    },
+    "build_new": "Goto Builder",
+    "create_wrapper": "Create Wrapper",
     "create_wrapper_title": "Create Agent Wrapper",
     "agent_url": "Agent URL",
     "enter_agent_url": "Enter the URL of the existing agent you want to wrap",

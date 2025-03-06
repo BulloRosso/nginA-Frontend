@@ -12,8 +12,11 @@ import { useTranslation } from 'react-i18next';
 import AgentsCatalog from '../components/AgentsCatalog';
 import DiscoveryModal from '../components/agents/DiscoveryModal';
 import AgentWrapperWizard from '../components/agents/AgentWrapperWizard';
+import AgentsFooter from '../components/AgentsFooter';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AgentsCatalogPage: React.FC = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation(['agents']);
   const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
   const [isWrapperWizardOpen, setIsWrapperWizardOpen] = useState(false);
@@ -23,6 +26,10 @@ const AgentsCatalogPage: React.FC = () => {
     setRefreshKey(prev => prev + 1);
   };
 
+  const gotoBuilder = () => {
+    navigate('/builder');
+  }
+  
   return (
     <Container 
       maxWidth={false} 
@@ -37,26 +44,12 @@ const AgentsCatalogPage: React.FC = () => {
         <AgentsCatalog key={refreshKey} />
       </Box>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setIsDiscoveryModalOpen(true)}
-          >
-            {t('agents.discover_new')}
-          </Button>
-
-          <Button
-            variant="contained"
-            startIcon={<WidgetsIcon />}
-            onClick={() => setIsWrapperWizardOpen(true)}
-          >
-            {t('agents.create_wrapper')}
-          </Button>
-        </Stack>
-      </Box>
-
+      <AgentsFooter 
+        onDiscoverClick={() => setIsDiscoveryModalOpen(true)}
+        onWrapperClick={() => setIsWrapperWizardOpen(true)}
+        onBuildClick={() => gotoBuilder()}
+      />
+      
       <DiscoveryModal
         open={isDiscoveryModalOpen}
         onClose={() => setIsDiscoveryModalOpen(false)}
