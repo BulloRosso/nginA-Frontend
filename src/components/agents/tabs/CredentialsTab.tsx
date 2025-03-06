@@ -19,30 +19,67 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Card,
+  CardContent,
+  Collapse
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useTranslation } from 'react-i18next';
 import { Agent } from '../../../types/agent';
 import { VaultService, Credential } from '../../../services/vault';
+import { AgentService } from '../../../services/agents';
 import AuthenticationDisplay from '../AuthenticationDisplay';
 
-export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
-  const { t } = useTranslation(['agents']);
+export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: Agent) => void }> = ({ agent, onAgentUpdated }) => {
+  const { t } = useTranslation(['agents', 'common']);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [selectedCredentials, setSelectedCredentials] = useState<Set<string>>(new Set());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Authentication state
+  const [authentication, setAuthentication] = useState<string>(agent.authentication || 'none');
+  const [headerName, setHeaderName] = useState<string>('');
+  const [basicAuthLogin, setBasicAuthLogin] = useState<string>('');
+  const [basicAuthPassword, setBasicAuthPassword] = useState<string>('');
+
   const [newCredential, setNewCredential] = useState<Credential>({
     service_name: agent.id,
     key_name: '',
     secret_key: ''
   });
+
+  // Initialize authentication details
+  useEffect(() => {
+    // Parse current authentication format if needed
+    if (agent.authentication?.startsWith('header:')) {
+      setAuthentication('header');
+      setHeaderName(agent.authentication.split(':')[1]);
+    } else if (agent.authentication?.startsWith('basic-auth:')) {
+      setAuthentication('basic-auth');
+      const authParts = agent.authentication.substring('basic-auth:'.length).split(',');
+      if (authParts.length >= 1) setBasicAuthLogin(authParts[0]);
+      if (authParts.length >= 2) setBasicAuthPassword(authParts[1]);
+    } else {
+      setAuthentication(agent.authentication || 'none');
+    }
+  }, [agent.authentication]);
 
   // Filter credentials for current agent
   const filteredCredentials = credentials.filter(
@@ -108,17 +145,204 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
       setIsAddDialogOpen(false);
       setNewCredential({ service_name: agent.id, key_name: '', secret_key: '' });
       await fetchCredentials();
+      setSuccess('Credential added successfully');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError('Failed to add credential');
     }
   };
 
+  const handleSaveAuthentication = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Prepare the authentication value based on the selected type
+      let finalAuthentication = authentication;
+      if (authentication === 'header') {
+        if (!headerName) {
+          setError('Header name is required');
+          setIsLoading(false);
+          return;
+        }
+        finalAuthentication = `header:${headerName}`;
+      } else if (authentication === 'basic-auth') {
+        if (!basicAuthLogin || !basicAuthPassword) {
+          setError('Username and password are required');
+          setIsLoading(false);
+          return;
+        }
+        finalAuthentication = `basic-auth:${basicAuthLogin},${basicAuthPassword}`;
+      }
+
+      // Get the current agent data first to preserve all fields
+      const currentAgent = await AgentService.getAgent(agent.id, false);
+      if (!currentAgent) {
+        throw new Error('Failed to retrieve current agent data');
+      }
+
+      // Create update object with all existing data plus updated authentication
+      const updateData = {
+        title: currentAgent.title,
+        description: currentAgent.description,
+        input: currentAgent.input,
+        input_example: currentAgent.input_example,
+        output: currentAgent.output,
+        output_example: currentAgent.output_example,
+        credits_per_run: currentAgent.credits_per_run,
+        workflow_id: currentAgent.workflow_id,
+        stars: currentAgent.stars,
+        type: currentAgent.type || 'atom',
+        authentication: finalAuthentication,
+        icon_svg: currentAgent.icon_svg,
+        max_execution_time_secs: currentAgent.max_execution_time_secs,
+        agent_endpoint: currentAgent.agent_endpoint
+      };
+
+      // Call the API to update the agent
+      const updatedAgent = await AgentService.updateAgent(agent.id, updateData, false);
+
+      if (updatedAgent && onAgentUpdated) {
+        onAgentUpdated(updatedAgent);
+        setSuccess('Authentication updated successfully');
+        setTimeout(() => setSuccess(null), 3000);
+      }
+
+      setIsEditing(false);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to update authentication');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset to original values
+    if (agent.authentication?.startsWith('header:')) {
+      setAuthentication('header');
+      setHeaderName(agent.authentication.split(':')[1]);
+    } else if (agent.authentication?.startsWith('basic-auth:')) {
+      setAuthentication('basic-auth');
+      const authParts = agent.authentication.substring('basic-auth:'.length).split(',');
+      if (authParts.length >= 1) setBasicAuthLogin(authParts[0]);
+      if (authParts.length >= 2) setBasicAuthPassword(authParts[1]);
+    } else {
+      setAuthentication(agent.authentication || 'none');
+      setHeaderName('');
+      setBasicAuthLogin('');
+      setBasicAuthPassword('');
+    }
+
+    setIsEditing(false);
+    setError(null);
+  };
+
   return (
     <Box>
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-      {/* Display authentication type */}
-      <AuthenticationDisplay authType={agent.authentication || 'none'} />
+      {/* Authentication section */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6">Authentication Settings</Typography>
+            {!isEditing ? (
+              <Button 
+                startIcon={<EditIcon />} 
+                onClick={() => setIsEditing(true)}
+                variant="outlined"
+                size="small"
+              >
+                Edit
+              </Button>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button 
+                  startIcon={<CancelIcon />} 
+                  onClick={handleCancel}
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  startIcon={<SaveIcon />} 
+                  onClick={handleSaveAuthentication}
+                  variant="contained"
+                  size="small"
+                  color="primary"
+                  disabled={isLoading}
+                >
+                  Save
+                </Button>
+              </Box>
+            )}
+          </Box>
+
+          {!isEditing ? (
+            <AuthenticationDisplay authType={agent.authentication || 'none'} />
+          ) : (
+            <Box sx={{ mt: 2 }}>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="auth-type-label">Authentication Type</InputLabel>
+                <Select
+                  labelId="auth-type-label"
+                  value={authentication}
+                  label="Authentication Type"
+                  onChange={(e) => setAuthentication(e.target.value)}
+                  disabled={isLoading}
+                >
+                  <MenuItem value="none">{t('agents.auth_none')}</MenuItem>
+                  <MenuItem value="bearer-token">{t('agents.auth_bearer')}</MenuItem>
+                  <MenuItem value="header">{t('agents.auth_header')}</MenuItem>
+                  <MenuItem value="basic-auth">{t('agents.auth_basic')}</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Collapse in={authentication === 'header'}>
+                <TextField
+                  fullWidth
+                  label={t('agents.header_name')}
+                  variant="outlined"
+                  value={headerName}
+                  onChange={(e) => setHeaderName(e.target.value)}
+                  disabled={isLoading}
+                  sx={{ mb: 2 }}
+                />
+              </Collapse>
+
+              <Collapse in={authentication === 'basic-auth'}>
+                <Box sx={{ mb: 2 }}>
+                  <TextField
+                    fullWidth
+                    label={t('agents.username')}
+                    variant="outlined"
+                    value={basicAuthLogin}
+                    onChange={(e) => setBasicAuthLogin(e.target.value)}
+                    disabled={isLoading}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label={t('agents.password')}
+                    type="password"
+                    variant="outlined"
+                    value={basicAuthPassword}
+                    onChange={(e) => setBasicAuthPassword(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </Box>
+              </Collapse>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Credentials Table section */}
+      <Typography variant="h6" sx={{ mb: 2 }}>API Credentials</Typography>
 
       <TableContainer component={Paper}>
         <Table>
@@ -129,9 +353,18 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCredentials.map((credential) => (
-              <React.Fragment key={credential.id}>
+            {filteredCredentials.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={2} align="center">
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                    No credentials found. Add new credentials using the button below.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCredentials.map((credential) => (
                 <TableRow
+                  key={credential.id}
                   sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}
                 >
                   <TableCell padding="checkbox">
@@ -166,8 +399,8 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
                     </Box>
                   </TableCell>
                 </TableRow>
-              </React.Fragment>
-            ))}
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -208,7 +441,6 @@ export const CredentialsTab: React.FC<{ agent: Agent }> = ({ agent }) => {
         <Typography color="warning.dark" sx={{ flex: 1 }}>
           {t('agents.credentials.note')}
         </Typography>
-
       </Box>
 
       <Dialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)}>

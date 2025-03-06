@@ -46,6 +46,7 @@ const AgentsCatalog: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    console.log("Agents", agents)
   }, []);
 
   const isAgentInTeam = (agentId: string): boolean => {

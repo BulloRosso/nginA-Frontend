@@ -7,11 +7,15 @@ import {
   Typography, 
   Container,
   Paper,
-  useTheme
+  useTheme,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import WidgetsIcon from '@mui/icons-material/Widgets';
 import BuildIcon from '@mui/icons-material/Build';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 
 interface FooterActionProps {
@@ -125,51 +129,79 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
   onBuildClick
 }) => {
   const { t } = useTranslation(['agents']);
+  const [expanded, setExpanded] = React.useState<boolean>(false);
+
+  const handleAccordionChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpanded(isExpanded);
+  };
 
   return (
     <Box 
       component="footer" 
       sx={{ 
-        py: 5, 
-        backgroundColor: '#f7f0dd',
-        mt: 6
+        mt: 4
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-            <FooterAction
-              title={t('agents.footer.discover_title')}
-              description={t('agents.footer.discover_description')}
-              imageSrc="/img/basic-bot.png"
-              buttonLabel={t('agents.discover_new')}
-              icon={<AddIcon />}
-              onClick={onDiscoverClick}
-            />
-          </Grid>
+        <Accordion 
+          expanded={expanded} 
+          onChange={handleAccordionChange}
+          sx={{ 
+            backgroundColor: '#f7f0dd',
+            '&:before': {
+              display: 'none', // Removes the default divider
+            }
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="agents-footer-content"
+            id="agents-footer-header"
+            sx={{ 
+             
+            }}
+          >
+            <Typography variant="h6" fontWeight="medium">
+              {t('agents.add_agents_panel')}
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ py: 4 }}>
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+                <FooterAction
+                  title={t('agents.footer.discover_title')}
+                  description={t('agents.footer.discover_description')}
+                  imageSrc="/img/basic-bot.png"
+                  buttonLabel={t('agents.discover_new')}
+                  icon={<AddIcon />}
+                  onClick={onDiscoverClick}
+                />
+              </Grid>
 
-          <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-            <FooterAction
-              title={t('agents.footer.wrapper_title')}
-              description={t('agents.footer.wrapper_description')}
-              imageSrc="/img/wrapper.png"
-              buttonLabel={t('agents.create_wrapper')}
-              icon={<WidgetsIcon />}
-              onClick={onWrapperClick}
-            />
-          </Grid>
+              <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+                <FooterAction
+                  title={t('agents.footer.wrapper_title')}
+                  description={t('agents.footer.wrapper_description')}
+                  imageSrc="/img/wrapper.png"
+                  buttonLabel={t('agents.create_wrapper')}
+                  icon={<WidgetsIcon />}
+                  onClick={onWrapperClick}
+                />
+              </Grid>
 
-          <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
-            <FooterAction
-              title={t('agents.footer.build_title')}
-              description={t('agents.footer.build_description')}
-              imageSrc="/img/agent-profile.jpg"
-              buttonLabel={t('agents.build_new')}
-              icon={<BuildIcon />}
-              onClick={onBuildClick}
-            />
-          </Grid>
-        </Grid>
+              <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+                <FooterAction
+                  title={t('agents.footer.build_title')}
+                  description={t('agents.footer.build_description')}
+                  imageSrc="/img/agent-profile.jpg"
+                  buttonLabel={t('agents.build_new')}
+                  icon={<BuildIcon />}
+                  onClick={onBuildClick}
+                />
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
       </Container>
     </Box>
   );

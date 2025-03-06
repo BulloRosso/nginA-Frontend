@@ -85,6 +85,6 @@
     "must_be_positive": "Value must be a positive number",
     "create_wrapper_button": "Create Wrapper for Agent now!",
     "invalid_json": "Invalid JSON format",
-    "what_is_wrapper"_ "Was ist ein Wrapper?"
+    "what_is_wrapper": "Was ist ein Wrapper?"
   }
 }

@@ -18,7 +18,9 @@
     "agent_description_record": "ADR (meta data)",
     "catalog_description": "Alle auf diesem System registrierten Agenten",
     "already_in_team": "Agent ist bereits im Team",
+    "remove_from_team": "Agent aus Team entfernen",
     "add_to_team": "Agent zum Team hinzufügen",
+    "add_agents_panel": "Add Agents to the Catalog",
     "tabs": {
       "input": "Input",
       "output": "Output",

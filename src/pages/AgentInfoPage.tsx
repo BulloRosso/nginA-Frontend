@@ -188,7 +188,13 @@ const AgentInfoPage: React.FC = () => {
           />
 
           <TabPanel value={tabValue} index={0}>
-            <CredentialsTab agent={agent} />
+            <CredentialsTab 
+              agent={agent} 
+              onAgentUpdated={(updatedAgent) => {
+                // Update your agent state here
+                setAgent(updatedAgent);
+              }} 
+            />
           </TabPanel>
           <TabPanel value={tabValue} index={1}>
             <InputTab agent={agent} />
