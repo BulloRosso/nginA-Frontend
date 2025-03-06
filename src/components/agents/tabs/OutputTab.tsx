@@ -1,5 +1,5 @@
 // components/agents/tabs/OutputTab.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Button, Snackbar, Alert } from '@mui/material';
 import SchemaTable from '../SchemaTable';
 import { Agent } from '../../../types/agent';
@@ -13,6 +13,8 @@ enum DisplayMode {
 }
 
 export const OutputTab: React.FC<{ agent: Agent }> = ({ agent }) => {
+  const [currentSchema, setCurrentSchema] = useState(agent.output || {});
+  const [currentExample, setCurrentExample] = useState(agent.output_example || {});
   const [displayMode, setDisplayMode] = useState<DisplayMode>(DisplayMode.VISUALIZER);
   const [jsonSchema, setJsonSchema] = useState<string>(
     JSON.stringify(agent.output || {}, null, 2)
@@ -82,6 +84,9 @@ export const OutputTab: React.FC<{ agent: Agent }> = ({ agent }) => {
       console.log('Backend update result:', result);
 
       if (result) {
+        setCurrentSchema(parsedSchema);
+        setCurrentExample(parsedExample);
+        
         console.log('✅ Successfully updated agent output');
         setNotification({
           open: true,
@@ -111,10 +116,17 @@ export const OutputTab: React.FC<{ agent: Agent }> = ({ agent }) => {
     setNotification(prev => ({ ...prev, open: false }));
   };
 
+  useEffect(() => {
+    setCurrentSchema(agent.output || {});
+    setCurrentExample(agent.output_example || {});
+    setJsonSchema(JSON.stringify(agent.output || {}, null, 2));
+    setSampleData(JSON.stringify(agent.output_example || {}, null, 2));
+  }, [agent]);
+
   const renderContent = () => {
     switch (displayMode) {
       case DisplayMode.VISUALIZER:
-        return <SchemaTable schema={agent.output || {}} />;
+        return <SchemaTable schema={currentSchema} />;
 
       case DisplayMode.JSON_SCHEMA:
         return (

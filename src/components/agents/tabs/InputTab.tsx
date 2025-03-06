@@ -1,5 +1,5 @@
 // components/agents/tabs/InputTab.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, ToggleButton, ToggleButtonGroup, Button, Snackbar, Alert } from '@mui/material';
 import SchemaTable from '../SchemaTable';
 import { Agent } from '../../../types/agent';
@@ -13,6 +13,8 @@ enum DisplayMode {
 }
 
 export const InputTab: React.FC<{ agent: Agent }> = ({ agent }) => {
+  const [currentSchema, setCurrentSchema] = useState(agent.input || {});
+  const [currentExample, setCurrentExample] = useState(agent.input_example || {});
   const [displayMode, setDisplayMode] = useState<DisplayMode>(DisplayMode.VISUALIZER);
   const [jsonSchema, setJsonSchema] = useState<string>(
     JSON.stringify(agent.input || {}, null, 2)
@@ -82,6 +84,10 @@ export const InputTab: React.FC<{ agent: Agent }> = ({ agent }) => {
       console.log('Backend update result:', result);
 
       if (result) {
+
+        setCurrentSchema(parsedSchema);
+        setCurrentExample(parsedExample);
+        
         console.log('✅ Successfully updated agent input');
         setNotification({
           open: true,
@@ -111,10 +117,17 @@ export const InputTab: React.FC<{ agent: Agent }> = ({ agent }) => {
     setNotification(prev => ({ ...prev, open: false }));
   };
 
+  useEffect(() => {
+    setCurrentSchema(agent.input || {});
+    setCurrentExample(agent.input_example || {});
+    setJsonSchema(JSON.stringify(agent.input || {}, null, 2));
+    setSampleData(JSON.stringify(agent.input_example || {}, null, 2));
+  }, [agent]);
+
   const renderContent = () => {
     switch (displayMode) {
       case DisplayMode.VISUALIZER:
-        return <SchemaTable schema={agent.input || {}} />;
+        return <SchemaTable schema={currentSchema} />;
 
       case DisplayMode.JSON_SCHEMA:
         return (
