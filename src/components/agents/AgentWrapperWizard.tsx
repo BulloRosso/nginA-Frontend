@@ -352,7 +352,7 @@ const AgentWrapperWizard: React.FC<AgentWrapperWizardProps> = ({ open, onClose, 
               mb: 2
             }}>
               <img 
-                src="/img/basic-bot.png" 
+                src="/img/wrapper.png" 
                 alt="Basic Bot" 
                 style={{ 
                   height: '180px',

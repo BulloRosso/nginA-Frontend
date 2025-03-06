@@ -16,6 +16,8 @@ export interface Agent {
   description: I18nContent;
   input?: JSONSchemaDefinition;
   output?: JSONSchemaDefinition;
+  input_example?: JSONSchemaDefinition;
+  output_example?: JSONSchemaDefinition;
   icon_svg?: string;
   credits_per_run: number;
   workflow_id?: string;

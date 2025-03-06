@@ -557,6 +557,136 @@ export class AgentService {
     return response.data;
   }
 
+  static async updateAgentInput(id: string, inputData: { input?: any, input_example?: any }, mockData: boolean = false): Promise<Agent | null> {
+    if (mockData) {
+      const agentIndex = mockAgents.findIndex(agent => agent.id === id);
+      if (agentIndex === -1) return null;
+
+      const updatedAgent = {
+        ...mockAgents[agentIndex],
+        ...inputData,
+        id: id, // Ensure ID doesn't change
+        created_at: mockAgents[agentIndex].created_at // Ensure created_at doesn't change
+      };
+
+      // Update mockAgents array with updatedAgent
+      mockAgents[agentIndex] = updatedAgent;
+      console.log('Mock data updated:', updatedAgent);
+      return updatedAgent;
+    }
+
+    try {
+      console.log('Sending update to API for agent input:', id);
+
+      // First get the current agent data
+      const currentAgent = await AgentService.getAgent(id, false);
+      if (!currentAgent) {
+        console.error('Agent not found for update');
+        return null;
+      }
+
+      // Create a proper AgentCreateDto object for update
+      const updatePayload = {
+        title: currentAgent.title,
+        description: currentAgent.description,
+        input: inputData.input || currentAgent.input,
+        input_example: inputData.input_example,
+        output: currentAgent.output,
+        output_example: currentAgent.output_example,
+        credits_per_run: currentAgent.credits_per_run,
+        workflow_id: currentAgent.workflow_id,
+        stars: currentAgent.stars,
+        type: currentAgent.type || 'atom', // Default to 'atom' if not set
+        authentication: currentAgent.authentication,
+        icon_svg: currentAgent.icon_svg,
+        max_execution_time_secs: currentAgent.max_execution_time_secs,
+        agent_endpoint: currentAgent.agent_endpoint
+      };
+
+      console.log('Update payload:', JSON.stringify(updatePayload, null, 2));
+
+      // Use PUT as required by backend
+      const response = await api.put(`/api/v1/agents/${id}`, updatePayload);
+      console.log('PUT response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating agent input:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
+      if (error.response && error.response.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  static async updateAgentOutput(id: string, outputData: { output?: any, output_example?: any }, mockData: boolean = false): Promise<Agent | null> {
+    if (mockData) {
+      const agentIndex = mockAgents.findIndex(agent => agent.id === id);
+      if (agentIndex === -1) return null;
+
+      const updatedAgent = {
+        ...mockAgents[agentIndex],
+        ...outputData,
+        id: id, // Ensure ID doesn't change
+        created_at: mockAgents[agentIndex].created_at // Ensure created_at doesn't change
+      };
+
+      // Update mockAgents array with updatedAgent
+      mockAgents[agentIndex] = updatedAgent;
+      console.log('Mock data updated:', updatedAgent);
+      return updatedAgent;
+    }
+
+    try {
+      console.log('Sending update to API for agent output:', id);
+
+      // First get the current agent data
+      const currentAgent = await AgentService.getAgent(id, false);
+      if (!currentAgent) {
+        console.error('Agent not found for update');
+        return null;
+      }
+
+      // Create a proper AgentCreateDto object for update
+      const updatePayload = {
+        title: currentAgent.title,
+        description: currentAgent.description,
+        input: currentAgent.input,
+        input_example: currentAgent.input_example,
+        output: outputData.output || currentAgent.output,
+        output_example: outputData.output_example,
+        credits_per_run: currentAgent.credits_per_run,
+        workflow_id: currentAgent.workflow_id,
+        stars: currentAgent.stars,
+        type: currentAgent.type || 'atom', // Default to 'atom' if not set
+        authentication: currentAgent.authentication,
+        icon_svg: currentAgent.icon_svg,
+        max_execution_time_secs: currentAgent.max_execution_time_secs,
+        agent_endpoint: currentAgent.agent_endpoint
+      };
+
+      console.log('Update payload:', JSON.stringify(updatePayload, null, 2));
+
+      // Use PUT as required by backend
+      const response = await api.put(`/api/v1/agents/${id}`, updatePayload);
+      console.log('PUT response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating agent output:', error);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
+      if (error.response && error.response.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  }
+  
   static async generateJsonSchema(exampleData: any, mockData: boolean = false): Promise<any> {
     if (mockData) {
       // For mock data, return a simple schema based on the example data
