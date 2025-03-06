@@ -5,20 +5,19 @@ import {
   Container,
   Typography,
   Box,
-  Tabs,
-  Tab,
   CircularProgress,
   Paper,
   IconButton,
-  Alert
+  Alert,
+  Fab
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import DirectionsRunOutlinedIcon from '@mui/icons-material/DirectionsRunOutlined';
-import { Fab } from '@mui/material';
 import InputIcon from '@mui/icons-material/Input';
 import OutputIcon from '@mui/icons-material/Output';
 import SecurityIcon from '@mui/icons-material/Security';
 import MonetizationOnOutlinedIcon from '@mui/icons-material/MonetizationOnOutlined';
+import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
 import { useTranslation } from 'react-i18next';
 import { AgentService } from '../services/agents';
 import { Agent } from '../types/agent';
@@ -28,9 +27,9 @@ import { CredentialsTab } from '../components/agents/tabs/CredentialsTab';
 import { CostsTab } from '../components/agents/tabs/CostsTab';
 import { TestAgentDialog } from '../components/agents/TestAgentDialog';
 import { AgentStatusIndicator } from '../components/agents/AgentStatusIndicator';
-import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
 import ReflectionTab from '../components/agents/tabs/ReflectionTab';
 import AgentIcon from '../components/agents/AgentIcon';
+import CustomTabstrip from '../components/CustomTabstrip';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -55,7 +54,7 @@ const schema = {
     age: {
       type: "number",
       title: "Age" 
-    
+
     },
     addresses: {
       type: "array",
@@ -93,11 +92,10 @@ const AgentInfoPage: React.FC = () => {
   const [testDialogOpen, setTestDialogOpen] = useState(false);
   const { t, i18n } = useTranslation(['agents']);
 
-
   const handleSchemaSubmit = (data) => {
     console.log('Form data:', data);
   };
-  
+
   useEffect(() => {
     const fetchAgent = async () => {
       try {
@@ -135,23 +133,20 @@ const AgentInfoPage: React.FC = () => {
     );
   }
 
+  // The order of tabs in the TabPanel needs to match the order in CustomTabstrip
+  // Security/Auth first, costs last
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 3 }}>
-      
-
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0, position: 'relative' }}>
-          
           <AgentIcon agent={agent} size={60} />
-          
+
           <Typography variant="h4" component="h1">
             {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
           </Typography>
 
-        
-          
           <Fab
-            
             size="medium"
             onClick={() => setTestDialogOpen(true)}
             sx={{
@@ -165,7 +160,6 @@ const AgentInfoPage: React.FC = () => {
                 backgroundColor: 'rgba(218, 165, 32, 0.5)', // Semi-transparent goldenrod
               }
             }}
-            
           >
             <DirectionsRunOutlinedIcon />
           </Fab>
@@ -177,9 +171,7 @@ const AgentInfoPage: React.FC = () => {
           agent={agent}
         />
 
-
         <Paper sx={{ mt: 2 }}>
-
           <Typography variant="body1" 
             sx={{ padding: '20px', 
                   paddingBottom: 0,
@@ -189,58 +181,31 @@ const AgentInfoPage: React.FC = () => {
             {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
           </Typography>
 
-          
-          <Tabs 
+          {/* Replace the MUI Tabs with our custom tabstrip */}
+          <CustomTabstrip 
             value={tabValue} 
             onChange={(_, newValue) => setTabValue(newValue)}
-            aria-label="agent information tabs"
-          >
-            <Tab 
-              icon={<InputIcon />} 
-              iconPosition="start" 
-              label={t('agents.tabs.input')} 
-            />
-            <Tab 
-              icon={<OutputIcon />} 
-              iconPosition="start" 
-              label={t('agents.tabs.output')} 
-            />
-            <Tab 
-              icon={<SecurityIcon />} 
-              iconPosition="start" 
-              label={t('agents.tabs.credentials')} 
-            />
-            <Tab 
-              icon={<MonetizationOnOutlinedIcon />} 
-              iconPosition="start" 
-              label={t('agents.tabs.costs')} 
-            />
-            <Tab 
-              icon={<RemoveRedEyeOutlinedIcon />} 
-              iconPosition="start" 
-              label={t('agents.tabs.evals')} 
-            />
-          </Tabs>
+          />
 
           <TabPanel value={tabValue} index={0}>
-            <InputTab agent={agent} />
-          </TabPanel>
-          <TabPanel value={tabValue} index={1}>
-            <OutputTab agent={agent} />
-          </TabPanel>
-          <TabPanel value={tabValue} index={2}>
             <CredentialsTab agent={agent} />
           </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            <InputTab agent={agent} />
+          </TabPanel>
+          <TabPanel value={tabValue} index={2}>
+            <OutputTab agent={agent} />
+          </TabPanel>
           <TabPanel value={tabValue} index={3}>
-            <CostsTab agent={agent} />
+            <ReflectionTab agent={agent} />
           </TabPanel>
           <TabPanel value={tabValue} index={4}>
-            <ReflectionTab agent={agent} />
+            <CostsTab agent={agent} />
           </TabPanel>
 
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'end', paddingRight: '24px', paddingBottom: '10px', gap: 2, right: 0 }}>
             <Typography variant="body1" color="text.secondary">
-            <small>{t('agents.is_online')}</small>
+              <small>{t('agents.is_online')}</small>
             </Typography>
             <AgentStatusIndicator agentEndpoint={agent.agent_endpoint} />
           </Box>
