@@ -16,6 +16,7 @@ import {
   ThemeProvider,
   CssBaseline
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add'; // Import Add icon
 import { Global, css } from '@emotion/react';
 import { useNavigate } from 'react-router-dom';
 import { Profile } from '../types/profile';
@@ -25,20 +26,21 @@ import BuilderBot from '../components/BuilderBot';
 import BuilderCanvas from '../components/agents/BuilderCanvas';
 import useAgentStore from '../../stores/agentStore';
 import { AgentService } from '../services/agents';
+import AgentSelectionModal from '../components/agents/AgentSelectionModal'; // Import the new component
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
 }
 
 const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
- 
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
- 
+  const [isAgentSelectionOpen, setIsAgentSelectionOpen] = useState(false); // New state for modal
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(0); // State for tracking active step
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(['profile', 'invitation', 'interview', 'common', 'agents']);
+  const { t, i18n } = useTranslation(['agents', 'common']);
 
   // Access agent store to monitor chain and transformations
   const { 
@@ -67,7 +69,17 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     setActiveStep(step);
   };
 
-    // Add mock agents to the workflow
+  // Handler for opening agent selection modal
+  const handleOpenAgentSelection = () => {
+    setIsAgentSelectionOpen(true);
+  };
+
+  // Handler for closing agent selection modal
+  const handleCloseAgentSelection = () => {
+    setIsAgentSelectionOpen(false);
+  };
+
+  // Add mock agents to the workflow
   const handleAddMockAgents = async () => {
     try {
       setLoading(true);
@@ -92,7 +104,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           );
         }
       });
-      
+
     } catch (error) {
       console.error('Error adding mock agents:', error);
       setError(t('agents.error_adding_mock_agents'));
@@ -167,15 +179,30 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   return (
       <Container maxWidth="lg">
         <Box sx={{ mt: 2, mb: 4 }}>
-          <Paper elevation={3} sx={{ p: 3 }}>
+          <Paper elevation={3} sx={{ p: 1, position: 'relative' }}>
             {error && (
               <Typography color="error" sx={{ mb: 2 }}>
                 {error}
               </Typography>
             )}
 
+            {/* Add Agents Button - Positioned absolute before stepper */}
+            <Button
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenAgentSelection}
+              sx={{
+                position: 'absolute !important',
+                top: '40px',
+                left: '16px',
+                zIndex: 1,
+              }}
+            >
+              {t('agents.add_agents')}
+            </Button>
+
             {/* Step Indicator with Navigation */}
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box sx={{ width: '100%', mb: 2, mt: 5 }}> {/* Added margin top to account for the button */}
               <Stepper 
                 activeStep={activeStep} 
                 alternativeLabel
@@ -224,6 +251,13 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
           </Paper>
         </Box>
+
+        {/* Agent Selection Modal */}
+        <AgentSelectionModal
+          open={isAgentSelectionOpen}
+          onClose={handleCloseAgentSelection}
+          onSuccess={setSuccessMessage}
+        />
 
         {/* Feedback Messages */}
         <Snackbar

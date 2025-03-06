@@ -1,5 +1,6 @@
 { "common":
 {
+  "ok": "OK",
   "error": "Error",
   "watch_video": "Before we start...",
   "welcomenoblivion": "Welcome (back) to nOblivion",

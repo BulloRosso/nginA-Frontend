@@ -85,6 +85,21 @@
     "must_be_positive": "Value must be a positive number",
     "create_wrapper_button": "Create Wrapper for Agent now!",
     "invalid_json": "Invalid JSON format",
-    "what_is_wrapper": "Was ist ein Wrapper?"
+    "what_is_wrapper": "Was ist ein Wrapper?",
+    "add_agents": "Manuell",
+    "add_agents_to_workflow": "Agenten zum Workflow hinzufügen",
+    "select_agents": "Agenten auswählen",
+    "sequence_agents": "Reihenfolge festelgen",
+    "select_required_agents": "Wählen Sie die Agenten aus, die Sie Ihrem Workflow hinzufügen möchten:",
+    "no_team_agents": "Keine Agenten in Ihrem Team gefunden. Bitte fügen Sie zuerst Agenten zu Ihrem Team hinzu.",
+    "next_sequence": "Weiter: Reihenfolge",
+    "order_agents": "Ordnen Sie die Ausführungsreihenfolge der ausgewählten Agenten an:",
+    "drag_drop_instructions": "Ziehen und ablegen Sie die Agenten, um ihre Reihenfolge zu ändern. Die Ausführung beginnt von oben nach unten.",
+    "use_arrows_to_change_order": "Verwenden Sie die Auf- und Ab-Pfeile, um die Ausführungsreihenfolge zu ändern. Agenten werden von oben nach unten ausgeführt.",
+    "no_agents_selected": "Keine Agenten ausgewählt. Bitte gehen Sie zurück und wählen Sie zuerst Agenten aus.",
+    "error_adding_mock_agents": "Fehler beim Hinzufügen von Mock-Agenten zum Workflow.",
+    "human_in_loop_coming_soon": "Die Human-in-the-Loop-Funktion kommt bald!",
+    "agent_added_successfully": "Agent erfolgreich zum Workflow hinzugefügt!",
+    "agents_added_successfully": "{{count}} Agenten erfolgreich zum Workflow hinzugefügt!"
   }
 }

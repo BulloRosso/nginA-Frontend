@@ -244,7 +244,10 @@ const SchemaTable: React.FC<SchemaTableProps> = ({
                   label="object"
                   size="small"
                   sx={{  marginLeft: '8px', fontFamily: 'monospace' }}
-                /> </Typography>
+                /> 
+               
+                </Typography>
+               
               </>
               )}
               <SchemaTable 

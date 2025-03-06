@@ -96,6 +96,22 @@
     "create_wrapper_button": "Create Wrapper for Agent now!",
     "invalid_json": "Invalid JSON format",
     "what_is_wrapper": "What is a wrapper?",
-    "invalid_schemas": "Please check you schema defintions and try again." 
+    "invalid_schemas": "Please check you schema defintions and try again.",
+    "add_agents": "Manual",
+    "add_agents_to_workflow": "Add Agents to Workflow",
+    "select_agents": "Select Agents",
+    "sequence_agents": "Sequence Agents",
+    "select_required_agents": "Select the agents you want to add to your workflow:",
+    "no_team_agents": "No agents found in your team. Please add agents to your team first.",
+    "next_sequence": "Next: Sequence",
+    "order_agents": "Arrange the execution order of selected agents:",
+    "drag_drop_instructions": "Drag and drop the agents to change their order. The execution will start from the top of the list.",
+    "use_arrows_to_change_order": "Use the up and down arrows to change the execution order. Agents will be executed from top to bottom.",
+    "set_agent_order": "Use the arrows to move agents up or down in the sequence. The execution will start from the top of the list.",
+    "no_agents_selected": "No agents selected. Please go back and select agents first.",
+    "error_adding_mock_agents": "Error adding mock agents to the workflow.",
+    "human_in_loop_coming_soon": "Human in the Loop feature is coming soon!",
+    "agent_added_successfully": "Agent added to workflow successfully!",
+    "agents_added_successfully": "{{count}} agents added to workflow successfully!"
   }
 }
