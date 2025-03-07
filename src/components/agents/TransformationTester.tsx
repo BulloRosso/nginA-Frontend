@@ -35,9 +35,10 @@ interface TransformationTesterProps {
   agents: Agent[];
 }
 
-const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) => {
+const TransformationTester: React.FC<TransformationTesterProps> = () => {
   const { t } = useTranslation(['agents', 'common']);
   const { 
+    currentAgentChain,
     currentAgentTransformations, 
     selectedTransformationAgentId, 
     setSelectedTransformationAgentId,
@@ -61,6 +62,17 @@ const TransformationTester: React.FC<TransformationTesterProps> = ({ agents }) =
   const outputEditorRef = useRef(null);
   const codeEditorRef = useRef(null);
 
+  const agents = currentAgentChain.map(chainItem => {
+    return {
+      id: chainItem.agent_id,
+      title: { en: chainItem.agent_title },
+      description: { en: chainItem.agent_description },
+      icon_svg: chainItem.icon_svg,
+      input: {},  // This would need real schema data if used
+      output: {}  // This would need real schema data if used
+    };
+  });
+  
   // Get agents for the transformation chain
   // We need at least 2 agents for a transformation chain
   const agentsInChain = agents.length >= 2 ? agents : [];

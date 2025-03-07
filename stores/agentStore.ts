@@ -6,6 +6,7 @@ interface AgentChainItem {
   agent_id: string;
   agent_title: string;
   agent_description: string;
+  icon_svg: string;
 }
 
 interface AgentTransformation {
@@ -50,7 +51,8 @@ export const useAgentStore = create<AgentStore>((set) => ({
     const newChainItem: AgentChainItem = {
       agent_id: agent.id,
       agent_title: agent.title.en,
-      agent_description: agent.description.en
+      agent_description: agent.description.en,
+      icon_svg: agent.icon_svg
     };
 
     return { currentAgentChain: [...state.currentAgentChain, newChainItem] };

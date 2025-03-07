@@ -159,7 +159,7 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
     const fetchAgents = async () => {
       try {
         setLoading(true);
-        const fetchedAgents = await AgentService.getAgents();
+        const fetchedAgents = await AgentService.getAgents(false);
         setAgents(fetchedAgents);
       } catch (error) {
         console.error('Failed to fetch agents:', error);
@@ -444,7 +444,7 @@ const BuilderCanvas: React.FC<BuilderCanvasProps> = ({
 
       {activeStep === 1 && (
         <Box sx={{ height: '503px', width: '100%' }}>
-          <TransformationTester agents={agents} />
+          <TransformationTester />
         </Box>
       )}
     </>

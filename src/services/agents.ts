@@ -499,13 +499,7 @@ export class AgentService {
   }
 
   static async getAgentTransformations(agentId?: string, mockData: boolean = false): Promise<any[]> {
-    if (mockData) {
-      if (agentId) {
-        return mockTransformations.filter(t => t.agent_id === agentId);
-      }
-      return mockTransformations;
-    }
-
+    
     let url = '/api/v1/transformations';
     if (agentId) {
       url += `?agent_id=${agentId}`;

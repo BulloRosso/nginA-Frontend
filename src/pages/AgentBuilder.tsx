@@ -19,8 +19,6 @@ import {
 import AddIcon from '@mui/icons-material/Add'; // Import Add icon
 import { Global, css } from '@emotion/react';
 import { useNavigate } from 'react-router-dom';
-import { Profile } from '../types/profile';
-import { ProfileService } from '../services/profiles';
 import { useTranslation } from 'react-i18next';
 import BuilderBot from '../components/BuilderBot';
 import BuilderCanvas from '../components/agents/BuilderCanvas';
@@ -66,6 +64,27 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
   // Function to handle step navigation
   const handleStepChange = (step: number) => {
+    // If moving to step 1 (transformations) and we have agents but no transformations
+    if (step === 1 && currentAgentChain.length > 0 && currentAgentTransformations.length === 0) {
+      // Initialize transformations for each agent in the chain (except the first one)
+      // First agent doesn't need transformation as it's the start of the chain
+      currentAgentChain.slice(1).forEach(agent => {
+        updateAgentTransformation(
+          agent.agent_id,
+          // Default transformation template
+          `/**
+   * Transform function to convert previous agent output to this agent input
+   * @param {object} input - The input data from the previous agent
+   * @returns {object} - The transformed data for this agent
+   */
+  function transform_input(input) {
+    // Add your transformation logic here
+    return input;
+  }`
+        );
+      });
+    }
+
     setActiveStep(step);
   };
 
@@ -79,40 +98,6 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     setIsAgentSelectionOpen(false);
   };
 
-  // Add mock agents to the workflow
-  const handleAddMockAgents = async () => {
-    try {
-      setLoading(true);
-      // Fetch agents if not already available
-      const mockAgents = await AgentService.getAgents();
-
-      // Add a few agents to the chain
-      mockAgents.slice(0, 3).forEach(agent => {
-        addAgentToChain(agent);
-      });
-
-      const transformations = await AgentService.getAgentTransformations();
-
-      // For each agent in the chain, add a transformation if one exists
-      mockAgents.slice(0, 3).forEach(agent => {
-        const existingTransformation = transformations.find(t => t.agent_id === agent.id);
-
-        if (existingTransformation) {
-          updateAgentTransformation(
-            agent.id, 
-            existingTransformation.post_process_transformations
-          );
-        }
-      });
-
-    } catch (error) {
-      console.error('Error adding mock agents:', error);
-      setError(t('agents.error_adding_mock_agents'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Determine whether the user can proceed to the next step
   const canProceedToTransformations = currentAgentChain.length > 0;
   const canProceedToHumanInLoop = currentAgentTransformations.length > 0;
@@ -124,23 +109,6 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
         return (
           <>
             <BuilderCanvas activeStep={0} />
-            {!canProceedToTransformations && (
-              <Typography 
-                sx={{ 
-                  mt: 2, 
-                  color: 'text.secondary', 
-                  fontStyle: 'italic',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  '&:hover': {
-                    color: 'primary.main'
-                  }
-                }}
-                onClick={handleAddMockAgents}
-              >
-                (Click to add mock agents)
-              </Typography>
-            )}
           </>
         );
       case 1:
