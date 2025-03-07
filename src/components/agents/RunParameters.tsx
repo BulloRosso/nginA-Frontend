@@ -33,7 +33,11 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Error as ErrorIcon,
-  Transform as TransformIcon
+  Transform as TransformIcon,
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
+  FormatListBulleted as FormatListBulletedIcon,
+  Translate as TranslateIcon,
+  WavingHandOutlined as WavingHandOutlinedIcon,
 } from '@mui/icons-material';
 import { Agent } from '../../types/agent';
 import SchemaForm from './tabs/InputFormForSchema';
@@ -359,15 +363,23 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
             </IconButton>
           </Box>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ mt:0, pt:0 }}>
           {agent ? (
-            <Box sx={{ width: '100%', height: '400px', minHeight: '400px'  }}>
+            <Box sx={{ width: '100%', height: '440px', minHeight: '440px'  }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="run parameters tabs">
-                  <Tab label="Prompt" {...a11yProps(0)} />
-                  <Tab label="Input" {...a11yProps(1)} />
-                  <Tab label="Content" {...a11yProps(2)} />
-                  <Tab label="Human Feedback" {...a11yProps(3)} />
+                  <Tab icon={<ChatBubbleOutlineIcon />} 
+                       iconPosition="start"
+                       label="Prompt" {...a11yProps(0)} />
+                  <Tab icon={<FormatListBulletedIcon />}
+                       iconPosition="start"
+                       label="Input" {...a11yProps(1)} />
+                  <Tab icon={<TranslateIcon />}
+                       iconPosition="start"
+                       label="Content" {...a11yProps(2)} />
+                  <Tab icon={<WavingHandOutlinedIcon />}
+                       iconPosition="start"
+                       label="Human Feedback" {...a11yProps(3)} />
                 </Tabs>
               </Box>
 
