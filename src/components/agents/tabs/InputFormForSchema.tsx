@@ -22,16 +22,62 @@ interface SchemaFormProps {
   isLoading: boolean;
   hideSubmit?: boolean;
   onChange?: (isValid: boolean, formData: any) => void;
+  initialData?: any; // New prop for initial form data
 }
 
-const SchemaForm: React.FC<SchemaFormProps> = ({ schema, onSubmit, isLoading, hideSubmit = false, onChange }) => {
-  const [formData, setFormData] = useState({});
+const SchemaForm: React.FC<SchemaFormProps> = ({ 
+  schema, 
+  onSubmit, 
+  isLoading, 
+  hideSubmit = false, 
+  onChange,
+  initialData = {}  // Default to empty object
+}) => {
+  const [formData, setFormData] = useState(initialData);
   const [expandedItems, setExpandedItems] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
 
+  // Initialize form data with initialData when it changes
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      console.log('Setting form data from initialData:', initialData);
+      setFormData(initialData);
+
+      // Expand array items that have data
+      const newExpandedItems = {...expandedItems};
+
+      const expandNestedArrays = (data, parentPath = '') => {
+        if (!data) return;
+
+        Object.entries(data).forEach(([key, value]) => {
+          const currentPath = parentPath ? `${parentPath}.${key}` : key;
+
+          if (Array.isArray(value)) {
+            value.forEach((_, index) => {
+              newExpandedItems[`${currentPath}.${index}`] = true;
+
+              // If array item is an object, recursively expand its properties
+              if (typeof value[index] === 'object' && value[index] !== null) {
+                expandNestedArrays(value[index], `${currentPath}.${index}`);
+              }
+            });
+          } else if (typeof value === 'object' && value !== null) {
+            expandNestedArrays(value, currentPath);
+          }
+        });
+      };
+
+      expandNestedArrays(initialData);
+      setExpandedItems(newExpandedItems);
+
+      // Immediate validation for initialData
+      validateForm(initialData);
+    }
+  }, [initialData]);
+
   useEffect(() => {
     // Initialize enum fields with first value if available
-    if (schema && schema.properties) {
+    if (schema && schema.properties && Object.keys(formData).length === 0) {
       const initialData = {};
 
       const initializeEnumValues = (properties, parentPath = '') => {
@@ -70,15 +116,17 @@ const SchemaForm: React.FC<SchemaFormProps> = ({ schema, onSubmit, isLoading, hi
   }, [schema]);
 
   useEffect(() => {
-    validateForm();
+    validateForm(formData);
+  }, [formData]);
 
+  useEffect(() => {
     // Call onChange if provided to pass data and validity to parent component
     if (onChange) {
       onChange(isFormValid, formData);
     }
-  }, [formData, isFormValid]);
+  }, [formData, isFormValid, onChange]);
 
-  const validateForm = () => {
+  const validateForm = (data) => {
     if (!schema.required) {
       setIsFormValid(true);
       return;
@@ -86,7 +134,7 @@ const SchemaForm: React.FC<SchemaFormProps> = ({ schema, onSubmit, isLoading, hi
 
     // Check if all required fields have values
     const requiredFieldsHaveValues = schema.required.every(field => {
-      const value = getValueByPath(formData, field);
+      const value = getValueByPath(data, field);
       return value !== undefined && value !== '';
     });
 
@@ -396,6 +444,41 @@ const SchemaForm: React.FC<SchemaFormProps> = ({ schema, onSubmit, isLoading, hi
                 )}
               </Typography>
             )}
+          </Box>
+        );
+
+      case 'boolean':
+        return (
+          <Box sx={{ mb: 2 }}>
+            <FormControl 
+              fullWidth 
+              required={isRequired}
+              size="small"
+              sx={{ backgroundColor: 'white', borderRadius: 1 }}
+            >
+              <InputLabel>{fieldSchema.title || fieldName}</InputLabel>
+              <Select
+                value={getValueByPath(formData, path) === undefined ? '' : getValueByPath(formData, path) ? 'true' : 'false'}
+                onChange={(e) => handleChange(path, e.target.value === 'true')}
+                label={fieldSchema.title || fieldName}
+              >
+                <MenuItem value="true">True</MenuItem>
+                <MenuItem value="false">False</MenuItem>
+              </Select>
+              {fieldSchema.description && (
+                <FormHelperText
+                  sx={{ 
+                    mt: 0, 
+                    p: "6px", 
+                    color: '#666666',
+                    bgcolor: "#f6f4ee",
+                    borderRadius: 0
+                  }}
+                >
+                  {fieldSchema.description}
+                </FormHelperText>
+              )}
+            </FormControl>
           </Box>
         );
 

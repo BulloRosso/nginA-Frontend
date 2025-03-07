@@ -24,19 +24,23 @@ import {
   Divider,
   Paper,
   Snackbar,
-  Alert
+  Alert,
+  CircularProgress,
+  TextareaAutosize
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
-  Error as ErrorIcon
+  Error as ErrorIcon,
+  Transform as TransformIcon
 } from '@mui/icons-material';
 import { Agent } from '../../types/agent';
 import SchemaForm from './tabs/InputFormForSchema';
 import { OperationService } from '../../services/operations';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import api from '../../services/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -96,6 +100,12 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
+  // New state for Prompt tab
+  const [promptText, setPromptText] = useState('');
+  const [promptError, setPromptError] = useState(false);
+  const [promptErrorMessage, setPromptErrorMessage] = useState('');
+  const [isProcessingPrompt, setIsProcessingPrompt] = useState(false);
+
   // Error dialog state
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -109,8 +119,18 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
       setInputFormData({});
       setAcceptLanguage('en');
       setCommChannels([]);
+      setPromptText('');
+      setPromptError(false);
+      setPromptErrorMessage('');
     }
   }, [open, agent]);
+
+  // Ensure form validation is updated when activeTab changes
+  useEffect(() => {
+    if (activeTab === 1 && Object.keys(inputFormData).length > 0) {
+      setInputFormValid(true);
+    }
+  }, [activeTab, inputFormData]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -167,6 +187,57 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
 
   const handleErrorDialogClose = () => {
     setErrorDialogOpen(false);
+  };
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPromptText(e.target.value);
+    setPromptError(false);
+    setPromptErrorMessage('');
+  };
+
+  const handlePromptTransform = async () => {
+    if (!agent || !promptText.trim()) {
+      setPromptError(true);
+      setPromptErrorMessage('Prompt cannot be empty');
+      return;
+    }
+
+    try {
+      setIsProcessingPrompt(true);
+      const response = await api.post(`/api/v1/context/prompt-to-json/${agent.id}`, {
+        prompt: promptText,
+        one_shot: true
+      });
+
+      // If the request was successful, set the form data
+      const extractedData = response.data;
+      console.log('Extracted data from prompt:', extractedData);
+
+      // Update the form data state with the extracted values
+      setInputFormData(extractedData);
+
+      // Force form validation to be true since the API validated the data
+      setInputFormValid(true);
+
+      // Switch to the Input tab
+      setActiveTab(1);
+
+      // Show success message
+      setSnackbarMessage('Parameters extracted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+
+    } catch (error) {
+      console.error('Error processing prompt:', error);
+      setPromptError(true);
+      if (error.response && error.response.status === 400) {
+        setPromptErrorMessage('Minimal start parameters could not be extracted');
+      } else {
+        setPromptErrorMessage(error.response?.data?.detail || 'Failed to process prompt');
+      }
+    } finally {
+      setIsProcessingPrompt(false);
+    }
   };
 
   // Pre-flight check to verify agent endpoint is available
@@ -276,6 +347,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
         onClose={onClose}
         maxWidth="md"
         fullWidth
+       
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -289,17 +361,62 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
         </DialogTitle>
         <DialogContent>
           {agent ? (
-            <Box sx={{ width: '100%' }}>
+            <Box sx={{ width: '100%', height: '400px', minHeight: '400px'  }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="run parameters tabs">
-                  <Tab label="Input" {...a11yProps(0)} />
-                  <Tab label="Content" {...a11yProps(1)} />
-                  <Tab label="Human Feedback" {...a11yProps(2)} />
+                  <Tab label="Prompt" {...a11yProps(0)} />
+                  <Tab label="Input" {...a11yProps(1)} />
+                  <Tab label="Content" {...a11yProps(2)} />
+                  <Tab label="Human Feedback" {...a11yProps(3)} />
                 </Tabs>
               </Box>
 
-              {/* Input Tab */}
+              {/* Prompt Tab */}
               <TabPanel value={activeTab} index={0}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <TextField
+                    label="Your prompt"
+                    multiline
+                    rows={8}
+                    fullWidth
+                    value={promptText}
+                    onChange={handlePromptChange}
+                    error={promptError}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
+                          borderColor: promptError ? 'red' : 'inherit',
+                        },
+                      },
+                      '& .MuiInputBase-input': {
+                        color: promptError ? 'red' : 'inherit',
+                      }
+                    }}
+                  />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                    {promptError && (
+                      <Typography color="error" variant="body2">
+                        {promptErrorMessage || 'Minimal start parameters could not be extracted'}
+                      </Typography>
+                    )}
+                    <Box sx={{ ml: 'auto' }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handlePromptTransform}
+                        disabled={isProcessingPrompt || !promptText.trim()}
+                        startIcon={isProcessingPrompt ? <CircularProgress size={20} color="inherit" /> : <TransformIcon />}
+                      >
+                        Transform/Check
+                      </Button>
+                    </Box>
+                  </Box>
+                </Box>
+              </TabPanel>
+
+              {/* Input Tab */}
+              <TabPanel value={activeTab} index={1}>
                 {agent.input ? (
                   <SchemaForm
                     schema={agent.input}
@@ -307,6 +424,8 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
                     onChange={handleInputFormChange}
                     isLoading={false}
                     hideSubmit={true}
+                    initialData={inputFormData}
+                    key={`schema-form-${JSON.stringify(inputFormData)}`} // Force re-render when inputFormData changes
                   />
                 ) : (
                   <Typography color="text.secondary">
@@ -316,7 +435,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
               </TabPanel>
 
               {/* Content Tab */}
-              <TabPanel value={activeTab} index={1}>
+              <TabPanel value={activeTab} index={2}>
                 <TextField
                   label="Accept-Language"
                   fullWidth
@@ -330,7 +449,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
               </TabPanel>
 
               {/* Human Feedback Tab */}
-              <TabPanel value={activeTab} index={2}>
+              <TabPanel value={activeTab} index={3}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="subtitle1">Communication Channels</Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

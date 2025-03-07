@@ -13,7 +13,8 @@ const navigationItems: NavigationItem[] = [
   { icon: "/img/menu-icon-catalog2.png", title: "Agent Catalog", route: "/agents" },
   { icon: "/img/menu-icon-builder.png", title: "Agent Builder", route: "/builder" },
   { icon: "/img/menu-icon-operator.png", title: "Agent Operator", route: "/operator" },
-  { icon: "/img/menu-icon-accountant.png", title: "Accountant", route: "/accountant" }
+  { icon: "/img/menu-icon-accountant.png", title: "Accountant", route: "/accountant" },
+  { icon: "/img/menu-icon-self-service.png", title: "Self-Service", route: "/self-service" }
 ];
 
 export const NavigationItems = () => {
