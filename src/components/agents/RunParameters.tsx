@@ -213,14 +213,39 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
         one_shot: true
       });
 
-      // If the request was successful, set the form data
+      // Get the extracted data from the API
       const extractedData = response.data;
       console.log('Extracted data from prompt:', extractedData);
 
-      // Update the form data state with the extracted values
-      setInputFormData(extractedData);
+      // Check if we have the agent's input schema to validate against
+      if (agent.input && agent.input.required && agent.input.required.length > 0) {
+        // Find which required fields are missing
+        const missingFields = identifyMissingRequiredFields(agent.input, extractedData);
 
-      // Force form validation to be true since the API validated the data
+        if (missingFields.length > 0) {
+          // We have missing required fields - show error
+          setPromptError(true);
+          setPromptErrorMessage(
+            `Missing required parameters: ${missingFields.join(', ')}. Please add them to your prompt.`
+          );
+
+          // Still transform and populate the fields that were successfully extracted
+          const transformedData = transformExtractedData(extractedData);
+          setInputFormData(transformedData);
+
+          return;
+        }
+      }
+
+      // All required fields are present or there are no required fields
+      // Transform the data for the form - preserving actual values, not descriptions
+      const transformedData = transformExtractedData(extractedData);
+      console.log('Transformed data for form:', transformedData);
+
+      // Update the form data with properly transformed values
+      setInputFormData(transformedData);
+
+      // Set form as valid since we've verified all required fields are present
       setInputFormValid(true);
 
       // Switch to the Input tab
@@ -244,6 +269,75 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
     }
   };
 
+  // Helper function to identify which required fields are missing
+  const identifyMissingRequiredFields = (schema, extractedData) => {
+    if (!schema || !schema.required) return [];
+
+    const missingFields = [];
+
+    for (const field of schema.required) {
+      // Field is completely missing
+      if (!(field in extractedData)) {
+        missingFields.push(field);
+        continue;
+      }
+
+      // Field exists but might have empty/invalid values
+      const fieldValue = extractedData[field];
+
+      // Empty object or null/undefined value
+      if (!fieldValue || 
+          (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0) ||
+          (fieldValue.description === undefined || fieldValue.description === '')) {
+        missingFields.push(field);
+      }
+    }
+
+    return missingFields;
+  };
+
+  // Helper function to transform extracted data into form-friendly values
+  const transformExtractedData = (extractedData) => {
+    const transformedData = {};
+
+    Object.entries(extractedData).forEach(([key, value]) => {
+      if (value && typeof value === 'object') {
+        if ('description' in value && value.description !== undefined) {
+          if (Array.isArray(value.description)) {
+            // For arrays, use the array directly
+            transformedData[key] = value.description;
+          } else if (typeof value.description === 'string') {
+            // For strings, determine if it's metadata or an actual value
+            const desc = value.description;
+
+            // Check if description contains metadata phrases that indicate it's not an actual value
+            if (desc.includes('Mandatory parameter') || 
+                desc.includes('Available') ||
+                desc.startsWith('The ') ||
+                desc.includes('parameter')) {
+              // This is likely metadata about the field, not a value to use
+              transformedData[key] = '';
+            } else {
+              // This looks like an actual value
+              transformedData[key] = desc;
+            }
+          } else {
+            // For other types, use the value directly
+            transformedData[key] = value.description;
+          }
+        } else {
+          // Keep complex objects as is if they don't have a description
+          transformedData[key] = value;
+        }
+      } else {
+        // Use primitive values directly
+        transformedData[key] = value;
+      }
+    });
+
+    return transformedData;
+  };
+  
   // Pre-flight check to verify agent endpoint is available
   const preFlightCheck = async (): Promise<boolean> => {
     if (!agent || !agent.agent_endpoint) {
@@ -365,7 +459,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
         </DialogTitle>
         <DialogContent sx={{ mt:0, pt:0 }}>
           {agent ? (
-            <Box sx={{ width: '100%', height: '440px', minHeight: '440px'  }}>
+            <Box sx={{ width: '100%'  }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={activeTab} onChange={handleTabChange} aria-label="run parameters tabs">
                   <Tab icon={<ChatBubbleOutlineIcon />} 
