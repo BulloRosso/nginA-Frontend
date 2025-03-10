@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Box, 
   Grid, 
@@ -57,11 +57,12 @@ const PromptEditor: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  
 
   // State for viewing and editing
   const [viewMode, setViewMode] = useState<'preview' | 'edit'>('preview');
   const [editorContent, setEditorContent] = useState<string>('');
-
+  const diffEditorRef = useRef(null);
   // State for modals
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
   const [compareDialogOpen, setCompareDialogOpen] = useState<boolean>(false);
@@ -73,9 +74,44 @@ const PromptEditor: React.FC = () => {
     newer: null
   });
 
-  // State for markdown styling
+  // Initialize the markdownCSS state
   const [markdownCSS, setMarkdownCSS] = useState<string>('');
+  const [cssLoading, setCssLoading] = useState<boolean>(true);
 
+  // Load CSS from file and localStorage
+  useEffect(() => {
+    const loadCSS = async () => {
+      try {
+        setCssLoading(true);
+
+        // First check localStorage for user customized CSS
+        const savedCSS = localStorage.getItem('markdownCSS');
+        if (savedCSS) {
+          setMarkdownCSS(savedCSS);
+          setCssLoading(false);
+          return;
+        }
+
+        // If no custom CSS in localStorage, load the default from public directory
+        const response = await fetch('/css/markdown.css');
+        if (response.ok) {
+          const cssText = await response.text();
+          setMarkdownCSS(cssText);
+          // Optionally save the default CSS to localStorage to avoid fetching it every time
+          localStorage.setItem('markdownCSS', cssText);
+        } else {
+          console.warn('Failed to load markdown CSS file:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading markdown CSS:', error);
+      } finally {
+        setCssLoading(false);
+      }
+    };
+
+    loadCSS();
+  }, []);
+  
   // Fetch prompts from API
   const fetchPrompts = async () => {
     setLoading(true);
@@ -342,6 +378,33 @@ const PromptEditor: React.FC = () => {
       older: olderPrompt
     });
 
+  };
+
+  const handleCompareDialogClose = () => {
+    // Attempt to clean up the models before closing
+    if (diffEditorRef.current) {
+      // Give the editor a chance to clean up properly
+      try {
+        const originalModel = diffEditorRef.current.getOriginalEditor().getModel();
+        const modifiedModel = diffEditorRef.current.getModifiedEditor().getModel();
+
+        // Set models to null first
+        diffEditorRef.current.setModel({ original: null, modified: null });
+
+        // Then dispose
+        if (originalModel) originalModel.dispose();
+        if (modifiedModel) modifiedModel.dispose();
+      } catch (e) {
+        console.warn("Error cleaning up diff editor models:", e);
+      }
+
+      // Clear ref
+      diffEditorRef.current = null;
+    }
+
+    // Reset state
+    setCompareVersions({ older: null, newer: null });
+    setCompareDialogOpen(false);
   };
 
   // Handle version change
@@ -721,7 +784,8 @@ const PromptEditor: React.FC = () => {
       </Grid>
 
       {/* Create Prompt Dialog */}
-      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={createDialogOpen} 
+              onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Create New Prompt</DialogTitle>
         <DialogContent>
           <TextField
@@ -757,7 +821,7 @@ const PromptEditor: React.FC = () => {
       {/* Compare Versions Dialog */}
       <Dialog
         open={compareDialogOpen}
-        onClose={() => setCompareDialogOpen(false)}
+        onClose={handleCompareDialogClose}
         maxWidth="xl"
         fullWidth
         PaperProps={{
@@ -770,7 +834,7 @@ const PromptEditor: React.FC = () => {
       >
         <DialogTitle>
           Compare Prompt Versions
-          <Typography variant="subtitle1" color="textSecondary">
+          <Typography variant="subtitle1" component="div" color="textSecondary">
             {selectedGroup} - Version {compareVersions.newer?.version} vs. Version {compareVersions.older?.version}
           </Typography>
         </DialogTitle>
@@ -803,7 +867,7 @@ const PromptEditor: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCompareDialogOpen(false)} variant="contained">
+          <Button onClick={handleCompareDialogClose} variant="contained">
             Close
           </Button>
         </DialogActions>
