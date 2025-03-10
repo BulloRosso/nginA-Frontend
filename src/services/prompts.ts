@@ -73,6 +73,13 @@ export class PromptService {
     }
   }
 
+  static async replacePrompt(name: string, version: number, promptText: string): Promise<Prompt> {
+    const response = await api.post(`/api/v1/prompts/replace/${name}/${version}`, {
+      prompt_text: promptText
+    });
+    return response.data;
+  }
+
   static async deletePromptGroup(name: string): Promise<boolean> {
     try {
       await api.delete(`/api/v1/prompts/purge/${name}`);

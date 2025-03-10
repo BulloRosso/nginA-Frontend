@@ -73,6 +73,7 @@ const PromptEditor: React.FC = () => {
     older: null,
     newer: null
   });
+  const [forceOverwrite, setForceOverwrite] = useState<boolean>(false);
 
   // Initialize the markdownCSS state
   const [markdownCSS, setMarkdownCSS] = useState<string>('');
@@ -111,6 +112,10 @@ const PromptEditor: React.FC = () => {
 
     loadCSS();
   }, []);
+
+  const handleForceOverwriteChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setForceOverwrite(event.target.checked);
+  };
   
   // Fetch prompts from API
   const fetchPrompts = async () => {
@@ -228,25 +233,45 @@ const PromptEditor: React.FC = () => {
     }
   };
 
-  // Save edited prompt (creates a new version since prompts are immutable)
+  // Save edited prompt (creates a new version or overwrites existing)
   const savePrompt = async () => {
     if (!selectedPrompt || editorContent === selectedPrompt.prompt_text) return;
 
     try {
       setLoading(true);
-      // Create a new prompt with the same name but updated content
-      const newPrompt = await PromptService.createPrompt({
-        name: selectedPrompt.name,
-        prompt_text: editorContent,
-        is_active: true // Make the new version active
-      });
 
+      let updatedPrompt;
+
+      if (forceOverwrite) {
+        // Use force overwrite endpoint
+        updatedPrompt = await PromptService.replacePrompt(
+          selectedPrompt.name,
+          selectedPrompt.version,
+          editorContent
+        );
+      } else {
+        // Create a new prompt with the same name but updated content
+        updatedPrompt = await PromptService.createPrompt({
+          name: selectedPrompt.name,
+          prompt_text: editorContent,
+          is_active: true // Make the new version active
+        });
+      }
+
+      // Update the local state with the response data first
+      setSelectedPrompt(updatedPrompt);
+
+      // Then refresh the list
       await fetchPrompts();
-      setSelectedPrompt(newPrompt);
+
+      // Switch back to preview mode after updating content
       setViewMode('preview');
     } catch (err) {
-      console.error('Error creating new version:', err);
-      setError('Failed to create new version. Please try again.');
+      console.error('Error saving prompt:', err);
+      setError(forceOverwrite ? 
+        'Failed to overwrite prompt. Please try again.' :
+        'Failed to create new version. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -648,6 +673,22 @@ const PromptEditor: React.FC = () => {
                 >
                   <SettingsIcon />
                 </IconButton>
+              )}
+
+              {selectedPrompt && viewMode == "edit" && (
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={forceOverwrite}
+                      onChange={handleForceOverwriteChange}
+                      disabled={loading}
+                      color="primary"
+                      size="small"
+                    />
+                  }
+                  label="Force Overwrite"
+                  sx={{ ml: 0 }}
+                />
               )}
 
               {selectedPrompt && currentGroup && (
