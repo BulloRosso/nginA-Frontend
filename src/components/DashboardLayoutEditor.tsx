@@ -55,15 +55,17 @@ const DraggableComponent: React.FC<{
       sx={{
         opacity: isDragging ? 0.5 : 1,
         cursor: 'move',
-        mb: 1,
+        mb: 0,
+        pt: 1,
         bgcolor: '#f5f5f5',
-        height: '60px',
+        height: '55px',
+        width: '100%',
         display: 'flex',
         alignItems: 'center',
       }}
     >
       <CardContent sx={{ width: '100%' }}>
-        <Typography variant="body2">{component.name}</Typography>
+        <Typography variant="body2">{component.name.toUpperCase()}</Typography>
         <Typography variant="caption" color="text.secondary">
           {component.type} ({component.layout_cols}x{component.layout_rows})
         </Typography>
@@ -123,7 +125,7 @@ const PlacedComponentItem: React.FC<{
       }}
     >
       <Typography variant="body2" align="center">
-        {component.name}
+        {component.name.toUpperCase()}
       </Typography>
       <Typography variant="caption" color="text.secondary" align="center">
         ({component.type})

@@ -137,6 +137,17 @@ const App = () => {
                   />
 
                   <Route 
+                    path="/dashboards/edit/:id" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <DashboardEditor />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  <Route 
                     path="/self-service" 
                     element={
                       <ProtectedRoute>

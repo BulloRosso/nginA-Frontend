@@ -422,6 +422,82 @@ export class DashboardService {
     }
   }
 
+  static async list_dashboards(userId?: string, mockData: boolean = false): Promise<Dashboard[]> {
+    if (mockData) {
+      // Return mock dashboards for development/testing
+      return [
+        {
+          id: 'dashboard-1',
+          created_at: new Date().toISOString(),
+          description: {
+            en: {
+              title: 'Sales Dashboard',
+              description: 'Dashboard for tracking sales performance'
+            }
+          },
+          is_anonymous: false,
+          style: {
+            layout: {
+              logoUrl: 'https://example.com/logo.svg',
+              templateName: 'default'
+            },
+            components: []
+          }
+        },
+        {
+          id: 'dashboard-2',
+          created_at: new Date().toISOString(),
+          description: {
+            en: {
+              title: 'Marketing Dashboard',
+              description: 'Dashboard for tracking marketing campaigns'
+            }
+          },
+          is_anonymous: false,
+          style: {
+            layout: {
+              logoUrl: 'https://example.com/logo2.svg',
+              templateName: 'default'
+            },
+            components: []
+          }
+        },
+        {
+          id: 'dashboard-3',
+          created_at: new Date().toISOString(),
+          description: {
+            en: {
+              title: 'Customer Support Dashboard',
+              description: 'Dashboard for monitoring customer support tickets'
+            }
+          },
+          is_anonymous: false,
+          style: {
+            layout: {
+              logoUrl: 'https://example.com/logo3.svg',
+              templateName: 'default'
+            },
+            components: []
+          }
+        }
+      ];
+    }
+
+    try {
+      let url = '/api/v1/dashboards';
+      if (userId) {
+        url += `?user_id=${userId}`;
+      }
+
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching dashboards:", error);
+      // Return empty array on error
+      return [];
+    }
+  }
+
   static async cloneDashboard(id: string, newUserId?: string, mockData: boolean = false): Promise<Dashboard | null> {
     if (mockData) {
       const dashboard = mockDashboards.find(dashboard => dashboard.id === id);

@@ -19,15 +19,22 @@ import {
   ListItemButton,
   ListItemText,
   Checkbox,
-  Stack
+  Stack,
+  IconButton,
+  InputAdornment,
+  Snackbar,
+  Alert,
+  Autocomplete
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { DashboardService } from '../services/dashboards';
 import { AgentService } from '../services/agents';
 import { TeamService } from '../services/teams';
 import { Dashboard, DashboardComponent } from '../types/dashboard';
 import { Agent } from '../types/agent';
 import DashboardLayoutEditor, { PlacedComponent } from './DashboardLayoutEditor';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // TabPanel component for handling tab content
 interface TabPanelProps {
@@ -78,6 +85,7 @@ const AgentSelectionDialog: React.FC<AgentSelectionDialogProps> = ({
   onSave,
   initialSelectedAgents 
 }) => {
+  // Implementation remains the same
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>(initialSelectedAgents || []);
@@ -198,10 +206,19 @@ const AgentSelectionDialog: React.FC<AgentSelectionDialogProps> = ({
   );
 };
 
+// Interface for dashboard option items in the combobox
+interface DashboardOption {
+  id: string;
+  label: string;
+}
+
 const DashboardEditor: React.FC<{
-  dashboardId?: string;
   onSave?: (dashboard: Dashboard) => void;
-}> = ({ dashboardId, onSave }) => {
+  onDashboardChange?: (dashboardId: string) => void;
+}> = ({ onSave, onDashboardChange }) => {
+  // Get dashboard ID from route params
+  const { id: routeDashboardId } = useParams<{ id?: string }>();
+
   // Tab state
   const [tabValue, setTabValue] = useState(0);
 
@@ -219,9 +236,93 @@ const DashboardEditor: React.FC<{
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [agentDialogOpen, setAgentDialogOpen] = useState(false);
 
+  // State for toast notification
+  const [toastOpen, setToastOpen] = useState(false);
+
+  // State for dashboard selector
+  const [availableDashboards, setAvailableDashboards] = useState<DashboardOption[]>([]);
+  const [loadingDashboards, setLoadingDashboards] = useState(false);
+  const [selectedDashboard, setSelectedDashboard] = useState<DashboardOption | null>(null);
+
+  // Initialize navigate
+  const navigate = useNavigate();
+
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  // Load available dashboards for the combobox
+  useEffect(() => {
+    const loadDashboards = async () => {
+      try {
+        setLoadingDashboards(true);
+        const dashboards = await DashboardService.list_dashboards();
+        const options = dashboards.map(dashboard => ({
+          id: dashboard.id,
+          label: dashboard.description?.en.title || `Dashboard ${dashboard.id}`
+        }));
+        setAvailableDashboards(options);
+
+        // Set selected dashboard if routeDashboardId is provided
+        if (routeDashboardId) {
+          const current = options.find(option => option.id === routeDashboardId);
+          if (current) {
+            setSelectedDashboard(current);
+          }
+        } else {
+          // Reset selected dashboard if we're on the main dashboard page
+          setSelectedDashboard(null);
+        }
+
+        setLoadingDashboards(false);
+      } catch (error) {
+        console.error("Error loading dashboards:", error);
+        setLoadingDashboards(false);
+      }
+    };
+
+    loadDashboards();
+  }, [routeDashboardId]);
+
+  // Handle dashboard selection change
+  const handleDashboardChange = (_event: React.SyntheticEvent, value: DashboardOption | null) => {
+    if (value && value.id !== routeDashboardId) {
+      // Navigate to the selected dashboard
+      navigate(`/dashboards/edit/${value.id}`);
+
+      // Reset the selection to allow future selections of the same dashboard
+      setTimeout(() => {
+        setSelectedDashboard(null);
+      }, 100);
+
+      if (onDashboardChange) {
+        onDashboardChange(value.id);
+      }
+    }
+  };
+
+  // Copy customer URL to clipboard
+  const handleCopyCustomerUrl = () => {
+    if (!routeDashboardId) return;
+
+    // Construct the URL using current protocol and host
+    const url = `${window.location.protocol}//${window.location.host}/dashboards/${routeDashboardId}`;
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        // Show toast notification
+        setToastOpen(true);
+      })
+      .catch(err => {
+        console.error('Failed to copy URL to clipboard:', err);
+      });
+  };
+
+  // Close toast notification
+  const handleToastClose = () => {
+    setToastOpen(false);
   };
 
   // Load available components
@@ -251,14 +352,23 @@ const DashboardEditor: React.FC<{
     loadComponents();
   }, []);
 
-  // Load dashboard data if editing existing dashboard
+  // Load dashboard data if editing existing dashboard (using routeDashboardId)
   useEffect(() => {
     const loadDashboard = async () => {
-      if (!dashboardId) return;
+      if (!routeDashboardId) {
+        // Reset the form if no dashboard ID
+        setTitle('');
+        setDescription('');
+        setLogoUrl('');
+        setPlacedComponents([]);
+        setSelectedAgents([]);
+        return;
+      }
 
       try {
+        console.log(`Loading dashboard data for ID: ${routeDashboardId}`);
         // Use mockData=true while backend is being fixed
-        const dashboard = await DashboardService.getDashboard(dashboardId, true);
+        const dashboard = await DashboardService.getDashboard(routeDashboardId, true);
         if (dashboard) {
           // Set basic details
           setTitle(dashboard.description?.en.title || '');
@@ -312,7 +422,7 @@ const DashboardEditor: React.FC<{
     };
 
     loadDashboard();
-  }, [dashboardId]);
+  }, [routeDashboardId]);
 
   // Add component to the grid
   const handleAddComponent = (component: DashboardComponent, row: number, col: number) => {
@@ -439,18 +549,18 @@ const DashboardEditor: React.FC<{
     }
   };
 
-  // Handle agent selection
-  const handleAgentSelectionSave = (agents: Agent[]) => {
-    setSelectedAgents(agents);
-  };
-
   // Remove an agent from the selection
   const handleRemoveAgent = (agentId: string) => {
     setSelectedAgents(selectedAgents.filter(agent => agent.id !== agentId));
   };
 
+  // Handle agent selection
+  const handleAgentSelectionSave = (agents: Agent[]) => {
+    setSelectedAgents(agents);
+  };
+
   // Handle dashboard save
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     const dashboardData = {
       description: {
         en: {
@@ -482,12 +592,17 @@ const DashboardEditor: React.FC<{
 
       let result;
       // Set mockData=false to use the real backend API
-      if (dashboardId) {
-        console.log(`Updating existing dashboard with ID: ${dashboardId}`);
-        result = await DashboardService.updateDashboard(dashboardId, dashboardData, false);
+      if (routeDashboardId) {
+        console.log(`Updating existing dashboard with ID: ${routeDashboardId}`);
+        result = await DashboardService.updateDashboard(routeDashboardId, dashboardData, false);
       } else {
         console.log("Creating new dashboard");
         result = await DashboardService.createDashboard(dashboardData, false);
+
+        // Navigate to the edit page for the new dashboard
+        if (result && result.id) {
+          navigate(`/dashboards/edit/${result.id}`);
+        }
       }
 
       console.log("Dashboard saved successfully:", result);
@@ -508,9 +623,44 @@ const DashboardEditor: React.FC<{
 
   return (
     <Container maxWidth="lg">
-      <Typography variant="h4" sx={{ mt: 3, mb: 2 }}>
-        Dashboard Editor
-      </Typography>
+      <Box 
+        sx={{ 
+          mt: 3, 
+          mb: 2, 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <Typography variant="h4">
+          Dashboard Editor
+        </Typography>
+
+        <Autocomplete
+          sx={{ width: 300 }}
+          options={availableDashboards}
+          loading={loadingDashboards}
+          value={selectedDashboard}
+          onChange={handleDashboardChange}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Load Dashboard"
+              size="small"
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loadingDashboards ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+        />
+      </Box>
 
       {/* Dashboard Tabs */}
       <Paper sx={{ mb: 3 }}>
@@ -522,6 +672,7 @@ const DashboardEditor: React.FC<{
           >
             <Tab label="Title & Description" {...a11yProps(0)} />
             <Tab label="Agents" {...a11yProps(1)} />
+            <Tab label="Customer URL" {...a11yProps(2)} />
           </Tabs>
         </Box>
 
@@ -532,6 +683,7 @@ const DashboardEditor: React.FC<{
               <TextField
                 label="Title (English)"
                 fullWidth
+                size="small"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -540,6 +692,7 @@ const DashboardEditor: React.FC<{
               <TextField
                 label="Logo URL"
                 fullWidth
+                size="small"
                 value={logoUrl}
                 onChange={(e) => setLogoUrl(e.target.value)}
               />
@@ -549,6 +702,7 @@ const DashboardEditor: React.FC<{
                 label="Description (English)"
                 fullWidth
                 multiline
+                size="small"
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -602,6 +756,45 @@ const DashboardEditor: React.FC<{
             )}
           </Stack>
         </TabPanel>
+
+        {/* Customer URL Tab */}
+        <TabPanel value={tabValue} index={2}>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Share this URL with your customers
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              This URL provides direct access to this dashboard.
+            </Typography>
+          </Box>
+          <TextField
+            fullWidth
+            label="Customer URL"
+            variant="outlined"
+            size="small"
+            value={routeDashboardId ? `${window.location.protocol}//${window.location.host}/dashboards/${routeDashboardId}` : 'Save the dashboard first to get a shareable URL'}
+            onClick={routeDashboardId ? handleCopyCustomerUrl : undefined}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    edge="end"
+                    onClick={handleCopyCustomerUrl}
+                    disabled={!routeDashboardId}
+                    title="Copy URL"
+                  >
+                    <ContentCopyIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{ 
+              cursor: routeDashboardId ? 'pointer' : 'not-allowed',
+              bgcolor: 'background.paper'
+            }}
+          />
+        </TabPanel>
       </Paper>
 
       {/* Layout Editor */}
@@ -636,6 +829,18 @@ const DashboardEditor: React.FC<{
         onSave={handleAgentSelectionSave}
         initialSelectedAgents={selectedAgents}
       />
+
+      {/* Toast Notification */}
+      <Snackbar 
+        open={toastOpen} 
+        autoHideDuration={4000} 
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleToastClose} severity="success" variant="filled">
+          Customer URL copied to clipboard
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
