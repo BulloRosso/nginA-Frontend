@@ -28,7 +28,9 @@ import {
   FormHelperText,
   ToggleButtonGroup,
   ToggleButton,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
 import { 
   Add as AddIcon, 
@@ -170,6 +172,23 @@ const PromptEditor: React.FC = () => {
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
       setEditorContent(value);
+    }
+  };
+
+  // Handle checkbox change for active version
+  const handleActiveCheckboxChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedPrompt || !event.target.checked) return;
+
+    try {
+      setLoading(true);
+      // Call API to set this version as active
+      await PromptService.activatePrompt(selectedPrompt.name, selectedPrompt.version);
+      await fetchPrompts();
+    } catch (err) {
+      console.error('Error setting prompt as active:', err);
+      setError('Failed to set prompt as active. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -449,11 +468,27 @@ const PromptEditor: React.FC = () => {
               borderColor: 'divider',
               height: '60px',
               display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center'
             }}>
               <Typography variant="h6">
                 {selectedPrompt ? `${selectedPrompt.name} (v${selectedPrompt.version})` : 'Select a Prompt'}
               </Typography>
+
+              {selectedPrompt && (
+                <FormControlLabel
+                  control={
+                    <Checkbox 
+                      checked={selectedPrompt.is_active}
+                      onChange={handleActiveCheckboxChange}
+                      disabled={selectedPrompt.is_active || loading}
+                      color="primary"
+                    />
+                  }
+                  label="Active Version"
+                  sx={{ ml: 2 }}
+                />
+              )}
             </Box>
 
             {/* Content Area */}
@@ -734,20 +769,26 @@ const PromptEditor: React.FC = () => {
         </DialogTitle>
         <DialogContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
           {compareVersions.newer && compareVersions.older ? (
-            <Editor
-              height="100%"
-              defaultLanguage="markdown"
-              original={compareVersions.older.prompt_text}
-              modified={compareVersions.newer.prompt_text}
-              theme="light"
-              options={{
-                readOnly: true,
-                renderSideBySide: true,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                hideUnchangedRegions: true
-              }}
-            />
+            <Box sx={{ width: '100%', height: '100%' }}>
+              <Editor
+                height="100%"
+                width="100%"
+                theme="light"
+                original={compareVersions.older.prompt_text}
+                modified={compareVersions.newer.prompt_text}
+                options={{
+                  readOnly: true,
+                  renderSideBySide: true,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  diffEditor: {
+                    renderSideBySide: true,
+                    ignoreTrimWhitespace: false,
+                    renderIndicators: true
+                  }
+                }}
+              />
+            </Box>
           ) : (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
               <CircularProgress />
