@@ -9,6 +9,7 @@ import {
   People as PeopleIcon,
   MailOutline as InviteIcon,
   InfoOutlined as InfoIcon,
+  MessageOutlined as PromptIcon,
 } from '@mui/icons-material';
 import { LanguageSwitch } from '../common/LanguageSwitch';
 import Settings from '../modals/Settings';
@@ -26,7 +27,7 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
     onClose();
     openDisclaimer();
   };
-  
+
   const handleNavigation = (path: string) => {
     onClose();
     navigate(path);
@@ -53,18 +54,11 @@ const AppMenu = ({ anchorEl, onClose, isAuthenticated }) => {
       <ListItemText primary={t('about:about.menuItem')} />
     </MenuItem>,
 
-    <MenuItem key="profiles" onClick={() => handleNavigation('/profile-selection')}>
+    <MenuItem key="prompts" onClick={() => handleNavigation('/prompts')}>
       <ListItemIcon>
-        <PeopleIcon fontSize="small" />
+        <PromptIcon fontSize="small" />
       </ListItemIcon>
-      <ListItemText primary={t('common.menu.profiles')} />
-    </MenuItem>,
-
-    <MenuItem key="invitations" onClick={() => handleNavigation('/agents')}>
-      <ListItemIcon>
-        <InviteIcon fontSize="small" />
-      </ListItemIcon>
-      <ListItemText primary={t('common.menu.catalog')} />
+      <ListItemText primary="Prompt Editor" />
     </MenuItem>
   ];
 
@@ -166,7 +160,7 @@ export const Header = () => {
     <AppBar position="static" sx={{ backgroundColor: '#1eb3b7'}}>
       <Toolbar variant="dense">
         <Typography variant="h6" component="div" sx={{ 
-          
+
           fontWeight: 'bold', 
           flexGrow: 1 
         }}>

@@ -3,7 +3,6 @@ import './App.css';
 import React from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import ProfileSetup from './pages/ProfileSetup';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -18,7 +17,6 @@ import IntroductionVideo from './pages/IntroductionVideo';
 import ChatRobot from './components/chat/ChatRobot';
 import InvitationsDashboard from './components/invitations/InvitationsDashboard';
 import TokenHandler from './components/interview/TokenHandler';
-import { TokenProtectedRoute } from './hoc/withTokenProtection';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 import Checkout from './pages/Checkout';
@@ -33,6 +31,7 @@ import AgentBuilder from './pages/AgentBuilder';
 import AgentOperator from './pages/AgentOperator';
 import Accountant from './pages/Accountant';
 import HumanInTheLoopReview from './components/HumanInTheLoopReview';
+import PromptEditor from './components/prompts/PromptEditor';
 
 // Create the theme with error handling
 let theme;
@@ -126,6 +125,16 @@ const App = () => {
                     } 
                   />
                   <Route 
+                    path="/prompts" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <PromptEditor />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
                     path="/accountant" 
                     element={
                       <ProtectedRoute>
@@ -163,15 +172,6 @@ const App = () => {
                         <VerifiedRoute>
                           <Checkout />
                         </VerifiedRoute>
-                      </ProtectedRoute>
-                    } 
-                  />
-
-                  <Route 
-                    path="/profile" 
-                    element={
-                      <ProtectedRoute>
-                        <ProfileSetup />
                       </ProtectedRoute>
                     } 
                   />

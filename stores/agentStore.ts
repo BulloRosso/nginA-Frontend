@@ -11,6 +11,7 @@ interface AgentChainItem {
 
 interface AgentTransformation {
   agent_id: string;
+  pre_process_transformations: string;
   post_process_transformations: string;
 }
 
@@ -73,12 +74,14 @@ export const useAgentStore = create<AgentStore>((set) => ({
       // Update existing transformation
       newTransformations[existingIndex] = {
         ...newTransformations[existingIndex],
+        pre_process_transformations: transformation,
         post_process_transformations: transformation
       };
     } else {
       // Add new transformation
       newTransformations.push({
         agent_id: agentId,
+        pre_process_tranformations: transformation,
         post_process_transformations: transformation
       });
     }
