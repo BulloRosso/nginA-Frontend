@@ -32,6 +32,7 @@ import AgentOperator from './pages/AgentOperator';
 import Accountant from './pages/Accountant';
 import HumanInTheLoopReview from './components/HumanInTheLoopReview';
 import PromptEditor from './components/prompts/PromptEditor';
+import DashboardEditor from './components/DashboardEditor';
 
 // Create the theme with error handling
 let theme;
@@ -134,6 +135,18 @@ const App = () => {
                       </ProtectedRoute>
                     } 
                   />
+
+                  <Route 
+                    path="/self-service" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <DashboardEditor />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
                   <Route 
                     path="/accountant" 
                     element={
