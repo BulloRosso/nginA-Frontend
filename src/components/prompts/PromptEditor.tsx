@@ -668,7 +668,7 @@ const PromptEditor: React.FC = () => {
                 Compare Versions
               </Button>
 
-              <Box sx={{ mt: 2, p: 2, bgcolor: 'info.light', borderRadius: 1, color: 'info.contrastText' }}>
+              <Box sx={{ mt: 2, p: 2, bgcolor: '#fef6d5', borderRadius: 1, color: 'text.secondary' }}>
                 <Typography variant="body2">
                   Prompts are immutable to create repeatable eval results! Remember you create a new version of the prompt every time you modify and save an existing prompt.
                 </Typography>
