@@ -44,7 +44,7 @@ import {
   Settings as SettingsIcon
 } from '@mui/icons-material';
 import { marked } from 'marked';
-import Editor from '@monaco-editor/react';
+import { Editor, DiffEditor } from '@monaco-editor/react';
 import { PromptService } from '../../services/prompts';
 import { Prompt, PromptGrouped } from '../../types/prompts';
 import MarkdownCSSEditor from './MarkdownCSSEditor';
@@ -309,7 +309,15 @@ const PromptEditor: React.FC = () => {
       setLoading(false);
     }
   };
-
+  
+  // Open compare dialog
+  useEffect(() => {
+    // Only open dialog when we have both versions set
+    if (compareVersions.newer && compareVersions.older) {
+      setCompareDialogOpen(true);
+    }
+  }, [compareVersions]);
+  
   // Open compare dialog
   const openCompareDialog = async () => {
     if (!selectedPrompt || !currentGroup) return;
@@ -334,7 +342,6 @@ const PromptEditor: React.FC = () => {
       older: olderPrompt
     });
 
-    setCompareDialogOpen(true);
   };
 
   // Handle version change
@@ -770,7 +777,7 @@ const PromptEditor: React.FC = () => {
         <DialogContent sx={{ flexGrow: 1, overflow: 'hidden' }}>
           {compareVersions.newer && compareVersions.older ? (
             <Box sx={{ width: '100%', height: '100%' }}>
-              <Editor
+              <DiffEditor
                 height="100%"
                 width="100%"
                 theme="light"
