@@ -19,6 +19,10 @@ export interface ConfigurationComponent {
   name: string;
   startCol: number;
   startRow: number;
+  layout_cols?: number;  // Added property for column span
+  layout_rows?: number;  // Added property for row span
+  type?: string;
+  react_component_name?: string;
 }
 
 // Define the configuration interface

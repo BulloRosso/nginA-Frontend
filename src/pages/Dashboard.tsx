@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
     <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Login Modal */}
       <Dialog open={openLoginModal} onClose={() => {}} maxWidth="sm" fullWidth>
-        <DialogTitle>Welcome to your Automations!</DialogTitle>
+        <DialogTitle>Welcome to your automations</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
             <TextField
@@ -258,12 +258,8 @@ const Dashboard: React.FC = () => {
         <DialogActions>
           <Button 
             onClick={handleLogin} 
+            color="primary" 
             variant="contained"
-            sx={{
-              backgroundColor: "gold",
-              marginRight: "14px",
-              marginBottom: "14px"
-            }}
             disabled={!loginData.email || !loginData.password || isLoggingIn}
           >
             {isLoggingIn ? 'Logging in...' : 'Log In'}
@@ -320,7 +316,12 @@ const Dashboard: React.FC = () => {
           </AppBar>
 
           {/* Main Content */}
-          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+          <Box sx={{ 
+            flexGrow: 1, 
+            overflow: 'auto', 
+            width: '100%',
+            height: 'calc(100% - 64px)' // Subtract AppBar height
+          }}>
             {/* Show content based on role */}
             {userRole === 'developer' ? (
               <DashboardFromLayout 
@@ -335,7 +336,7 @@ const Dashboard: React.FC = () => {
                 onTitleChange={updateDashboardTitle} 
               />
             ) : (
-              <Box>
+              <Box sx={{ width: '100%', height: '100%' }}>
                 {/* Default view if role not detected - use customer view as fallback */}
                 <Typography variant="caption" color="error" sx={{ position: 'absolute', top: '70px', left: '10px', zIndex: 1000 }}>
                   Unknown role - using default view
