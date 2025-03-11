@@ -24,6 +24,7 @@ export interface Agent {
   stars: number;
   authentication: string;
   type: string;
+  output_type: string;
   configuration?: any;
   image_url?: string;
   max_execution_time_secs?: number;

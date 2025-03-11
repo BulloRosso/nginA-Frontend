@@ -172,22 +172,14 @@ const AgentInfoPage: React.FC = () => {
         />
 
         <Paper sx={{ mt: 2 }}>
-          <Typography variant="body1" 
-            sx={{ padding: '20px', 
-                  paddingBottom: 0,
-                  color: '#999'
-                }}
-            paragraph>
-            {agent.description[i18n.language as keyof typeof agent.description] || agent.description.en}
-          </Typography>
-
+       
           {/* Replace the MUI Tabs with our custom tabstrip */}
           <CustomTabstrip 
             value={tabValue} 
             onChange={(_, newValue) => setTabValue(newValue)}
           />
 
-          <TabPanel value={tabValue} index={0}>
+          <TabPanel value={tabValue} index={1}>
             <CredentialsTab 
               agent={agent} 
               onAgentUpdated={(updatedAgent) => {
@@ -196,16 +188,16 @@ const AgentInfoPage: React.FC = () => {
               }} 
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={1}>
+          <TabPanel value={tabValue} index={2}>
             <InputTab agent={agent} />
           </TabPanel>
-          <TabPanel value={tabValue} index={2}>
+          <TabPanel value={tabValue} index={3}>
             <OutputTab agent={agent} />
           </TabPanel>
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={4}>
             <ReflectionTab agent={agent} />
           </TabPanel>
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={0}>
             <CostsTab agent={agent} />
           </TabPanel>
 

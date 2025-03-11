@@ -78,11 +78,11 @@ const ArrowContainer = styled(Box)(() => ({
 
 // Order changed: Auth first, costs last
 const tabIcons = [
+  { icon: <MonetizationOnOutlinedIcon />, key: 'agents.tabs.costs' },
   { icon: <SecurityIcon />, key: 'agents.tabs.credentials' },
   { icon: <InputIcon />, key: 'agents.tabs.input' },
   { icon: <OutputIcon />, key: 'agents.tabs.output' },
-  { icon: <RemoveRedEyeOutlinedIcon />, key: 'agents.tabs.evals' },
-  { icon: <MonetizationOnOutlinedIcon />, key: 'agents.tabs.costs' }
+  { icon: <RemoveRedEyeOutlinedIcon />, key: 'agents.tabs.evals' }
 ];
 
 interface CustomTabstripProps {
