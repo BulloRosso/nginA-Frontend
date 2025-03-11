@@ -170,18 +170,6 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
             Size: {cols}x{rows}
           </Typography>
 
-          {/* Developer controls - only visible to developers */}
-          {isDeveloper && (
-            <Box sx={{ 
-              position: 'absolute', 
-              top: '5px', 
-              right: '5px',
-              display: 'flex',
-              gap: 1
-            }}>
-              <Button size="small" variant="outlined" color="primary">Edit</Button>
-            </Box>
-          )}
         </Paper>
       </Grid>
     );
@@ -266,24 +254,6 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
             {dashboard?.description?.en?.description || 'No description available'}
           </Typography>
         </Box>
-
-        {/* Only show developer actions to developers */}
-        {isDeveloper && (
-          <Box>
-            <Button 
-              variant="contained" 
-              color="primary"
-              sx={{ mr: 1 }}
-            >
-              Edit Layout
-            </Button>
-            <Button 
-              variant="outlined"
-            >
-              Settings
-            </Button>
-          </Box>
-        )}
       </Box>
 
       {/* Dashboard Content */}
