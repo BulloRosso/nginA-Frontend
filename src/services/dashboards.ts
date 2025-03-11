@@ -207,7 +207,7 @@ export class DashboardService {
 
     try {
       console.log("Fetching dashboard components from API");
-      const response = await api.get('/api/v1/dashboards/components');
+      const response = await api.get('/api/v1/dashboard/components');
       console.log("Dashboard components API response:", response);
       return response.data;
     } catch (error) {
@@ -255,7 +255,7 @@ export class DashboardService {
     }
 
     try {
-      const response = await api.get(`/api/v1/dashboards/components/${id}`);
+      const response = await api.get(`/api/v1/dashboard/components/${id}`);
       return response.data;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -280,7 +280,7 @@ export class DashboardService {
       return newComponent;
     }
 
-    const response = await api.post('/api/v1/dashboards/components', componentData);
+    const response = await api.post('/api/v1/dashboard/components', componentData);
     return response.data;
   }
 
@@ -300,7 +300,7 @@ export class DashboardService {
     }
 
     try {
-      const response = await api.put(`/api/v1/dashboards/components/${id}`, componentData);
+      const response = await api.put(`/api/v1/dashboard/components/${id}`, componentData);
       return response.data;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -315,7 +315,7 @@ export class DashboardService {
       return true; // Always successful in mock
     }
 
-    await api.delete(`/api/v1/dashboards/components/${id}`);
+    await api.delete(`/api/v1/dashboard/components/${id}`);
     return true;
   }
 

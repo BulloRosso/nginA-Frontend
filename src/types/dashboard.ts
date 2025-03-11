@@ -13,6 +13,23 @@ export interface Layout {
   templateName?: string;
 }
 
+// Define component in configuration
+export interface ConfigurationComponent {
+  id: string;
+  name: string;
+  startCol: number;
+  startRow: number;
+}
+
+// Define the configuration interface
+export interface DashboardConfiguration {
+  components?: ConfigurationComponent[];
+  refreshInterval?: number; 
+  theme?: string;
+  layout?: string;
+  // Add any other configuration properties as needed
+}
+
 export interface Style {
   layout?: Layout;
   components?: any[];
@@ -21,7 +38,7 @@ export interface Style {
 export interface Dashboard {
   id: string;
   created_at: string;
-  configuration?: any;
+  configuration?: DashboardConfiguration;  // Use the typed interface
   agents?: any;
   is_anonymous?: boolean;
   user_id?: string;
@@ -30,7 +47,7 @@ export interface Dashboard {
 }
 
 export interface DashboardCreateDto {
-  configuration?: any;
+  configuration?: DashboardConfiguration;  // Use the typed interface
   agents?: any;
   is_anonymous?: boolean;
   user_id?: string;

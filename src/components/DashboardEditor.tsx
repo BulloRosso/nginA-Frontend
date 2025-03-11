@@ -287,7 +287,13 @@ const DashboardEditor: React.FC<{
 
   // Handle dashboard selection change
   const handleDashboardChange = (_event: React.SyntheticEvent, value: DashboardOption | null) => {
+    // Clear the current layout grid immediately
+    setPlacedComponents([]);
+    setSelectedComponentId(null);
+
     if (value && value.id !== routeDashboardId) {
+      console.log("Selected dashboard:", value.id);
+
       // Navigate to the selected dashboard
       navigate(`/dashboards/edit/${value.id}`);
 
@@ -354,7 +360,14 @@ const DashboardEditor: React.FC<{
 
   // Load dashboard data if editing existing dashboard (using routeDashboardId)
   useEffect(() => {
+   
     const loadDashboard = async () => {
+
+      // Clear the grid first thing
+      setPlacedComponents([]);
+      setSelectedComponentId(null);
+      setSelectedAgents([]);
+      
       if (!routeDashboardId) {
         // Reset the form if no dashboard ID
         setTitle('');
@@ -367,53 +380,122 @@ const DashboardEditor: React.FC<{
 
       try {
         console.log(`Loading dashboard data for ID: ${routeDashboardId}`);
-        // Use mockData=true while backend is being fixed
-        const dashboard = await DashboardService.getDashboard(routeDashboardId, true);
+
+        const dashboard = await DashboardService.getDashboard(routeDashboardId);
+        console.log("Loaded dashboard:", dashboard);
+
         if (dashboard) {
           // Set basic details
           setTitle(dashboard.description?.en.title || '');
           setDescription(dashboard.description?.en.description || '');
           setLogoUrl(dashboard.style?.layout?.logoUrl || '');
 
-          // Set placed components
-          if (dashboard.style?.components) {
-            const componentsPromises = dashboard.style.components.map(async (comp: any) => {
-              try {
-                // Use mockData=true while backend is being fixed
-                const component = await DashboardService.getDashboardComponent(comp.id, true);
-                if (component) {
+          // Load components to place on the grid
+          let componentsConfig = [];
+
+          // First try to load from configuration.components (new format)
+          if (dashboard.configuration?.components && dashboard.configuration.components.length > 0) {
+            console.log("Found configuration.components:", dashboard.configuration.components);
+            componentsConfig = dashboard.configuration.components;
+          } 
+          // Fallback to style.components (old format)
+          else if (dashboard.style?.components) {
+            console.log("Falling back to style.components:", dashboard.style.components);
+            componentsConfig = dashboard.style.components;
+          }
+
+          if (componentsConfig.length > 0) {
+            try {
+              // First, load all available components to have access to their metadata
+              let componentsLibrary = availableComponents;
+
+              // If availableComponents isn't populated yet, fetch them
+              if (componentsLibrary.length === 0) {
+                componentsLibrary = await DashboardService.getDashboardComponents(false);
+                console.log("Loaded components library:", componentsLibrary);
+              }
+
+              // Map configuration components to placed components
+              const placedComponentsData = componentsConfig.map(configComp => {
+                // Find matching component in the library
+                const compDetails = componentsLibrary.find(
+                  lib => lib.id === configComp.id
+                );
+
+                if (compDetails) {
                   return {
-                    id: comp.id,
-                    startRow: comp.startRow,
-                    startCol: comp.startCol,
-                    name: component.name || '',
-                    type: component.type || '',
-                    colSpan: component.layout_cols || 2,
-                    rowSpan: component.layout_rows || 2
+                    id: configComp.id,
+                    startRow: configComp.startRow,
+                    startCol: configComp.startCol,
+                    name: configComp.name || compDetails.name || '',
+                    type: compDetails.type || '',
+                    colSpan: compDetails.layout_cols || 2,
+                    rowSpan: compDetails.layout_rows || 2
+                  };
+                } else {
+                  console.warn(`Component details not found for ${configComp.id}`);
+                  // Return with default values if component details not found
+                  return {
+                    id: configComp.id,
+                    startRow: configComp.startRow,
+                    startCol: configComp.startCol,
+                    name: configComp.name || 'Unknown Component',
+                    type: 'unknown',
+                    colSpan: 2,
+                    rowSpan: 2
                   };
                 }
-              } catch (error) {
-                console.error(`Error loading component ${comp.id}:`, error);
-              }
-              return null;
-            });
+              });
 
-            const loadedComponents = await Promise.all(componentsPromises);
-            setPlacedComponents(loadedComponents.filter(c => c !== null) as PlacedComponent[]);
+              console.log("Setting placed components:", placedComponentsData);
+              setPlacedComponents(placedComponentsData);
+            } catch (error) {
+              console.error("Error processing components:", error);
+            }
           }
 
           // Load assigned agents
-          if (dashboard.agents) {
+          if (dashboard.agents && dashboard.agents.length > 0) {
             try {
-              const agentPromises = dashboard.agents.map(async (agentInfo: any) => {
-                return await AgentService.getAgent(agentInfo.id, true);
+              console.log("Found dashboard agents:", dashboard.agents);
+
+              console.log("Loading agents via API for IDs:", dashboard.agents.map(a => a.id));
+              const agentPromises = dashboard.agents.map(async (agentInfo) => {
+                try {
+                  // First try without mock data
+                  const agent = await AgentService.getAgent(agentInfo.id, false);
+                  return agent;
+                } catch (err) {
+                  console.warn(`Could not load agent ${agentInfo.id} from API, falling back to mock:`, err);
+                  try {
+                    // Try with mock data as fallback
+                    return await AgentService.getAgent(agentInfo.id, true);
+                  } catch (fallbackErr) {
+                    console.error(`Failed to load agent ${agentInfo.id} even with mock data:`, fallbackErr);
+                    // Create a basic agent with the information we have
+                    return {
+                      id: agentInfo.id,
+                      title: typeof agentInfo.title === 'string' 
+                        ? { en: agentInfo.title, de: '' } 
+                        : agentInfo.title || { en: 'Unknown Agent', de: '' },
+                      description: { en: '', de: '' },
+                      icon_svg: ''
+                    };
+                  }
+                }
               });
 
               const loadedAgents = await Promise.all(agentPromises);
-              setSelectedAgents(loadedAgents.filter(a => a !== null) as Agent[]);
+              const validAgents = loadedAgents.filter(a => a !== null);
+              console.log("Loaded agents:", validAgents);
+              setSelectedAgents(validAgents);
+              
             } catch (error) {
-              console.error("Error loading agents:", error);
+              console.error("Error processing dashboard agents:", error);
             }
+          } else {
+            console.log("No agents found for this dashboard");
+            setSelectedAgents([]);
           }
         }
       } catch (error) {
@@ -561,6 +643,14 @@ const DashboardEditor: React.FC<{
 
   // Handle dashboard save
   const handleSave = async (): Promise<void> => {
+    // Create the configuration object with components as requested
+    const configurationComponents = placedComponents.map(comp => ({
+      id: comp.id,
+      name: comp.name,
+      startCol: comp.startCol,
+      startRow: comp.startRow
+    }));
+
     const dashboardData = {
       description: {
         en: {
@@ -568,11 +658,16 @@ const DashboardEditor: React.FC<{
           description
         }
       },
+      // Add the configuration field with components array
+      configuration: {
+        components: configurationComponents
+      },
       style: {
         layout: {
           logoUrl,
           templateName: 'default'
         },
+        // Keep the style.components for backwards compatibility
         components: placedComponents.map(comp => ({
           id: comp.id,
           startRow: comp.startRow,
