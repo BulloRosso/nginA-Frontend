@@ -28,6 +28,7 @@ export interface Operation {
   status: string | null;
   sum_credits: number | null;
   workflow_id: string | null;
+  execution_id: string | null;
   finished_at: string | null;
 }
 

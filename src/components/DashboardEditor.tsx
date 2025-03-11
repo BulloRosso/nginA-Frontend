@@ -35,6 +35,7 @@ import { Dashboard, DashboardComponent } from '../types/dashboard';
 import { Agent } from '../types/agent';
 import DashboardLayoutEditor, { PlacedComponent } from './DashboardLayoutEditor';
 import { useNavigate, useParams } from 'react-router-dom';
+import AssignUsers from './AssignUsers';
 
 // TabPanel component for handling tab content
 interface TabPanelProps {
@@ -247,11 +248,18 @@ const DashboardEditor: React.FC<{
   // Initialize navigate
   const navigate = useNavigate();
 
+  const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
+  
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
+  const handleUsersChanged = (userIds: string[]) => {
+    console.log('Users assigned to dashboard changed:', userIds);
+    setAssignedUserIds(userIds);
+  };
+  
   // Load available dashboards for the combobox
   useEffect(() => {
     const loadDashboards = async () => {
@@ -768,6 +776,7 @@ const DashboardEditor: React.FC<{
             <Tab label="Title & Description" {...a11yProps(0)} />
             <Tab label="Agents" {...a11yProps(1)} />
             <Tab label="Customer URL" {...a11yProps(2)} />
+            <Tab label="Customers" {...a11yProps(3)} />
           </Tabs>
         </Box>
 
@@ -890,6 +899,25 @@ const DashboardEditor: React.FC<{
             }}
           />
         </TabPanel>
+
+        <TabPanel value={tabValue} index={3}>
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Assign Users to Dashboard
+            </Typography>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Users assigned to this dashboard will have access to view it.
+            </Typography>
+          </Box>
+
+          {/* AssignUsers component */}
+          <AssignUsers
+            assignedUserIds={assignedUserIds}
+            onUsersChanged={handleUsersChanged}
+            title="Dashboard Users"
+          />
+        </TabPanel>
+        
       </Paper>
 
       {/* Layout Editor */}
