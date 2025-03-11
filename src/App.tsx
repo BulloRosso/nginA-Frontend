@@ -33,6 +33,7 @@ import Accountant from './pages/Accountant';
 import HumanInTheLoopReview from './components/HumanInTheLoopReview';
 import PromptEditor from './components/prompts/PromptEditor';
 import DashboardEditor from './components/DashboardEditor';
+import Dashboard from './pages/Dashboard'; 
 
 // Create the theme with error handling
 let theme;
@@ -82,7 +83,8 @@ const App = () => {
                   <Route path="/interview-token" element={<TokenHandler />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/human-in-the-loop/:id" element={<HumanInTheLoopReview />} />
-
+                  <Route path="/customer-dashboards/:dashboardId" element={<Dashboard />} />
+                  
                   {/* Auth routes - no header */}
                   <Route 
                     path="/login" 

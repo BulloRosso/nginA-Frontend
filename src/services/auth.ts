@@ -120,6 +120,61 @@ export const AuthService = {
     }
   },
 
+  async dashboardLogin(email: string, password: string): Promise<AuthResponse> {
+    try {
+      // Use fetch directly to completely bypass the axios interceptors
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://e5ede652-5081-48eb-9e93-64c13c6bbf50-00-2cmwk7hnytqn6.worf.replit.dev';
+
+      // Clean the URL if needed
+      const cleanBaseURL = apiBaseUrl.endsWith('/api/v1') 
+        ? apiBaseUrl.slice(0, -7) 
+        : apiBaseUrl;
+
+      const response = await fetch(`${cleanBaseURL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          email: email, 
+          password: password 
+        }),
+        credentials: 'include' // Important for cookies
+      });
+
+      const data = await response.json();
+
+      // Check for errors in the response
+      if (!response.ok) {
+        if (data?.detail?.code === 'email_not_confirmed') {
+          const authError = new Error(data.detail.message || 'Email not confirmed');
+          authError.name = 'EmailNotConfirmedError';
+          throw authError;
+        }
+
+        // Create a response-like error object for consistency
+        const error = new Error(data?.detail || 'Login failed');
+        (error as any).response = { 
+          status: response.status,
+          data: data
+        };
+        throw error;
+      }
+
+      console.log('Dashboard login response:', data);
+
+      // IMPORTANT: Store only in sessionStorage for dashboard
+      if (data.access_token) {
+        sessionStorage.setItem('dashboard_token', data.access_token);
+      }
+
+      return data;
+    } catch (error: any) {
+      console.error('Dashboard login error:', error);
+      throw error;
+    }
+  },
+  
   async resendConfirmationEmail(email: string): Promise<{ message: string }> {
       try {
           const response = await api.post('/api/v1/auth/resend-confirmation', {

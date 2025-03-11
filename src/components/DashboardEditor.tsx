@@ -775,7 +775,7 @@ const DashboardEditor: React.FC<{
           >
             <Tab label="Title & Description" {...a11yProps(0)} />
             <Tab label="Agents" {...a11yProps(1)} />
-            <Tab label="Customer URL" {...a11yProps(2)} />
+            <Tab label="Dashboard URL" {...a11yProps(2)} />
             <Tab label="Customers" {...a11yProps(3)} />
           </Tabs>
         </Box>
