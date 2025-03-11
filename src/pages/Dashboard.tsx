@@ -214,7 +214,7 @@ const Dashboard: React.FC = () => {
     <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Login Modal */}
       <Dialog open={openLoginModal} onClose={() => {}} maxWidth="sm" fullWidth>
-        <DialogTitle>Welcome to your automations</DialogTitle>
+        <DialogTitle>Welcome to your Automations!</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
             <TextField
@@ -258,8 +258,12 @@ const Dashboard: React.FC = () => {
         <DialogActions>
           <Button 
             onClick={handleLogin} 
-            color="primary" 
             variant="contained"
+            sx={{
+              backgroundColor: "gold",
+              marginRight: "14px",
+              marginBottom: "14px"
+            }}
             disabled={!loginData.email || !loginData.password || isLoggingIn}
           >
             {isLoggingIn ? 'Logging in...' : 'Log In'}
