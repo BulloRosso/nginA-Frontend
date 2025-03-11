@@ -489,8 +489,9 @@ export const CostsTab: React.FC<{ agent: Agent; onAgentUpdated?: (agent: Agent) 
       </Paper>
 
       {/* Tags section remains mostly unchanged */}
-      <Box sx={{ mt: 3 }}>
-        <Typography variant="h6" gutterBottom>
+      <Box sx={{ mt: 0 }}>
+        <Paper sx={{ p: 3, mt: 0, mb: 0, position: 'relative' }}>
+        <Typography variant="h6" sx={{ mt: 0, pt: 0 }} gutterBottom>
           Agent Tags
         </Typography>
 
@@ -544,6 +545,7 @@ export const CostsTab: React.FC<{ agent: Agent; onAgentUpdated?: (agent: Agent) 
             {t('tagging.input.select_button')}
           </Button>
         </Box>
+        </Paper>
       </Box>
 
       {/* Tag selection dialog */}

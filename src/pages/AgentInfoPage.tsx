@@ -139,10 +139,13 @@ const AgentInfoPage: React.FC = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ mt: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 0, position: 'relative' }}>
+        <Box sx={{ display: 'flex',
+                  border: 'solid 1px #ccc',
+                  borderRadius: '30px',
+                  alignItems: 'center', gap: 2, mb: 0, position: 'relative' }}>
           <AgentIcon agent={agent} size={60} />
 
-          <Typography variant="h4" component="h1">
+          <Typography variant="h5" color="primary" component="h1">
             {agent.title[i18n.language as keyof typeof agent.title] || agent.title.en}
           </Typography>
 
@@ -151,7 +154,8 @@ const AgentInfoPage: React.FC = () => {
             onClick={() => setTestDialogOpen(true)}
             sx={{
               position: 'absolute', 
-              right: 0,
+              right: '6px',
+              top: '4px', 
               backgroundColor: 'gold',
               '&:hover': {
                 backgroundColor: '#DAA520', // Darker gold (goldenrod)
@@ -179,7 +183,7 @@ const AgentInfoPage: React.FC = () => {
             onChange={(_, newValue) => setTabValue(newValue)}
           />
 
-          <TabPanel value={tabValue} index={1}>
+          <TabPanel value={tabValue} index={1} >
             <CredentialsTab 
               agent={agent} 
               onAgentUpdated={(updatedAgent) => {
