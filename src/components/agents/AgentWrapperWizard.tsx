@@ -274,9 +274,10 @@ const AgentWrapperWizard: React.FC<AgentWrapperWizardProps> = ({ open, onClose, 
           en: description,
           de: description // Duplicating English for now, can be updated later
         } as I18nContent,
+        type: 'atom',
         input: inputSchema,
         output: outputSchema,
-        workflow_id: agentUrl,
+        wrapped_url: agentUrl,
         authentication: finalAuthentication,
         credits_per_run: creditsPerRun,
         max_execution_time_secs: maxExecutionTime,
@@ -284,7 +285,15 @@ const AgentWrapperWizard: React.FC<AgentWrapperWizardProps> = ({ open, onClose, 
         agent_endpoint: `${import.meta.env.VITE_API_BASE_URL}/mockup-agents/wrapper/`
       };
 
-      await AgentService.createAgent(agentData);
+      // First create the agent
+      const createdAgent = await AgentService.createAgent(agentData);
+
+      // Then update the workflow_id by appending the agent's ID
+      createdAgent.agent_endpoint = createdAgent.agent_endpoint + createdAgent.id;
+
+      // Update the agent with the new workflow_id
+      await AgentService.updateAgent(createdAgent.id, createdAgent);
+      
       onSuccess();
       onClose();
     } catch (err: any) {

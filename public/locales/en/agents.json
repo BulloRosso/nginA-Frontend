@@ -5,6 +5,15 @@
     "catalog": "Katalog",
     "endpoint": "Endpoint (URL)",
     "conventions": "Conventions",
+    "started": "Started",
+    "finished": "Finished",
+    "time": {
+      "just_now": "just now",
+      "minutes_ago": "{{count}} minute(s) ago",
+      "hours_ago": "{{count}} hour(s) ago",
+      "days_ago": "{{count}} day(s) ago",
+      "weeks_ago": "{{count}} week(s) ago"
+    },
     "input_data": "Output data (of selected agent)",
     "transformed_data": "Transformed data (input data for next agent)",
     "enter_input_data": "Enter test data",

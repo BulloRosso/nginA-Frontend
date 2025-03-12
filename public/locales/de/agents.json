@@ -3,6 +3,15 @@
     "select_agent": "Agenten in Ihrem Team",
     "create_new": "Neuen Agenten erstellen",
     "catalog": "Katalog",
+    "started": "Start",
+    "finished": "Ende",
+    "time": {
+      "just_now": "jetzt",
+      "minutes_ago": "vor {{count}} Minute(n)",
+      "hours_ago": "vor {{count}} Stunde(n)",
+      "days_ago": "vor {{count}} Tag(en)",
+      "weeks_ago": "vor {{count}} Woche(n)"
+    },
     "endpoint": "Endpoint (URL)",
     "input_data": "Output (des gewählten Agenten)",
       "transformed_data": "Input (für den folgenden Agenten)",

@@ -85,15 +85,61 @@ const formatDuration = (seconds: number): string => {
   return `${minutes}m ${remainingSeconds}s`;
 };
 
-const formatDateTime = (dateString: string): string => {
-  return new Date(dateString).toLocaleString();
+const xgetRelativeTime = (dateString: string, i18n: any, _trigger?: number): string => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return "just now";
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days !== 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 2592000) {
+    const weeks = Math.floor(diffInSeconds / 604800);
+    return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
+  } else {
+    return date.toLocaleDateString();
+  }
+};
+
+// New function to get relative time from timestamp
+const getRelativeTime = (dateString: string, i18n: any, t: any, _trigger?: number): string => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+console.log('diffInSeconds:', diffInSeconds);
+  // Using i18n.t for translation
+  if (diffInSeconds < 60) {
+    return t('agents.time.just_now');
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return t('agents.time.minutes_ago', { count: minutes });
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return t('agents.time.hours_ago', { count: hours });
+  } else if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400);
+    return t('agents.time.days_ago', { count: days });
+  } else if (diffInSeconds < 2592000) {
+    const weeks = Math.floor(diffInSeconds / 604800);
+    return t('agents.time.weeks_ago', { count: weeks });
+  } else {
+    return date.toLocaleDateString(i18n.language);
+  }
 };
 
 // Number of items to display per page
 const ITEMS_PER_PAGE = 3;
 
 const TeamStatusComponent: React.FC = () => {
-  const { t } = useTranslation(['agents']);
+  const { t, i18n } = useTranslation(['agents']);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -117,6 +163,17 @@ const TeamStatusComponent: React.FC = () => {
   const [runHistoryOpen, setRunHistoryOpen] = useState(false);
   const [historyAgentId, setHistoryAgentId] = useState<string | null>(null);
   const [historyAgentTitle, setHistoryAgentTitle] = useState('');
+  // State to trigger time updates
+  const [timeUpdateTrigger, setTimeUpdateTrigger] = useState(0);
+
+  // Refresh relative times periodically
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTimeUpdateTrigger(prev => prev + 1);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleOpenRunHistory = (agentId: string, agentTitle: string) => {
     setHistoryAgentId(agentId);
@@ -124,7 +181,7 @@ const TeamStatusComponent: React.FC = () => {
     setRunHistoryOpen(true);
     handleMenuClose();
   };
-  
+
   // Always define these functions outside of conditional blocks
   const isAgentInTeam = (agentId: string): boolean => {
     return team?.agents?.members?.some(member => member.agentId === agentId) ?? false;
@@ -452,14 +509,14 @@ const TeamStatusComponent: React.FC = () => {
                         {agentStatus.lastRun && (
                           <Box display="flex" flexWrap="wrap" sx={{ gap: 0 }}>
                             <Typography variant="div" color="text.secondary">
-                              Started: {formatDateTime(agentStatus.lastRun.startedAt)}
+                              {t('agents.started')}: {getRelativeTime(agentStatus.lastRun.startedAt, i18n, t, timeUpdateTrigger)}
                             </Typography><br />
-                            {agentStatus.lastRun.finishedAt && (
+                            {agentStatus.lastRun.finishedAt && 
+                              (new Date(agentStatus.lastRun.finishedAt).getTime() - new Date(agentStatus.lastRun.startedAt).getTime() >= 60000) && (
                               <Typography variant="div" color="text.secondary">
-                                Finished: {formatDateTime(agentStatus.lastRun.finishedAt)}
+                                {t('agents.finished')}: {getRelativeTime(agentStatus.lastRun.finishedAt, i18n, t, timeUpdateTrigger)}
                               </Typography>
                             )}
-                            
                           </Box>
                         )}
                       </Box>
@@ -489,7 +546,7 @@ const TeamStatusComponent: React.FC = () => {
                             }
                           }}
                         >
-                          Results
+                          {t('agents.results')}
                         </Button>
 
                         <IconButton 
@@ -536,7 +593,7 @@ const TeamStatusComponent: React.FC = () => {
             showLastButton
           />
           <Typography variant="body2" color="text.secondary" sx={{ mt: '6px', ml: 2 }}>
-            Showing {paginatedAgents.length} of {teamStatus.agents.length} agents
+            {t('agents.showing')} {paginatedAgents.length} {t('agents.of')} {teamStatus.agents.length} {t('agents.agents')}
           </Typography>
         </Box>
         <Box sx={{
@@ -601,7 +658,7 @@ const TeamStatusComponent: React.FC = () => {
           }}
         >
           <LaunchIcon fontSize="small" sx={{ mr: 1 }} />
-          Show n8n workflow
+          {t('agents.show_workflow')}
         </MenuItem>
         <MenuItem 
           onClick={() => {
@@ -614,7 +671,7 @@ const TeamStatusComponent: React.FC = () => {
           }}
         >
           <HistoryIcon fontSize="small" sx={{ mr: 1 }} />
-          Run History
+          {t('agents.run_history')}
         </MenuItem>
       </Menu>
 
@@ -627,7 +684,7 @@ const TeamStatusComponent: React.FC = () => {
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0 }}>
-            <Typography variant="h6">Run Results</Typography>
+            <Typography variant="h6">{t('agents.run_results')}</Typography>
             <IconButton onClick={() => setResultsDialogOpen(false)}><CloseIcon /></IconButton>
           </Box>
         </DialogTitle>
@@ -636,8 +693,8 @@ const TeamStatusComponent: React.FC = () => {
             {/* Tab for switching between JSON results and Scratchpad Files */}
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0 }}>
               <Tabs value={activeResultsTab} onChange={(_, newValue) => setActiveResultsTab(newValue)}>
-                <Tab label="Results" />
-                <Tab label="Scratchpad Files" />
+                <Tab label={t('agents.results')} />
+                <Tab label={t('agents.scratchpad_files')} />
               </Tabs>
             </Box>
 
@@ -660,10 +717,10 @@ const TeamStatusComponent: React.FC = () => {
               ) : (
                 <Alert severity="info" sx={{ mt: 2 }}>
                   <Typography variant="body1">
-                    No files available for this run. The run ID is missing from the results data.
+                    {t('agents.no_files_available')}
                   </Typography>
                   <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-                    To fix this issue, the backend API needs to include a run_id field in the lastRun object.
+                    {t('agents.run_id_missing')}
                   </Typography>
                 </Alert>
               )
