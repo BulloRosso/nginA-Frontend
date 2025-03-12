@@ -500,16 +500,13 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
         {/* Title based on current view */}
         <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
           {activeAgentId === INPUT_ID 
-            ? 'Input Files' 
+            ? 'Input Files uploaded by User' 
             : `${agentTabs.find(tab => tab.id === activeAgentId)?.title || 'Agent'} ${t('agents.output')}`}
         </Typography>
 
         {/* Show uploaded input files first when on input view */}
         {activeAgentId === INPUT_ID && inputFiles.length > 0 && (
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
-              Uploaded Files
-            </Typography>
             <Grid container spacing={2} sx={{ mb: 3 }}>
               {inputFiles.map((file) => (
                 <Grid item key={file.id} xs={6} sm={4} md={3} lg={2}>
@@ -567,7 +564,6 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
                 </Grid>
               ))}
             </Grid>
-            <Divider sx={{ mb: 3 }} />
           </Box>
         )}
 
