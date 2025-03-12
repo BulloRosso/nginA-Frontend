@@ -426,12 +426,15 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
 
  
   return (
-    <Box sx={{ width: '100%', display: 'flex' }}>
+    <Box sx={{ width: '100%', 
+              borderWidth: 1, 
+              minHeight: '600px',
+              borderColor: 'divider',
+              display: 'flex' }}>
       {/* Vertical agent sidebar with input icon at the top */}
       <Box sx={{ 
         width: '80px', 
-        borderLeft: 1, 
-        borderColor: 'divider',
+        minHeight: '600px',
         bgcolor: '#f5f5f5'
       }}>
         <List>
