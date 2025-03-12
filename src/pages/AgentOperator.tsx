@@ -4,31 +4,13 @@ import {
   Container, 
   Paper, 
   Typography, 
-  List, 
-  ListItem,
-  Avatar,
-  Button,
   Box,
-  CircularProgress,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Grid,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Stack,
-  Snackbar,
-  Alert
+  CircularProgress
 } from '@mui/material';
 
 import { de, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import BuyProduct from '../components/modals/BuyProduct';
 import './styles/GoldButton.css';
-import InvitationDialog from '../components/modals/InvitationDialog';
 import SupportBot from '../components/SupportBot';
 import TeamStatus from '../components/agents/TeamStatus';
 

@@ -14,6 +14,10 @@
       "days_ago": "{{count}} day(s) ago",
       "weeks_ago": "{{count}} week(s) ago"
     },
+    "run_results": "Scratchpad Browser",
+    "results": "Results",
+    "output": "output",
+    "scratchpad_files": "Files",
     "input_data": "Output data (of selected agent)",
     "transformed_data": "Transformed data (input data for next agent)",
     "enter_input_data": "Enter test data",

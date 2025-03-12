@@ -12,6 +12,10 @@
       "days_ago": "vor {{count}} Tag(en)",
       "weeks_ago": "vor {{count}} Woche(n)"
     },
+    "run_results": "Scratchpad Browser",
+    "results": "Ergebnisse",
+    "output": "output",
+    "scratchpad_files": "Dateien",
     "endpoint": "Endpoint (URL)",
     "input_data": "Output (des gewählten Agenten)",
       "transformed_data": "Input (für den folgenden Agenten)",

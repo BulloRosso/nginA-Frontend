@@ -114,7 +114,7 @@ const getRelativeTime = (dateString: string, i18n: any, t: any, _trigger?: numbe
   const now = new Date();
   const date = new Date(dateString);
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-console.log('diffInSeconds:', diffInSeconds);
+
   // Using i18n.t for translation
   if (diffInSeconds < 60) {
     return t('agents.time.just_now');
@@ -139,7 +139,7 @@ console.log('diffInSeconds:', diffInSeconds);
 const ITEMS_PER_PAGE = 3;
 
 const TeamStatusComponent: React.FC = () => {
-  const { t, i18n } = useTranslation(['agents']);
+  const { t, i18n } = useTranslation(['agents' , 'common']);
   const navigate = useNavigate();
   const { user } = useAuth();
 

@@ -1,5 +1,5 @@
 // src/components/ScratchpadBrowser.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Grid,
@@ -14,13 +14,18 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  Tooltip
+  Tooltip,
+  LinearProgress,
+  Divider
 } from '@mui/material';
 import { 
   Description as DocumentIcon, 
   Close, 
   Image as ImageIcon,
-  OpenInNew as OpenInNewIcon
+  OpenInNew as OpenInNewIcon,
+  CloudUpload as CloudUploadIcon,
+  Inbox as InboxIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
 import Editor from '@monaco-editor/react';
 import { ScratchpadService } from '../services/scratchpad';
@@ -30,6 +35,8 @@ import { Agent } from '../types/agent';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import AgentIcon from './agents/AgentIcon';
+import { useDropzone } from 'react-dropzone';
+import { useTranslation } from 'react-i18next';
 
 interface ScratchpadBrowserProps {
   runId: string;
@@ -42,15 +49,32 @@ interface AgentTab {
   agent?: Agent;
 }
 
+interface UploadingFile {
+  id: string;
+  name: string;
+  progress: number;
+  size: number;
+  error?: string;
+}
+
 const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
+  // Define special IDs
+  const INPUT_ID = 'input';
+  const { t, i18n } = useTranslation(['agents', 'common'])
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [agentTabs, setAgentTabs] = useState<AgentTab[]>([]);
+  const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0);
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<ScratchpadFile | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
   const [loadingContent, setLoadingContent] = useState<boolean>(false);
+
+  // State for file uploads
+  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [inputFiles, setInputFiles] = useState<ScratchpadFile[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -62,41 +86,70 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
 
       if (!scratchpadData.files || Object.keys(scratchpadData.files).length === 0) {
         setAgentTabs([]);
-        setLoading(false);
-        return;
+        // Don't return yet - we still need to check for input files
       }
 
-      // Fetch agent details for each agent_id
-      const agentIds = Object.keys(scratchpadData.files);
-      const agentDetailsPromises = agentIds.map(id => AgentService.getAgent(id));
+      // Fetch agent details for each agent_id if we have agent files
+      if (scratchpadData.files && Object.keys(scratchpadData.files).length > 0) {
+        const agentIds = Object.keys(scratchpadData.files);
+        const agentDetailsPromises = agentIds.map(id => AgentService.getAgent(id));
 
-      try {
-        const agentDetails = await Promise.all(agentDetailsPromises);
+        try {
+          const agentDetails = await Promise.all(agentDetailsPromises);
 
-        // Create tabs with agent details
-        const tabs: AgentTab[] = agentDetails.map((agent: Agent) => ({
-          id: agent.id,
-          title: agent.title.en || agent.id,
-          files: scratchpadData.files[agent.id] || [],
-          agent: agent
-        }));
+          // Create tabs with agent details
+          const tabs: AgentTab[] = agentDetails.map((agent: Agent) => ({
+            id: agent.id,
+            title: agent.title.en || agent.id,
+            files: scratchpadData.files[agent.id] || [],
+            agent: agent
+          }));
 
-        setAgentTabs(tabs);
+          setAgentTabs(tabs);
 
-        // Set first tab as selected if available
-        if (tabs.length > 0 && selectedTabIndex >= tabs.length) {
-          setSelectedTabIndex(0);
+          // Set first tab as selected if available
+          if (tabs.length > 0 && selectedTabIndex >= tabs.length) {
+            setSelectedTabIndex(0);
+          }
+
+          // Set the first agent as active by default if we don't have input files
+          if (tabs.length > 0 && activeAgentId === null) {
+            setActiveAgentId(tabs[0].id);
+          }
+        } catch (agentError) {
+          // If agent details fail, use agent IDs as fallback
+          const tabs: AgentTab[] = agentIds.map(id => ({
+            id,
+            title: `Agent ${id.substring(0, 8)}`,
+            files: scratchpadData.files[id] || []
+          }));
+
+          setAgentTabs(tabs);
+          console.error('Error fetching agent details:', agentError);
         }
-      } catch (agentError) {
-        // If agent details fail, use agent IDs as fallback
-        const tabs: AgentTab[] = agentIds.map(id => ({
-          id,
-          title: `Agent ${id.substring(0, 8)}`,
-          files: scratchpadData.files[id] || []
-        }));
+      }
 
-        setAgentTabs(tabs);
-        console.error('Error fetching agent details:', agentError);
+      // Fetch input files if they exist
+      try {
+        // The "input" is represented as a special path in the ScratchpadService
+        // We need to fetch these files separately
+        const inputData = await ScratchpadService.getInputFiles(runId);
+        console.log('Fetched input files:', inputData);
+
+        if (inputData && inputData.length > 0) {
+          setInputFiles(inputData);
+
+          // If we have input files and no active agent is set, default to input view
+          if (activeAgentId === null) {
+            setActiveAgentId(INPUT_ID);
+          }
+        } else {
+          console.log('No input files found');
+          setInputFiles([]);
+        }
+      } catch (inputError) {
+        console.error('Error fetching input files:', inputError);
+        setInputFiles([]);
       }
     } catch (err) {
       setError('Failed to load scratchpad files. Please try again.');
@@ -112,8 +165,21 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
     }
   }, [runId]);
 
-  const handleTabChange = (index: number) => {
-    setSelectedTabIndex(index);
+  // Ensure activeAgentId is set after data is loaded
+  useEffect(() => {
+    // If we have input files but no activeAgentId, set it to input
+    if (activeAgentId === null) {
+      if (inputFiles.length > 0) {
+        setActiveAgentId(INPUT_ID);
+      } else if (agentTabs.length > 0) {
+        // Otherwise set to first agent if available
+        setActiveAgentId(agentTabs[0].id);
+      }
+    }
+  }, [agentTabs, inputFiles, activeAgentId]);
+
+  const handleTabChange = (agentId: string) => {
+    setActiveAgentId(agentId);
   };
 
   const handleFileClick = async (file: ScratchpadFile) => {
@@ -142,6 +208,74 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
       window.open(file.metadata.url, '_blank');
     }
   };
+
+  // File upload handling
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setUploadError(null);
+
+    // Create tracking objects for each file
+    const newUploadingFiles = acceptedFiles.map(file => ({
+      id: Math.random().toString(36).substring(2, 11),
+      name: file.name,
+      progress: 0,
+      size: file.size
+    }));
+
+    setUploadingFiles(prev => [...prev, ...newUploadingFiles]);
+
+    // Upload each file and track progress
+    acceptedFiles.forEach((file, index) => {
+      const uploadId = newUploadingFiles[index].id;
+
+      // Start upload
+      ScratchpadService.uploadInputFile(runId, file, (progress) => {
+        // Update progress for this specific file
+        setUploadingFiles(prev => 
+          prev.map(f => 
+            f.id === uploadId ? {...f, progress} : f
+          )
+        );
+      })
+      .then(() => {
+        // Mark as complete
+        setUploadingFiles(prev => 
+          prev.map(f => 
+            f.id === uploadId ? {...f, progress: 100} : f
+          )
+        );
+
+        // After a successful upload, refresh the input files list
+        setTimeout(() => {
+          // Remove completed file from upload list
+          setUploadingFiles(prev => prev.filter(f => f.id !== uploadId));
+
+          // Refresh input files
+          ScratchpadService.getInputFiles(runId)
+            .then(inputData => {
+              setInputFiles(inputData);
+            })
+            .catch(err => {
+              console.error('Error refreshing input files:', err);
+            });
+        }, 1000); // Allow time to see 100% before removing
+      })
+      .catch(err => {
+        console.error('Error uploading file:', err);
+        setUploadingFiles(prev => 
+          prev.map(f => 
+            f.id === uploadId ? {...f, progress: 0, error: 'Upload failed'} : f
+          )
+        );
+        setUploadError(`Failed to upload ${file.name}: ${err.message}`);
+      });
+    });
+  }, [runId]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
+    onDrop,
+    // Prevent the browser from opening the file
+    noClick: uploadingFiles.length > 0
+  });
 
   const closeDrawer = () => {
     setDrawerOpen(false);
@@ -276,7 +410,7 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
     );
   }
 
-  if (agentTabs.length === 0) {
+  if (agentTabs.length === 0 && inputFiles.length === 0) {
     return (
       <Alert severity="info" sx={{ m: 2 }}>
         No files found for this run.
@@ -284,11 +418,16 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
     );
   }
 
-  const currentAgentFiles = agentTabs[selectedTabIndex]?.files || [];
+  // Get files for the current active agent
+  const currentAgentFiles = 
+    activeAgentId === INPUT_ID 
+      ? inputFiles 
+      : agentTabs.find(tab => tab.id === activeAgentId)?.files || [];
 
+ 
   return (
     <Box sx={{ width: '100%', display: 'flex' }}>
-      {/* Vertical agent sidebar */}
+      {/* Vertical agent sidebar with input icon at the top */}
       <Box sx={{ 
         width: '80px', 
         borderLeft: 1, 
@@ -296,24 +435,49 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
         bgcolor: '#f5f5f5'
       }}>
         <List>
-          {agentTabs.map((tab, index) => (
+          {/* Input files icon at the top */}
+          <ListItem key="input-files" disablePadding>
+            <Tooltip title="Input Files" placement="right">
+              <ListItemButton 
+                selected={activeAgentId === INPUT_ID}
+                onClick={() => handleTabChange(INPUT_ID)}
+                sx={{ 
+                  display: 'flex',
+                  justifyContent: 'center',
+                  py: 2,
+                  px: 1,
+                  bgcolor: activeAgentId === INPUT_ID ? 'rgba(0, 0, 0, 0.04)' : 'transparent'
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 'auto', justifyContent: 'center' }}>
+                  <CloudUploadIcon color={activeAgentId === INPUT_ID ? "primary" : "inherit"} />
+                </ListItemIcon>
+              </ListItemButton>
+            </Tooltip>
+          </ListItem>
+
+          {/* Divider between input icon and agent icons */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mx: 2, my: 1 }} />
+
+          {/* Agent icons */}
+          {agentTabs.map((tab) => (
             <ListItem key={tab.id} disablePadding>
               <Tooltip title={tab.title} placement="right">
                 <ListItemButton 
-                  selected={selectedTabIndex === index}
-                  onClick={() => handleTabChange(index)}
+                  selected={activeAgentId === tab.id}
+                  onClick={() => handleTabChange(tab.id)}
                   sx={{ 
                     display: 'flex',
                     justifyContent: 'center',
                     py: 2,
                     px: 1,
-                    bgcolor: selectedTabIndex === index ? 'rgba(0, 0, 0, 0.04)' : 'transparent'
+                    bgcolor: activeAgentId === tab.id ? 'rgba(0, 0, 0, 0.04)' : 'transparent'
                   }}
                 >
                   {tab.agent ? (
                     <AgentIcon 
                       agent={tab.agent} 
-                      isActive={selectedTabIndex === index}
+                      isActive={activeAgentId === tab.id}
                       size={40}
                     />
                   ) : (
@@ -330,40 +494,195 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
 
       {/* Content area */}
       <Box sx={{ flex: 1, p: 2 }}>
-        <Grid container spacing={2}>
-          {currentAgentFiles.map((file) => (
-            <Grid item key={file.id} xs={6} sm={4} md={3} lg={2}>
-              <Paper
-                elevation={2}
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  height: 140,
-                  cursor: 'pointer'
-                }}
-                onClick={() => handleFileClick(file)}
-              >
-                <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                  {getFileIcon(file)}
-                </Box>
-                <Typography 
-                  variant="caption" 
-                  align="center"
-                  noWrap
-                  sx={{ 
-                    width: '100%',
-                    textOverflow: 'ellipsis',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {getDisplayFilename(file.filename)}
-                </Typography>
-              </Paper>
+        {/* Title based on current view */}
+        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+          {activeAgentId === INPUT_ID 
+            ? 'Input Files' 
+            : `${agentTabs.find(tab => tab.id === activeAgentId)?.title || 'Agent'} ${t('agents.output')}`}
+        </Typography>
+
+        {/* Show uploaded input files first when on input view */}
+        {activeAgentId === INPUT_ID && inputFiles.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
+              Uploaded Files
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              {inputFiles.map((file) => (
+                <Grid item key={file.id} xs={6} sm={4} md={3} lg={2}>
+                  <Paper
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      height: 140,
+                      position: 'relative',
+                      cursor: 'pointer',
+                      '&:hover .delete-icon': {
+                        display: 'flex'
+                      }
+                    }}
+                    onClick={() => handleFileClick(file)}
+                  >
+                    <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                      {getFileIcon(file)}
+                    </Box>
+                    <Typography 
+                      variant="caption" 
+                      align="center"
+                      noWrap
+                      sx={{ 
+                        width: '100%',
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      {getDisplayFilename(file.filename)}
+                    </Typography>
+                    {/* Delete icon overlay - can be implemented in the future */}
+                    {/* <Box 
+                      className="delete-icon"
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        display: 'none',
+                        p: 0.5,
+                        bgcolor: 'rgba(255, 255, 255, 0.8)',
+                        borderRadius: '0 0 0 4px'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle delete functionality here
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" color="error" />
+                    </Box> */}
+                  </Paper>
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
+            <Divider sx={{ mb: 3 }} />
+          </Box>
+        )}
+
+        {/* Show upload area only for input files */}
+        {activeAgentId === INPUT_ID && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
+              Upload New Files
+            </Typography>
+            {/* File drop zone */}
+            <Box
+              {...getRootProps()}
+              sx={{
+                border: '2px dashed',
+                borderColor: isDragActive ? 'primary.main' : 'grey.400',
+                borderRadius: 2,
+                p: 3,
+                mb: 3,
+                textAlign: 'center',
+                bgcolor: isDragActive ? 'action.hover' : 'background.paper',
+                minHeight: '150px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                cursor: uploadingFiles.length > 0 ? 'default' : 'pointer'
+              }}
+            >
+              <input {...getInputProps()} />
+
+              {uploadingFiles.length > 0 ? (
+                <Box sx={{ width: '100%' }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Uploading {uploadingFiles.length} {uploadingFiles.length === 1 ? 'file' : 'files'}
+                  </Typography>
+
+                  {uploadingFiles.map(file => (
+                    <Box key={file.id} sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{file.name}</span>
+                        <span>{Math.round(file.progress)}%</span>
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={file.progress} 
+                        sx={{ 
+                          mt: 0.5,
+                          height: 8,
+                          borderRadius: 1,
+                          bgcolor: file.error ? 'error.light' : undefined 
+                        }} 
+                      />
+                      {file.error && (
+                        <Typography variant="caption" color="error">
+                          {file.error}
+                        </Typography>
+                      )}
+                    </Box>
+                  ))}
+                </Box>
+              ) : (
+                <>
+                  <InboxIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="h6" component="p">
+                    Drop files here, or click to select
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Upload files to be processed by the agents
+                  </Typography>
+                </>
+              )}
+            </Box>
+
+            {uploadError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {uploadError}
+              </Alert>
+            )}
+          </Box>
+        )}
+
+        {/* File grid for agent files */}
+        {activeAgentId !== INPUT_ID && (
+          <Grid container spacing={2}>
+            {currentAgentFiles.map((file) => (
+              <Grid item key={file.id} xs={6} sm={4} md={3} lg={2}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    height: 140,
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => handleFileClick(file)}
+                >
+                  <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                    {getFileIcon(file)}
+                  </Box>
+                  <Typography 
+                    variant="caption" 
+                    align="center"
+                    noWrap
+                    sx={{ 
+                      width: '100%',
+                      textOverflow: 'ellipsis',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {getDisplayFilename(file.filename)}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Box>
 
       {/* File content drawer */}
