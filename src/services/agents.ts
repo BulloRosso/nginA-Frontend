@@ -546,7 +546,7 @@ export class AgentService {
         }
       };
     }
-
+    console.log('testAgent', agentId, inputData);
     const response = await api.post(`/api/v1/agents/${agentId}/test`, { input: inputData });
     return response.data;
   }

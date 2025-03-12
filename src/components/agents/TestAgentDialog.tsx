@@ -55,7 +55,7 @@ export const TestAgentDialog: React.FC<TestAgentDialogProps> = ({
       setError(null);
 
       const startTime = Date.now();
-      const response = await AgentService.testAgent(agent.agent_endpoint, formData);
+      const response = await AgentService.testAgent(agent.id, formData);
       const endTime = Date.now();
       setResponseTime((endTime - startTime) / 1000); // Convert to seconds
       setResponse(response);
