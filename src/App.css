@@ -9,3 +9,64 @@ main {
   font-weight: 400;
   font-style: normal;
 }
+
+/* Make the dashboard container take full viewport height */
+.dashboard-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Dashboard header area */
+.dashboard-header {
+  flex-shrink: 0;
+}
+
+/* Dashboard content area */
+.dashboard-content {
+  flex-grow: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Table styling for full height */
+.dashboard-table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.dashboard-table tbody {
+  height: 100%;
+}
+
+/* Full height component styling */
+.full-height-component {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.full-height-component .component-content {
+  flex-grow: 1;
+  overflow: auto;
+}
+
+/* Apply to specific component types that need to stretch vertically */
+.chatbot-tile {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chatbot-tile .messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.chatbot-tile .input-container {
+  flex-shrink: 0;
+  padding: 8px;
+}

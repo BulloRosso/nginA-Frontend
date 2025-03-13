@@ -10,8 +10,12 @@ import {
   TextField,
   Stack
 } from '@mui/material';
+import { 
+  Description as FileIcon
+} from '@mui/icons-material';
 import ScratchpadBrowser from '../ScratchpadBrowser';
 import eventBus from './DashboardEventBus';
+import TileHeader from './TileHeader';
 
 interface ScratchpadBrowserSettings {
   title?: string;
@@ -20,11 +24,13 @@ interface ScratchpadBrowserSettings {
 interface TileScratchpadBrowserProps {
   settings?: ScratchpadBrowserSettings;
   renderMode?: 'dashboard' | 'settings';
+  fullHeight?: boolean;
 }
 
 const TileScratchpadBrowser: React.FC<TileScratchpadBrowserProps> = ({ 
   settings = {}, 
-  renderMode = 'dashboard' 
+  renderMode = 'dashboard',
+  fullHeight = false
 }) => {
   const [localSettings, setLocalSettings] = useState<ScratchpadBrowserSettings>({
     title: settings.title || 'Scratchpad Browser'
@@ -86,12 +92,33 @@ const TileScratchpadBrowser: React.FC<TileScratchpadBrowserProps> = ({
 
   // Dashboard view
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ borderBottom: '1px solid #eee', mb: 2, p: 2 }}>
-        <Typography variant="h6">{localSettings.title}</Typography>
-      </Box>
+    <Box 
+      sx={{ 
+        height: fullHeight ? '100%' : 'auto', 
+        display: 'flex', 
+        flexDirection: 'column' 
+      }}
+      className="scratchpad-browser-tile"
+    >
+      {/* Using the common TileHeader component */}
+      <TileHeader 
+        title={localSettings.title || 'Scratchpad Browser'}
+        
+        showInfo={true}
+        infoText="Browse files created during agent runs"
+       
+      />
 
-      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+      <Box 
+        sx={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          p: 2,
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+        className="scratchpad-content"
+      >
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
             <CircularProgress />

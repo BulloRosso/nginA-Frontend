@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import DashboardService from '../../services/dashboards';
 import { Dashboard, DashboardComponent } from '../../types/dashboard';
-import DashboardRenderer from './DashboardRenderer';
+import TableBasedDashboardRenderer from './TableBasedDashboardRenderer';
 
 interface DashboardFromLayoutProps {
   dashboardId: string;
@@ -43,7 +43,6 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
         console.log('Fetching dashboard with ID:', dashboardId);
 
         // Use the dashboard service to fetch dashboard data
-        // For development, we can use mock data by passing true as the second parameter
         const dashboardData = await DashboardService.getDashboard(dashboardId, false);
 
         console.log('Dashboard data received:', dashboardData);
@@ -103,13 +102,23 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
         return component;
       }
 
+      // Ensure settings object exists
+      const settings = component.settings || {};
+
+      // Handle agentId in both places (inside settings and directly on component)
+      if (component.agentId && !settings.agentId) {
+        settings.agentId = component.agentId;
+      }
+
       // Return merged component data
       return {
         ...componentDef,
         ...component,
+        // Make sure settings is preserved and properly merged
+        settings: settings,
         // Ensure layout information is preserved
-        layout_cols: component.layout_cols || componentDef.layout_cols || 3,
-        layout_rows: component.layout_rows || componentDef.layout_rows || 2,
+        layout_cols: component.layout_cols || componentDef.layout_cols || 1,
+        layout_rows: component.layout_rows || componentDef.layout_rows || 1,
       };
     });
   };
@@ -133,21 +142,29 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
   }
 
   return (
-    <Box sx={{ 
-      height: '100%', 
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      {/* Dashboard description */}
-      <Box sx={{ 
-        p: 3, 
-        borderBottom: '1px solid #eaeaea',
+    <Box 
+      sx={{ 
+        height: '100vh', 
+        width: '100%',
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%'
-      }}>
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}
+      className="dashboard-container"
+    >
+      {/* Dashboard description */}
+      <Box 
+        sx={{ 
+          p: 3, 
+          borderBottom: '1px solid #eaeaea',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          flexShrink: 0
+        }}
+        className="dashboard-header"
+      >
         <Box>
           <Typography variant="body1">
             {dashboard?.description?.en?.description || 'No description available'}
@@ -156,13 +173,17 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
       </Box>
 
       {/* Dashboard Content */}
-      <Box sx={{ 
-        flexGrow: 1, 
-        width: '100%', 
-        overflow: 'auto'
-      }}>
+      <Box 
+        sx={{ 
+          flexGrow: 1, 
+          width: '100%', 
+          overflow: 'hidden',
+          display: 'flex'
+        }}
+        className="dashboard-content"
+      >
         {dashboard && (
-          <DashboardRenderer
+          <TableBasedDashboardRenderer
             dashboardId={dashboardId}
             configuration={{
               components: enrichComponentsWithDefinitions()

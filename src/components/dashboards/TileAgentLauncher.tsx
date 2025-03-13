@@ -20,7 +20,8 @@ import {
   FilePresent as FileIcon,
   PlayArrow as RunIcon,
   Pause as PauseIcon,
-  BackHand as BackHandIcon
+  BackHand as BackHandIcon,
+  SmartToy as RobotIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { AgentService } from '../../services/agents';
@@ -29,6 +30,7 @@ import RunParameters from '../agents/RunParameters';
 import AgentIcon from '../agents/AgentIcon';
 import { Agent } from '../../types/agent';
 import eventBus from './DashboardEventBus';
+import TileHeader from './TileHeader';
 
 interface AgentLauncherSettings {
   title?: string;
@@ -38,6 +40,7 @@ interface AgentLauncherSettings {
 interface TileAgentLauncherProps {
   settings?: AgentLauncherSettings;
   renderMode?: 'dashboard' | 'settings';
+  fullHeight?: boolean;
 }
 
 // Number of items to display per page (default)
@@ -45,7 +48,8 @@ const DEFAULT_ITEMS_PER_PAGE = 3;
 
 const TileAgentLauncher: React.FC<TileAgentLauncherProps> = ({ 
   settings = {}, 
-  renderMode = 'dashboard' 
+  renderMode = 'dashboard',
+  fullHeight = false
 }) => {
   const { t, i18n } = useTranslation(['agents', 'common']);
 
@@ -267,30 +271,64 @@ const TileAgentLauncher: React.FC<TileAgentLauncherProps> = ({
   // Dashboard view
   if (loading) {
     return (
-      <Box sx={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <CircularProgress />
+      <Box 
+        sx={{ 
+          height: fullHeight ? '100%' : 'auto', 
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}
+      >
+        <TileHeader 
+          title={localSettings.title}
+         
+        />
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
-        <Typography variant="h6" gutterBottom>{localSettings.title}</Typography>
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
+      <Box 
+        sx={{ 
+          height: fullHeight ? '100%' : 'auto', 
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}
+      >
+        <TileHeader 
+          title={localSettings.title}
+          
+        />
+        <Box sx={{ flex: 1, p: 2 }}>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        </Box>
       </Box>
     );
   }
 
   if (!teamStatus || teamStatus.agents.length === 0) {
     return (
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
-        <Typography variant="h6" gutterBottom>{localSettings.title}</Typography>
-        <Alert severity="info" sx={{ mt: 2, backgroundColor: '#d9f1f2' }}>
-          {t('agents.no_agents_in_team')}
-        </Alert>
+      <Box 
+        sx={{ 
+          height: fullHeight ? '100%' : 'auto', 
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}
+      >
+        <TileHeader 
+          title={localSettings.title}
+          
+        />
+        <Box sx={{ flex: 1, p: 2 }}>
+          <Alert severity="info" sx={{ mt: 2, backgroundColor: '#d9f1f2' }}>
+            {t('agents.no_agents_in_team')}
+          </Alert>
+        </Box>
       </Box>
     );
   }
@@ -298,123 +336,137 @@ const TileAgentLauncher: React.FC<TileAgentLauncherProps> = ({
   const paginatedAgents = getPaginatedData();
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 2 }}>
-      <Typography variant="h6" gutterBottom>{localSettings.title}</Typography>
+    <Box 
+      sx={{ 
+        height: fullHeight ? '100%' : 'auto', 
+        display: 'flex', 
+        flexDirection: 'column'
+      }}
+      className="agent-launcher-tile"
+    >
+      <TileHeader 
+        title={localSettings.title}
+      
+        showInfo={true}
+        infoText="Launch AI agents and view their outputs"
+      />
 
-      <Stack spacing={2} sx={{ mb: 2, flex: 1, overflow: 'auto' }}>
-        {paginatedAgents.map((agentStatus: any) => {
-          const agent = getAgentForStatusItem(agentStatus.title);
-          const active = isActiveRun(agentStatus.lastRun);
-          const hasResults = hasValidResults(agentStatus.lastRun);
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}>
+        <Stack spacing={2} sx={{ mb: 2, flex: 1, overflow: 'auto' }}>
+          {paginatedAgents.map((agentStatus: any) => {
+            const agent = getAgentForStatusItem(agentStatus.title);
+            const active = isActiveRun(agentStatus.lastRun);
+            const hasResults = hasValidResults(agentStatus.lastRun);
 
-          return (
-            <Card 
-              key={agentStatus.title} 
-              variant="outlined" 
-              sx={{ 
-                cursor: hasResults ? 'pointer' : 'default',
-                transition: 'box-shadow 0.3s',
-                '&:hover': {
-                  boxShadow: hasResults ? 3 : 0
-                }
-              }}
-              onClick={() => hasResults && handleAgentSelect(agentStatus)}
-            >
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box display="flex" alignItems="center" gap={2}>
-                  {agent && (
-                    <AgentIcon 
-                      agent={agent} 
-                      isActive={false} 
-                      size={40} 
-                    />
-                  )}
-
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1">{agentStatus.title}</Typography>
-
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Chip 
-                        size="small"
-                        color={active ? 'success' : undefined}
-                        label={agentStatus.lastRun?.status || 'Never run'}
-                        sx={{ 
-                          backgroundColor: getStatusColor(agentStatus.lastRun?.status),
-                          color: getStatusFontColor(agentStatus.lastRun?.status)
-                        }}
+            return (
+              <Card 
+                key={agentStatus.title} 
+                variant="outlined" 
+                sx={{ 
+                  cursor: hasResults ? 'pointer' : 'default',
+                  transition: 'box-shadow 0.3s',
+                  '&:hover': {
+                    boxShadow: hasResults ? 3 : 0
+                  }
+                }}
+                onClick={() => hasResults && handleAgentSelect(agentStatus)}
+              >
+                <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <Box display="flex" alignItems="center" gap={2}>
+                    {agent && (
+                      <AgentIcon 
+                        agent={agent} 
+                        isActive={false} 
+                        size={40} 
                       />
-
-                      {agentStatus.lastRun && (
-                        <Typography variant="body2" color="text.secondary">
-                          &#128336;{formatDuration(agentStatus.lastRun.duration)}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-
-                  <Box display="flex" flexDirection="column" alignItems="flex-end">
-                    {agentStatus.lastRun && (
-                      <Typography variant="body2" color="text.secondary">
-                        {t('agents.started')}: {getRelativeTime(agentStatus.lastRun.startedAt)}
-                      </Typography>
                     )}
 
-                    <Box display="flex" alignItems="center" gap={1} mt={1}>
-                      <Tooltip title={t('agents.results')}>
-                        <span> {/* Wrapper needed for disabled buttons */}
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle1">{agentStatus.title}</Typography>
+
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Chip 
+                          size="small"
+                          color={active ? 'success' : undefined}
+                          label={agentStatus.lastRun?.status || 'Never run'}
+                          sx={{ 
+                            backgroundColor: getStatusColor(agentStatus.lastRun?.status),
+                            color: getStatusFontColor(agentStatus.lastRun?.status)
+                          }}
+                        />
+
+                        {agentStatus.lastRun && (
+                          <Typography variant="body2" color="text.secondary">
+                            &#128336;{formatDuration(agentStatus.lastRun.duration)}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+
+                    <Box display="flex" flexDirection="column" alignItems="flex-end">
+                      {agentStatus.lastRun && (
+                        <Typography variant="body2" color="text.secondary">
+                          {t('agents.started')}: {getRelativeTime(agentStatus.lastRun.startedAt)}
+                        </Typography>
+                      )}
+
+                      <Box display="flex" alignItems="center" gap={1} mt={1}>
+                        <Tooltip title={t('agents.results')}>
+                          <span> {/* Wrapper needed for disabled buttons */}
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              startIcon={<FileIcon />}
+                              disabled={!hasResults}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (hasResults) {
+                                  handleAgentSelect(agentStatus);
+                                }
+                              }}
+                            >
+                              {t('agents.results')}
+                            </Button>
+                          </span>
+                        </Tooltip>
+
+                        <Tooltip title={active ? t('agents.running') : t('agents.run')}>
                           <Button
-                            variant="outlined"
+                            variant="contained"
                             size="small"
-                            startIcon={<FileIcon />}
-                            disabled={!hasResults}
+                            sx={{ backgroundColor: active ? 'warning' : 'gold' }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (hasResults) {
-                                handleAgentSelect(agentStatus);
+                              if (agent) {
+                                handleStartRun(agent);
                               }
                             }}
                           >
-                            {t('agents.results')}
+                            {getFabIcon(agentStatus.lastRun?.status)}
                           </Button>
-                        </span>
-                      </Tooltip>
-
-                      <Tooltip title={active ? t('agents.running') : t('agents.run')}>
-                        <Button
-                          variant="contained"
-                          size="small"
-                          color={active ? 'warning' : 'success'}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (agent) {
-                              handleStartRun(agent);
-                            }
-                          }}
-                        >
-                          {getFabIcon(agentStatus.lastRun?.status)}
-                        </Button>
-                      </Tooltip>
+                        </Tooltip>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </Stack>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Stack>
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
-          <Pagination 
-            count={totalPages} 
-            page={page} 
-            onChange={handlePageChange} 
-            color="primary" 
-            size="small"
-          />
-        </Box>
-      )}
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+            <Pagination 
+              count={totalPages} 
+              page={page} 
+              onChange={handlePageChange} 
+              color="primary" 
+              size="small"
+            />
+          </Box>
+        )}
+      </Box>
 
       {/* Run Parameters Dialog */}
       {currentAgent && (

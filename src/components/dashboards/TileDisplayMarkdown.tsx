@@ -9,8 +9,13 @@ import {
   FormLabel,
   Stack
 } from '@mui/material';
+import {
+  MarkdownIcon as MarkdownIcon,
+  TextFields as TextIcon
+} from '@mui/icons-material';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import TileHeader from './TileHeader';
 
 interface DisplayMarkdownSettings {
   markdown?: string;
@@ -22,12 +27,14 @@ interface TileDisplayMarkdownProps {
   settings?: DisplayMarkdownSettings;
   renderMode?: 'dashboard' | 'settings';
   onSettingsChange?: (settings: DisplayMarkdownSettings) => void;
+  fullHeight?: boolean;
 }
 
 const TileDisplayMarkdown: React.FC<TileDisplayMarkdownProps> = ({ 
   settings = {}, 
   renderMode = 'dashboard',
-  onSettingsChange
+  onSettingsChange,
+  fullHeight = false
 }) => {
   const [localSettings, setLocalSettings] = useState<DisplayMarkdownSettings>({
     markdown: settings.markdown || '# Hello World\n\nThis is a markdown component. Edit settings to customize.',
@@ -133,18 +140,27 @@ const TileDisplayMarkdown: React.FC<TileDisplayMarkdownProps> = ({
 
   // Dashboard view
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {localSettings.title && (
-        <Box sx={{ borderBottom: '1px solid #eee', mb: 2, pb: 1 }}>
-          <Typography variant="h6">{localSettings.title}</Typography>
-        </Box>
-      )}
+    <Box 
+      sx={{ 
+        height: fullHeight ? '100%' : 'auto', 
+        display: 'flex', 
+        flexDirection: 'column' 
+      }}
+      className="markdown-tile"
+    >
+      {/* Using the common TileHeader component */}
+      <TileHeader 
+        title={localSettings.title || 'Markdown'}
+        icon={<TextIcon sx={{ mr: 1 }} />}
+        showInfo={false}
+      />
 
       <Box
         className="markdown-content"
         sx={{
           flex: 1,
           overflow: 'auto',
+          p: 2,
           '& img': { maxWidth: '100%' },
           '& pre': { 
             backgroundColor: '#f5f5f5',

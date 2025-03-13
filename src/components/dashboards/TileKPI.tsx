@@ -10,8 +10,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Stack,
-  IconButton
+  Stack
 } from '@mui/material';
 import {
   AttachMoney as MoneyIcon,
@@ -24,6 +23,7 @@ import {
   Storage as StorageIcon
 } from '@mui/icons-material';
 import api from '../../services/api';
+import TileHeader from './TileHeader';
 
 interface KPISettings {
   agentId?: string;
@@ -31,23 +31,27 @@ interface KPISettings {
   label?: string;
   color?: string;
   icon?: string;
+  showHeader?: boolean;
 }
 
 interface TileKPIProps {
   settings?: KPISettings;
   renderMode?: 'dashboard' | 'settings';
+  fullHeight?: boolean;
 }
 
 const TileKPI: React.FC<TileKPIProps> = ({ 
   settings = {}, 
-  renderMode = 'dashboard' 
+  renderMode = 'dashboard',
+  fullHeight = false
 }) => {
   const [localSettings, setLocalSettings] = useState<KPISettings>({
     agentId: settings.agentId || '',
     kpiName: settings.kpiName || 'total_sales',
     label: settings.label || 'Total Sales',
     color: settings.color || '#2196f3',
-    icon: settings.icon || 'money'
+    icon: settings.icon || 'money',
+    showHeader: settings.showHeader !== undefined ? settings.showHeader : false
   });
 
   const [kpiValue, setKpiValue] = useState<number | null>(null);
@@ -58,14 +62,14 @@ const TileKPI: React.FC<TileKPIProps> = ({
 
   // Icons mapping
   const icons = {
-    money: <MoneyIcon sx={{ fontSize: 36 }} />,
-    chart: <ChartIcon sx={{ fontSize: 36 }} />,
-    time: <TimeIcon sx={{ fontSize: 36 }} />,
-    person: <PersonIcon sx={{ fontSize: 36 }} />,
-    check: <CheckIcon sx={{ fontSize: 36 }} />,
-    error: <ErrorIcon sx={{ fontSize: 36 }} />,
-    warning: <WarningIcon sx={{ fontSize: 36 }} />,
-    storage: <StorageIcon sx={{ fontSize: 36 }} />
+    money: <MoneyIcon fontSize="inherit" />,
+    chart: <ChartIcon fontSize="inherit" />,
+    time: <TimeIcon fontSize="inherit" />,
+    person: <PersonIcon fontSize="inherit" />,
+    check: <CheckIcon fontSize="inherit" />,
+    error: <ErrorIcon fontSize="inherit" />,
+    warning: <WarningIcon fontSize="inherit" />,
+    storage: <StorageIcon fontSize="inherit" />
   };
 
   // Format KPI value
@@ -154,7 +158,7 @@ const TileKPI: React.FC<TileKPIProps> = ({
     }
   }, [renderMode, localSettings.kpiName, settings.label]);
 
-  const handleSettingChange = (field: keyof KPISettings, value: string) => {
+  const handleSettingChange = (field: keyof KPISettings, value: any) => {
     setLocalSettings(prev => ({
       ...prev,
       [field]: value
@@ -256,71 +260,25 @@ const TileKPI: React.FC<TileKPIProps> = ({
               <MenuItem value="storage">Storage</MenuItem>
             </Select>
           </FormControl>
+
+          <FormControl fullWidth>
+            <FormLabel>Show Header</FormLabel>
+            <Select
+              value={localSettings.showHeader ? 'true' : 'false'}
+              onChange={(e) => handleSettingChange('showHeader', e.target.value === 'true')}
+              size="small"
+            >
+              <MenuItem value="true">Yes</MenuItem>
+              <MenuItem value="false">No</MenuItem>
+            </Select>
+            <Typography variant="caption" color="text.secondary">
+              KPIs look best without headers, but you can enable one if needed
+            </Typography>
+          </FormControl>
         </Stack>
       </Box>
     );
   }
-
-  // Dashboard view
-  return (
-    <Box 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-        p: 2
-      }}
-    >
-      {/* Icon in the upper left */}
-      <Box 
-        sx={{ 
-          position: 'absolute', 
-          top: '12px', 
-          left: '12px',
-          color: localSettings.color
-        }}
-      >
-        {localSettings.icon && icons[localSettings.icon as keyof typeof icons]}
-      </Box>
-
-      {loading ? (
-        <CircularProgress />
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
-        <>
-          <Typography 
-            variant="h2" 
-            component="div" 
-            align="center"
-            sx={{ 
-              fontWeight: 'bold',
-              color: localSettings.color,
-              fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' }
-            }}
-          >
-            {formatKPIValue(kpiValue)}
-          </Typography>
-
-          <Typography 
-            variant="body1" 
-            component="div" 
-            align="center"
-            sx={{ 
-              mt: 1,
-              color: 'text.secondary',
-              fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' }
-            }}
-          >
-            {localSettings.label}
-          </Typography>
-        </>
-      )}
-    </Box>
-  );
 };
 
 export default TileKPI;

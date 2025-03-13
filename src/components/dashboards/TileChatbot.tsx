@@ -14,13 +14,18 @@ import {
   MenuItem,
   InputLabel
 } from '@mui/material';
-import { Send as SendIcon } from '@mui/icons-material';
+import { 
+  Send as SendIcon,
+  Chat as ChatIcon 
+} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import api from '../../services/api';
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from './DashboardEventBus';
+import TileHeader from './TileHeader';
+import ComponentDebugInfo from './ComponentDebugInfo';
 
 interface Message {
   text: string;
@@ -37,11 +42,13 @@ interface ChatbotSettings {
 interface TileChatbotProps {
   settings?: ChatbotSettings;
   renderMode?: 'dashboard' | 'settings';
+  fullHeight?: boolean;
 }
 
 const TileChatbot: React.FC<TileChatbotProps> = ({ 
   settings = {}, 
-  renderMode = 'dashboard' 
+  renderMode = 'dashboard',
+  fullHeight = false 
 }) => {
   const { t, i18n } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -53,10 +60,16 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
 
   // Local settings with defaults
   const [localSettings, setLocalSettings] = useState<ChatbotSettings>({
-    agentId: settings.agentId || '',
-    title: settings.title || 'Chat Support',
-    sessionId: settings.sessionId || uuidv4()
+    agentId: settings?.agentId || '',
+    title: settings?.title || 'Chat Support',
+    sessionId: settings?.sessionId || uuidv4()
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[TileChatbot] Settings received:', settings);
+    console.log('[TileChatbot] AgentId:', localSettings.agentId);
+  }, [settings]);
 
   // Fetch available agents for the settings form
   useEffect(() => {
@@ -266,25 +279,41 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
 
   // Dashboard view
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <Box 
-        sx={{ 
-          p: 2,
-          borderBottom: '1px solid #eee',
-          bgcolor: '#f2f0e8',
-        }}
-      >
-        <Typography variant="h6">{localSettings.title}</Typography>
-      </Box>
+    <Box 
+      sx={{ 
+        height: fullHeight ? '100%' : 'auto', 
+        display: 'flex', 
+        flexDirection: 'column',
+        position: 'relative'
+      }}
+      className="chatbot-tile"
+    >
+      {/* Debug info component - only shows in development */}
+      <ComponentDebugInfo 
+        componentId={settings?.id || 'unknown'}
+        componentName="TileChatbot"
+        settings={settings}
+      />
+
+      {/* Using the common TileHeader component */}
+      <TileHeader 
+        title={localSettings.title || 'Chat Support'}
+        icon={<ChatIcon sx={{ mr: 1 }} />}
+        showInfo={true}
+        infoText="Chat with our AI assistant"
+        bgcolor="#f2f0e8"
+      />
 
       {/* Messages Area */}
-      <Box sx={{ 
-        flex: 1, 
-        overflow: 'auto', 
-        p: 2,
-        backgroundColor: '#f5f5f5',
-      }}>
+      <Box 
+        sx={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          p: 2,
+          backgroundColor: '#f5f5f5',
+        }}
+        className="messages-container"
+      >
         <Stack spacing={2}>
           {messages.map((message, index) => (
             <Box
@@ -331,7 +360,15 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
       </Box>
 
       {/* Input Area */}
-      <Box sx={{ display: 'flex', gap: 1, p: 2, borderTop: '1px solid #eee' }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          gap: 1, 
+          p: 2, 
+          borderTop: '1px solid #eee' 
+        }}
+        className="input-container"
+      >
         <TextField
           fullWidth
           value={inputMessage}

@@ -13,6 +13,13 @@ export interface Layout {
   templateName?: string;
 }
 
+// Component settings interface
+export interface ComponentSettings {
+  [key: string]: any;
+  agentId?: string;
+  title?: string;
+}
+
 // Define component in configuration
 export interface ConfigurationComponent {
   id: string;
@@ -23,6 +30,8 @@ export interface ConfigurationComponent {
   layout_rows?: number;  // Added property for row span
   type?: string;
   react_component_name?: string;
+  settings?: ComponentSettings;
+  agentId?: string; // For backward compatibility
 }
 
 // Define the configuration interface
