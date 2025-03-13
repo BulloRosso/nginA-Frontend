@@ -4,13 +4,20 @@ Self-hostable agentic workflows.
 
 ![nginA Use Case](/docs/high-level-overview.jpg) 
 
-nginA is based on n8n (workflow engine for technical teams) and Supabase (data storage as a service).
+nginA is based on n8n (open source workflow engine for technical teams) and Supabase (data storage as a service).
+
+One of the main reasons for building nginA was the requirement for the solution to be **self-hostable** and open source.
+
 
 ### The Use Case
 
 The main use of nginA provide a user interface for AI agents (you can use non-AI services as well).
 
-For compliance reasons nginA is **self-hostable** (one of the main reasons for building it).
+AI agents are implementations of SOPs (Standard Operating Procedures) and must be:
+* Reliable
+* Auditable/Observable
+* Billable
+* Secure 
 
 ![nginA Use Case](/docs/ngina-usecase.jpg) 
 
@@ -18,9 +25,19 @@ nginA has two main setups to deliver AI workflows, content or chatbots to other 
 
 ### Provide AI workflows internal users
 
+Key users design agentic workflows for their department and publish dashboards
+or push automations for internal users.
+
+Internal users must authenticate before accessing dashboards.
+
 ![nginA Use Case 1](/docs/use-case-1.jpg) 
 
 ### Provide AI workflows for customers
+
+The agency's developer(s) design agentic workflows for customers and publish dashboards
+or push automations.
+
+Customers must authenticate before accessing dashboards.
 
 ![nginA Use Case 1](/docs/use-case-2.jpg) 
 
