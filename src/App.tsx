@@ -34,6 +34,7 @@ import HumanInTheLoopReview from './components/HumanInTheLoopReview';
 import PromptEditor from './components/prompts/PromptEditor';
 import DashboardEditor from './components/DashboardEditor';
 import Dashboard from './pages/Dashboard'; 
+import AuthGuard from './components/auth/AuthGuard';
 
 // Create the theme with error handling
 let theme;
@@ -58,11 +59,15 @@ try {
 }
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    return <Navigate to="/login" />;
-  }
-  return <AppLayout>{children}</AppLayout>;
+  return (
+    <AuthGuard>
+      <AppLayout>
+        <VerifiedRoute>
+          {children}
+        </VerifiedRoute>
+      </AppLayout>
+    </AuthGuard>
+  );
 };
 
 const App = () => {
