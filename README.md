@@ -4,10 +4,9 @@ Self-hostable agentic workflows.
 
 ![nginA Use Case](/docs/high-level-overview.jpg) 
 
-nginA is based on n8n (open source workflow engine for technical teams) and Supabase (data storage as a service).
+nginA is based on **n8n** (open source workflow engine for technical teams) and **Supabase** (data storage as a service).
 
 One of the main reasons for building nginA was the requirement for the solution to be **self-hostable** and open source.
-
 
 ### The Use Case
 
