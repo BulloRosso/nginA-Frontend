@@ -37,6 +37,7 @@ interface ChatbotSettings {
   agentId?: string;
   title?: string;
   sessionId?: string;
+  welcomeMessage?: string; // Added welcomeMessage setting
 }
 
 interface TileChatbotProps {
@@ -62,7 +63,8 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
   const [localSettings, setLocalSettings] = useState<ChatbotSettings>({
     agentId: settings?.agentId || '',
     title: settings?.title || 'Chat Support',
-    sessionId: settings?.sessionId || uuidv4()
+    sessionId: settings?.sessionId || uuidv4(),
+    welcomeMessage: settings?.welcomeMessage || 'Welcome! How can I assist you today?' // Default welcome message
   });
 
   // Debug logging
@@ -114,14 +116,14 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
 
       fetchAgentEndpoint();
 
-      // Add initial welcome message
+      // Add initial welcome message - use custom welcome message if provided
       setMessages([{
-        text: `Welcome to ${localSettings.title}! How can I assist you today?`,
+        text: localSettings.welcomeMessage || `Welcome to ${localSettings.title}! How can I assist you today?`,
         isUser: false,
         timestamp: new Date()
       }]);
     }
-  }, [localSettings.agentId, localSettings.title, renderMode]);
+  }, [localSettings.agentId, localSettings.title, localSettings.welcomeMessage, renderMode]);
 
   useEffect(() => {
     scrollToBottom();
@@ -272,6 +274,22 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
               ))}
             </Select>
           </FormControl>
+
+          {/* Added welcome message setting */}
+          <FormControl fullWidth>
+            <FormLabel>Welcome Message</FormLabel>
+            <TextField
+              value={localSettings.welcomeMessage}
+              onChange={(e) => handleSettingChange('welcomeMessage', e.target.value)}
+              placeholder="Enter welcome message"
+              fullWidth
+              multiline
+              rows={2}
+              margin="dense"
+              size="small"
+              helperText="Custom welcome message shown at the start of the conversation"
+            />
+          </FormControl>
         </Stack>
       </Box>
     );
@@ -295,13 +313,13 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
         settings={settings}
       />
 
-      {/* Using the common TileHeader component */}
+      {/* Using the common TileHeader component with no background and hidden icon */}
       <TileHeader 
         title={localSettings.title || 'Chat Support'}
         icon={<ChatIcon sx={{ mr: 1 }} />}
-        showInfo={true}
-        infoText="Chat with our AI assistant"
-        bgcolor="#f2f0e8"
+        showInfo={false}
+        hideIcon={true} // Hide the icon
+        bgcolor="transparent" // No background color
       />
 
       {/* Messages Area */}
@@ -310,7 +328,9 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
           flex: 1, 
           overflow: 'auto', 
           p: 2,
+          marginTop: 0,
           backgroundColor: '#f5f5f5',
+          minHeight: '100%', // Ensure there's at least some space for messages
         }}
         className="messages-container"
       >
@@ -359,13 +379,15 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
         </Stack>
       </Box>
 
-      {/* Input Area */}
+      {/* Input Area - with sticky positioning */}
       <Box 
         sx={{ 
           display: 'flex', 
           gap: 1, 
           p: 2, 
-          borderTop: '1px solid #eee' 
+          borderTop: '1px solid #eee',
+          mt: 'auto', // Push to the bottom
+          backgroundColor: '#fff' // Ensure background is opaque
         }}
         className="input-container"
       >

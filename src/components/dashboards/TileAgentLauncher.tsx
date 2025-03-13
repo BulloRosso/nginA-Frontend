@@ -377,7 +377,7 @@ const TileAgentLauncher: React.FC<TileAgentLauncherProps> = ({
                       <AgentIcon 
                         agent={agent} 
                         isActive={false} 
-                        size={40} 
+                        size={60}
                       />
                     )}
 

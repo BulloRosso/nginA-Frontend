@@ -70,3 +70,101 @@ main {
   flex-shrink: 0;
   padding: 8px;
 }
+
+/* Styles for the chatbot tile */
+
+/* Main container - ensure it fills its allocated space */
+.chatbot-tile {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 300px; /* Minimum height to ensure footer is visible */
+}
+
+/* Header - fixed height */
+.chatbot-tile .tile-header {
+  flex-shrink: 0;
+}
+
+/* Messages container - flexible space */
+.chatbot-tile .messages-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input container - fixed at bottom */
+.chatbot-tile .input-container {
+  flex-shrink: 0;
+  border-top: 1px solid #eee;
+  background-color: #fff;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Message bubbles */
+.chatbot-tile .messages-container .MuiPaper-root {
+  max-width: 70%;
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* User message */
+.chatbot-tile .messages-container .MuiPaper-root.user-message {
+  background-color: #1eb3b7;
+  color: white;
+}
+
+/* Bot message */
+.chatbot-tile .messages-container .MuiPaper-root.bot-message {
+  background-color: white;
+  color: black;
+}
+
+/* Message timestamp */
+.chatbot-tile .message-timestamp {
+  font-size: 0.7rem;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+
+/* Ensure the last message doesn't get cut off */
+.chatbot-tile .messages-container .MuiStack-root {
+  padding-bottom: 12px;
+}
+
+/* Send button styling */
+.chatbot-tile .send-button {
+  background-color: gold;
+  color: black;
+}
+
+.chatbot-tile .send-button:hover {
+  background-color: #ffd700;
+}
+
+.chatbot-tile .send-button.Mui-disabled {
+  background-color: #cccccc;
+  color: white;
+}
+
+/* Empty state - when no messages yet */
+.chatbot-tile .empty-state {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Loading animation */
+.chatbot-tile .loading {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}

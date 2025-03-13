@@ -113,7 +113,7 @@ const TileScratchpadBrowser: React.FC<TileScratchpadBrowserProps> = ({
         sx={{ 
           flex: 1, 
           overflow: 'auto', 
-          p: 2,
+          p: 0,
           display: 'flex',
           flexDirection: 'column'
         }}

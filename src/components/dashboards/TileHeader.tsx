@@ -19,6 +19,7 @@ interface TileHeaderProps {
   onInfoClick?: () => void;
   color?: string;
   bgcolor?: string;
+  hideIcon?: boolean; // New prop to hide the icon
 }
 
 const TileHeader: React.FC<TileHeaderProps> = ({
@@ -33,6 +34,7 @@ const TileHeader: React.FC<TileHeaderProps> = ({
   onInfoClick,
   color = 'inherit',
   bgcolor = 'transparent',
+  hideIcon = false, // Default to showing the icon
 }) => {
   return (
     <Box 
@@ -42,14 +44,14 @@ const TileHeader: React.FC<TileHeaderProps> = ({
         justifyContent: 'space-between',
         borderBottom: '1px solid #eee',
         p: 2,
-        mb: 1,
+        mb: 0,
         bgcolor: bgcolor,
         color: color,
       }}
       className="tile-header"
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        {icon && (
+        {!hideIcon && icon && (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {icon}
           </Box>

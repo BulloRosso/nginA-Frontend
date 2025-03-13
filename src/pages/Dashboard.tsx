@@ -271,7 +271,7 @@ const Dashboard: React.FC = () => {
       {isAuthenticated && dashboardId && (
         <>
           {/* App Bar with Burger Menu */}
-          <AppBar position="static">
+          <AppBar>
             <Toolbar>
               <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 {dashboardTitle}
