@@ -1,32 +1,19 @@
+// src/components/dashboards/DashboardFromLayout.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
-  CircularProgress, 
-  Paper, 
-  Button,
-  Grid,
-  Container
+  CircularProgress,
+  Paper
 } from '@mui/material';
-import dashboardApi from '../../services/dashboardApi';
-import DashboardService from '../../services/dashboardService';
+import DashboardService from '../../services/dashboards';
 import { Dashboard, DashboardComponent } from '../../types/dashboard';
+import DashboardRenderer from './DashboardRenderer';
 
 interface DashboardFromLayoutProps {
   dashboardId: string;
   isDeveloper?: boolean;
   onTitleChange?: (title: string) => void;
-}
-
-// Position and render a component within our grid system
-interface PositionedComponent {
-  component: any;
-  gridPosition: {
-    startCol: number;
-    startRow: number;
-    cols: number;
-    rows: number;
-  };
 }
 
 const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({ 
@@ -57,14 +44,14 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
 
         // Use the dashboard service to fetch dashboard data
         // For development, we can use mock data by passing true as the second parameter
-        const dashboardData = await DashboardService.getDashboard(dashboardId, false); // Using mock data for now
+        const dashboardData = await DashboardService.getDashboard(dashboardId, false);
 
         console.log('Dashboard data received:', dashboardData);
 
         setDashboard(dashboardData);
 
         // Also fetch component definitions
-        const componentDefinitions = await DashboardService.getDashboardComponents(false); // Using mock data for now
+        const componentDefinitions = await DashboardService.getDashboardComponents(false);
         setComponents(componentDefinitions);
 
         // Update title in parent component
@@ -100,119 +87,31 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
     }
   }, [dashboardId, onTitleChange]);
 
-  // Function to merge dashboard component configuration with component definitions
-  const mergeComponentData = (dashboardComponent: any): any => {
-    if (!components || components.length === 0) return dashboardComponent;
-
-    // Find the component definition by react_component_name or id
-    const componentDef = components.find(
-      c => c.react_component_name === dashboardComponent.react_component_name || 
-           c.id === dashboardComponent.id
-    );
-
-    if (!componentDef) return dashboardComponent;
-
-    // Merge the dashboard component with its definition
-    // Priority: dashboard component props override component definition
-    return {
-      ...componentDef,
-      ...dashboardComponent,
-      // Ensure we have layout information
-      layout_cols: dashboardComponent.layout_cols || componentDef.layout_cols || 3,
-      layout_rows: dashboardComponent.layout_rows || componentDef.layout_rows || 2,
-    };
-  };
-
-  // Function to render a component in the grid
-  const renderGridComponent = (component: any) => {
-    const mergedComponent = mergeComponentData(component);
-    const cols = mergedComponent.layout_cols || 3;
-    const rows = mergedComponent.layout_rows || 2;
-
-    // Calculate height based on rows (approximate)
-    const height = rows * 90; // 90px per row as a baseline
-
-    return (
-      <Grid 
-        item 
-        xs={12} 
-        sm={cols <= 4 ? 6 : 12} 
-        md={cols} 
-        key={mergedComponent.id}
-        sx={{
-          height: `${height}px`,
-          position: 'relative',
-          marginBottom: 2
-        }}
-      >
-        <Paper
-          sx={{
-            p: 2,
-            height: '100%',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-          elevation={2}
-        >
-          <Typography variant="h6">{mergedComponent.name}</Typography>
-
-          {/* Component type indicator */}
-          <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-            {mergedComponent.type || 'Unknown type'}
-          </Typography>
-
-          {/* Here you would render the actual component based on its type */}
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            Component: {mergedComponent.react_component_name || 'Unknown'}
-          </Typography>
-
-          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: 'text.secondary' }}>
-            Size: {cols}x{rows}
-          </Typography>
-
-        </Paper>
-      </Grid>
-    );
-  };
-
-  // Function to render dashboard components by row using MUI Grid
-  const renderDashboardComponents = () => {
-    if (!dashboard?.configuration?.components || dashboard.configuration.components.length === 0) {
-      return (
-        <Box sx={{ p: 3, width: '100%' }}>
-          <Typography variant="body1">No components configured for this dashboard.</Typography>
-        </Box>
-      );
+  // Enrich components with their definitions
+  const enrichComponentsWithDefinitions = () => {
+    if (!dashboard?.configuration?.components || !components.length) {
+      return dashboard?.configuration?.components || [];
     }
 
-    // Group components by row
-    const componentsByRow: { [key: number]: any[] } = {};
+    return dashboard.configuration.components.map(component => {
+      // Find matching component definition
+      const componentDef = components.find(
+        c => c.react_component_name === component.react_component_name || c.id === component.id
+      );
 
-    dashboard.configuration.components.forEach(component => {
-      const rowIndex = component.startRow || 1;
-      if (!componentsByRow[rowIndex]) {
-        componentsByRow[rowIndex] = [];
+      if (!componentDef) {
+        return component;
       }
-      componentsByRow[rowIndex].push(component);
+
+      // Return merged component data
+      return {
+        ...componentDef,
+        ...component,
+        // Ensure layout information is preserved
+        layout_cols: component.layout_cols || componentDef.layout_cols || 3,
+        layout_rows: component.layout_rows || componentDef.layout_rows || 2,
+      };
     });
-
-    // Sort rows by index
-    const rows = Object.keys(componentsByRow)
-      .map(Number)
-      .sort((a, b) => a - b);
-
-    return (
-      <Box sx={{ p: 3, width: '100%' }}>
-        {rows.map(rowIndex => (
-          <Grid container spacing={2} key={`row-${rowIndex}`}>
-            {/* Sort components within row by column */}
-            {componentsByRow[rowIndex]
-              .sort((a, b) => (a.startCol || 1) - (b.startCol || 1))
-              .map(component => renderGridComponent(component))}
-          </Grid>
-        ))}
-      </Box>
-    );
   };
 
   if (loading) {
@@ -262,7 +161,16 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
         width: '100%', 
         overflow: 'auto'
       }}>
-        {renderDashboardComponents()}
+        {dashboard && (
+          <DashboardRenderer
+            dashboardId={dashboardId}
+            configuration={{
+              components: enrichComponentsWithDefinitions()
+            }}
+            isLoading={loading}
+            error={error}
+          />
+        )}
       </Box>
     </Box>
   );

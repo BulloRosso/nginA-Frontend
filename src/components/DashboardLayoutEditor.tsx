@@ -8,12 +8,18 @@ import {
   ListItem,
   Card,
   CardContent,
-  Divider,
-  TextField
+  Divider
 } from '@mui/material';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DashboardComponent } from '../types/dashboard';
+import { useTranslation } from 'react-i18next';
+// Import all tile components for settings rendering
+import TileDisplayMarkdown from './dashboards/TileDisplayMarkdown';
+import TileChatbot from './dashboards/TileChatbot';
+import TileKPI from './dashboards/TileKPI';
+import TileScratchpadBrowser from './dashboards/TileScratchpadBrowser';
+import TileAgentLauncher from './dashboards/TileAgentLauncher';
 
 // Define the type for a component placed on the grid
 export interface PlacedComponent {
@@ -24,6 +30,7 @@ export interface PlacedComponent {
   type: string;
   colSpan: number;
   rowSpan: number;
+  settings?: any;
 }
 
 // Define type for drag item
@@ -34,10 +41,25 @@ interface DragItem {
   placedIndex?: string;
 }
 
+// Map of component types to their React components
+const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
+  'TileDisplayMarkdown': TileDisplayMarkdown,
+  'DisplayMarkdown': TileDisplayMarkdown,
+  'TileChatbot': TileChatbot,
+  'Chatbot': TileChatbot,
+  'TileKPI': TileKPI,
+  'KPI': TileKPI,
+  'TileScratchpadBrowser': TileScratchpadBrowser,
+  'ScratchpadBrowser': TileScratchpadBrowser,
+  'TileAgentLauncher': TileAgentLauncher,
+  'AgentLauncher': TileAgentLauncher
+};
+
 // DraggableComponent for components in the component list
 const DraggableComponent: React.FC<{
   component: DashboardComponent;
 }> = ({ component }) => {
+  const { t, i18n } = useTranslation('agents');
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'COMPONENT',
     item: { 
@@ -65,7 +87,7 @@ const DraggableComponent: React.FC<{
       }}
     >
       <CardContent sx={{ width: '100%' }}>
-        <Typography variant="body2">{component.name.toUpperCase()}</Typography>
+        <Typography variant="body2">{t('agents.dashboards.' + component.name)}</Typography>
         <Typography variant="caption" color="text.secondary">
           {component.type} ({component.layout_cols}x{component.layout_rows})
         </Typography>
@@ -81,6 +103,7 @@ const PlacedComponentItem: React.FC<{
   onSelect: () => void;
   onRemove: () => void;
 }> = ({ component, isSelected, onSelect, onRemove }) => {
+  const { t, i18n } = useTranslation('agents');
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'PLACED_COMPONENT',
     item: { 
@@ -90,7 +113,8 @@ const PlacedComponentItem: React.FC<{
         name: component.name,
         type: component.type,
         layout_cols: component.colSpan,
-        layout_rows: component.rowSpan
+        layout_rows: component.rowSpan,
+        settings: component.settings
       },
       isPlaced: true,
       placedIndex: component.id 
@@ -98,7 +122,7 @@ const PlacedComponentItem: React.FC<{
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-  }), [component.id, component.name, component.type, component.colSpan, component.rowSpan]);  // Add dependencies
+  }), [component.id, component.name, component.type, component.colSpan, component.rowSpan, component.settings]);  // Add dependencies
 
   return (
     <Paper
@@ -125,7 +149,7 @@ const PlacedComponentItem: React.FC<{
       }}
     >
       <Typography variant="body2" align="center">
-        {component.name.toUpperCase()}
+        {t('agents.dashboards.' + component.name)}
       </Typography>
       <Typography variant="caption" color="text.secondary" align="center">
         ({component.type})
@@ -249,6 +273,7 @@ interface DashboardLayoutEditorProps {
   onMoveComponent: (id: string, row: number, col: number) => void;
   onSelectComponent: (id: string | null) => void;
   onRemoveComponent: (id: string) => void;
+  onUpdateComponentSettings?: (id: string, settings: any) => void;
 }
 
 const DashboardLayoutEditor: React.FC<DashboardLayoutEditorProps> = ({
@@ -258,8 +283,12 @@ const DashboardLayoutEditor: React.FC<DashboardLayoutEditorProps> = ({
   onAddComponent,
   onMoveComponent,
   onSelectComponent,
-  onRemoveComponent
+  onRemoveComponent,
+  onUpdateComponentSettings
 }) => {
+  // State to track the component settings during edit
+  const [componentSettings, setComponentSettings] = useState<any>({});
+  const { t, i18n } = useTranslation('agents');
   // Set up keyboard event handler for arrow keys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -308,6 +337,24 @@ const DashboardLayoutEditor: React.FC<DashboardLayoutEditorProps> = ({
     };
   }, [selectedComponentId, placedComponents, onMoveComponent]);
 
+  // Update componentSettings when the selected component changes
+  useEffect(() => {
+    if (selectedComponentId) {
+      const selectedComponent = placedComponents.find(comp => comp.id === selectedComponentId);
+      if (selectedComponent) {
+        setComponentSettings(selectedComponent.settings || {});
+      }
+    }
+  }, [selectedComponentId, placedComponents]);
+
+  // Handle settings change
+  const handleSettingsChange = (newSettings: any) => {
+    setComponentSettings(newSettings);
+    if (selectedComponentId && onUpdateComponentSettings) {
+      onUpdateComponentSettings(selectedComponentId, newSettings);
+    }
+  };
+
   // Create grid cells for the layout
   const gridCells = [];
   for (let row = 0; row < 8; row++) {
@@ -341,6 +388,27 @@ const DashboardLayoutEditor: React.FC<DashboardLayoutEditorProps> = ({
 
   // Find the selected component
   const selectedComponent = placedComponents.find(comp => comp.id === selectedComponentId);
+
+  // Determine which component renderer to use for settings
+  const getComponentType = (componentName: string): React.ComponentType<any> | null => {
+    // First check in the map
+    if (COMPONENT_MAP[componentName]) {
+      return COMPONENT_MAP[componentName];
+    }
+
+    // Try with 'Tile' prefix if not found
+    if (COMPONENT_MAP[`Tile${componentName}`]) {
+      return COMPONENT_MAP[`Tile${componentName}`];
+    }
+
+    // Fallback to using the react_component_name from the available components
+    const availableComponent = availableComponents.find(c => c.id === selectedComponentId);
+    if (availableComponent?.react_component_name && COMPONENT_MAP[availableComponent.react_component_name]) {
+      return COMPONENT_MAP[availableComponent.react_component_name];
+    }
+
+    return null;
+  };
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -383,35 +451,39 @@ const DashboardLayoutEditor: React.FC<DashboardLayoutEditorProps> = ({
       </Grid>
 
       {/* Component Properties */}
-      <Paper sx={{ p: 2, mt: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>Component Properties</Typography>
+      <Paper sx={{ p: 0, mt: 3 }}>
         {selectedComponent ? (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">
-                {selectedComponent.name} ({selectedComponent.type})
-              </Typography>
-              <Divider sx={{ my: 1 }} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Component Prop 1"
-                fullWidth
-                disabled
-                value=""
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Component Prop 2"
-                fullWidth
-                disabled
-                value=""
-              />
-            </Grid>
-          </Grid>
+          <Box>
+            <Typography variant="h6" sx={{ p: 1,pl:2, mb: 0, pb: 0 }}>
+              {t('agents.dashboards.' + selectedComponent.name)} ({selectedComponent.type})
+            </Typography>
+            <Divider sx={{ my: 1 }} />
+
+            {/* Render the component's settings form */}
+            {(() => {
+              // Find the component type first
+              const componentType = getComponentType(selectedComponent.name);
+
+              if (componentType) {
+                const ComponentSettings = componentType;
+                return (
+                  <ComponentSettings
+                    settings={componentSettings}
+                    renderMode="settings"
+                    onSettingsChange={handleSettingsChange}
+                  />
+                );
+              } else {
+                return (
+                  <Typography color="text.secondary">
+                    Settings not available for this component type.
+                  </Typography>
+                );
+              }
+            })()}
+          </Box>
         ) : (
-          <Typography color="textSecondary">
+          <Typography color="text.secondary">
             Select a component to view and edit its properties
           </Typography>
         )}

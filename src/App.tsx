@@ -34,7 +34,7 @@ import HumanInTheLoopReview from './components/HumanInTheLoopReview';
 import PromptEditor from './components/prompts/PromptEditor';
 import DashboardEditor from './components/DashboardEditor';
 import Dashboard from './pages/Dashboard'; 
-import AuthGuard from './components/auth/AuthGuard';
+import RoleAuthGuard from './components/auth/RoleAuthGuard';
 
 // Create the theme with error handling
 let theme;
@@ -60,13 +60,22 @@ try {
 
 const ProtectedRoute = ({ children }) => {
   return (
-    <AuthGuard>
+    <RoleAuthGuard allowedRoles={['developer']}>
       <AppLayout>
         <VerifiedRoute>
           {children}
         </VerifiedRoute>
       </AppLayout>
-    </AuthGuard>
+    </RoleAuthGuard>
+  );
+};
+
+// For customer-accessible routes (including developers)
+const CustomerAccessibleRoute = ({ children }) => {
+  return (
+    <RoleAuthGuard allowedRoles={['customer', 'developer']}>
+      {children}
+    </RoleAuthGuard>
   );
 };
 
@@ -88,7 +97,16 @@ const App = () => {
                   <Route path="/interview-token" element={<TokenHandler />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/human-in-the-loop/:id" element={<HumanInTheLoopReview />} />
-                  <Route path="/customer-dashboards/:dashboardId" element={<Dashboard />} />
+                 
+                  {/* Customer-role routes */}
+                  <Route 
+                    path="/customer-dashboards/:dashboardId" 
+                    element={
+                      <CustomerAccessibleRoute>
+                        <Dashboard />
+                      </CustomerAccessibleRoute>
+                    } 
+                  />
                   
                   {/* Auth routes - no header */}
                   <Route 

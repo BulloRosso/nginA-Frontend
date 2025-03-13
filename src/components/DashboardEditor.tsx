@@ -86,7 +86,6 @@ const AgentSelectionDialog: React.FC<AgentSelectionDialogProps> = ({
   onSave,
   initialSelectedAgents 
 }) => {
-  // Implementation remains the same
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>(initialSelectedAgents || []);
@@ -249,7 +248,7 @@ const DashboardEditor: React.FC<{
   const navigate = useNavigate();
 
   const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
-  
+
   // Handle tab change
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -259,7 +258,7 @@ const DashboardEditor: React.FC<{
     console.log('Users assigned to dashboard changed:', userIds);
     setAssignedUserIds(userIds);
   };
-  
+
   // Load available dashboards for the combobox
   useEffect(() => {
     const loadDashboards = async () => {
@@ -368,14 +367,14 @@ const DashboardEditor: React.FC<{
 
   // Load dashboard data if editing existing dashboard (using routeDashboardId)
   useEffect(() => {
-   
+
     const loadDashboard = async () => {
 
       // Clear the grid first thing
       setPlacedComponents([]);
       setSelectedComponentId(null);
       setSelectedAgents([]);
-      
+
       if (!routeDashboardId) {
         // Reset the form if no dashboard ID
         setTitle('');
@@ -438,7 +437,8 @@ const DashboardEditor: React.FC<{
                     name: configComp.name || compDetails.name || '',
                     type: compDetails.type || '',
                     colSpan: compDetails.layout_cols || 2,
-                    rowSpan: compDetails.layout_rows || 2
+                    rowSpan: compDetails.layout_rows || 2,
+                    settings: configComp.settings || {} // Include component settings
                   };
                 } else {
                   console.warn(`Component details not found for ${configComp.id}`);
@@ -450,7 +450,8 @@ const DashboardEditor: React.FC<{
                     name: configComp.name || 'Unknown Component',
                     type: 'unknown',
                     colSpan: 2,
-                    rowSpan: 2
+                    rowSpan: 2,
+                    settings: configComp.settings || {} // Include component settings
                   };
                 }
               });
@@ -497,7 +498,7 @@ const DashboardEditor: React.FC<{
               const validAgents = loadedAgents.filter(a => a !== null);
               console.log("Loaded agents:", validAgents);
               setSelectedAgents(validAgents);
-              
+
             } catch (error) {
               console.error("Error processing dashboard agents:", error);
             }
@@ -529,7 +530,8 @@ const DashboardEditor: React.FC<{
       name: component.name || '',
       type: component.type || '',
       colSpan: colSpan,
-      rowSpan: rowSpan
+      rowSpan: rowSpan,
+      settings: component.settings_template || {} // Initialize with template settings if available
     };
 
     // Check for overlap with existing components
@@ -631,6 +633,19 @@ const DashboardEditor: React.FC<{
     }
   };
 
+  // Update component settings
+  const handleUpdateComponentSettings = (id: string, settings: any) => {
+    console.log("Updating settings for component:", id, settings);
+
+    setPlacedComponents(prevComponents => 
+      prevComponents.map(comp => 
+        comp.id === id 
+          ? { ...comp, settings: settings } 
+          : comp
+      )
+    );
+  };
+
   // Remove a component from the grid
   const handleRemoveComponent = (id: string) => {
     setPlacedComponents(placedComponents.filter(comp => comp.id !== id));
@@ -656,7 +671,8 @@ const DashboardEditor: React.FC<{
       id: comp.id,
       name: comp.name,
       startCol: comp.startCol,
-      startRow: comp.startRow
+      startRow: comp.startRow,
+      settings: comp.settings // Include component settings in the configuration
     }));
 
     const dashboardData = {
@@ -679,7 +695,8 @@ const DashboardEditor: React.FC<{
         components: placedComponents.map(comp => ({
           id: comp.id,
           startRow: comp.startRow,
-          startCol: comp.startCol
+          startCol: comp.startCol,
+          settings: comp.settings // Include component settings here too
         }))
       },
       // Include agents in the saved data
@@ -917,7 +934,7 @@ const DashboardEditor: React.FC<{
             title="Dashboard Users"
           />
         </TabPanel>
-        
+
       </Paper>
 
       {/* Layout Editor */}
@@ -930,6 +947,7 @@ const DashboardEditor: React.FC<{
           onMoveComponent={handleMoveComponent}
           onSelectComponent={setSelectedComponentId}
           onRemoveComponent={handleRemoveComponent}
+          onUpdateComponentSettings={handleUpdateComponentSettings}
         />
       )}
 

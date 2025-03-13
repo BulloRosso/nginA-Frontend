@@ -14,6 +14,13 @@
       "days_ago": "{{count}} day(s) ago",
       "weeks_ago": "{{count}} week(s) ago"
     },
+    "dashboards": {
+      "agent_launcher_tile": "Agent Launchpad",
+      "chatbot_tile": "Chatbot",
+      "kpi_tile": "KPI Box",
+      "display_markdown_tile": "Explanation",
+      "scratchpad_browser_tile": "Scratchpad"
+    },
     "run_results": "Scratchpad Browser",
     "results": "Results",
     "output": "output",
