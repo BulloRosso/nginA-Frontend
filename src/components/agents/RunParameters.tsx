@@ -199,6 +199,37 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
     setPromptErrorMessage('');
   };
 
+  // Helper function to identify which required fields are missing or null
+  const identifyMissingRequiredFields = (schema, extractedData) => {
+    if (!schema || !schema.required) return [];
+
+    const missingFields = [];
+
+    for (const field of schema.required) {
+      // Field is completely missing from response
+      if (!(field in extractedData)) {
+        missingFields.push(field);
+        continue;
+      }
+
+      // Field exists but has null or empty value
+      const fieldValue = extractedData[field];
+
+      // Check for null, undefined, empty string, or empty object/array
+      if (fieldValue === null || 
+          fieldValue === undefined || 
+          fieldValue === '' ||
+          (Array.isArray(fieldValue) && fieldValue.length === 0) ||
+          (typeof fieldValue === 'object' && 
+           fieldValue !== null && 
+           Object.keys(fieldValue).length === 0)) {
+        missingFields.push(field);
+      }
+    }
+
+    return missingFields;
+  };
+
   const handlePromptTransform = async () => {
     if (!agent || !promptText.trim()) {
       setPromptError(true);
@@ -219,33 +250,35 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
 
       // Check if we have the agent's input schema to validate against
       if (agent.input && agent.input.required && agent.input.required.length > 0) {
-        // Find which required fields are missing
+        // Find which required fields are missing or null
         const missingFields = identifyMissingRequiredFields(agent.input, extractedData);
 
+        // Always populate the form with what was extracted, even if some fields are missing
+        const transformedData = transformExtractedData(extractedData);
+        setInputFormData(transformedData);
+
         if (missingFields.length > 0) {
-          // We have missing required fields - show error
+          // We have missing or null required fields - show error
           setPromptError(true);
           setPromptErrorMessage(
             `Missing required parameters: ${missingFields.join(', ')}. Please add them to your prompt.`
           );
 
-          // Still transform and populate the fields that were successfully extracted
-          const transformedData = transformExtractedData(extractedData);
-          setInputFormData(transformedData);
-
+          // Don't set form as valid and don't change tabs
+          setInputFormValid(false);
           return;
         }
       }
 
-      // All required fields are present or there are no required fields
-      // Transform the data for the form - preserving actual values, not descriptions
+      // All required fields are present with non-null values
+      // Transform the data for the form
       const transformedData = transformExtractedData(extractedData);
       console.log('Transformed data for form:', transformedData);
 
       // Update the form data with properly transformed values
       setInputFormData(transformedData);
 
-      // Set form as valid since we've verified all required fields are present
+      // Set form as valid since all required fields are present and non-null
       setInputFormValid(true);
 
       // Switch to the Input tab
@@ -267,33 +300,6 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
     } finally {
       setIsProcessingPrompt(false);
     }
-  };
-
-  // Helper function to identify which required fields are missing
-  const identifyMissingRequiredFields = (schema, extractedData) => {
-    if (!schema || !schema.required) return [];
-
-    const missingFields = [];
-
-    for (const field of schema.required) {
-      // Field is completely missing
-      if (!(field in extractedData)) {
-        missingFields.push(field);
-        continue;
-      }
-
-      // Field exists but might have empty/invalid values
-      const fieldValue = extractedData[field];
-
-      // Empty object or null/undefined value
-      if (!fieldValue || 
-          (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0) ||
-          (fieldValue.description === undefined || fieldValue.description === '')) {
-        missingFields.push(field);
-      }
-    }
-
-    return missingFields;
   };
 
   // Helper function to transform extracted data into form-friendly values
