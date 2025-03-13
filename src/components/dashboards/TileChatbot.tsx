@@ -137,7 +137,44 @@ const TileChatbot: React.FC<TileChatbotProps> = ({
         chatInput: text
       });
 
-      return response.data.answer || "I'm sorry, I didn't get that. Could you please rephrase?";
+      console.log("Agent response:", response.data);
+
+      // Check if response is an array (like your specific case)
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        const firstItem = response.data[0];
+
+        // Try to get output field from the first item
+        if (firstItem && typeof firstItem === 'object' && firstItem.output) {
+          return firstItem.output;
+        }
+      }
+
+      // Check if the response has the 'answer' property (original FastAPI format)
+      if (response.data && response.data.answer !== undefined) {
+        return response.data.answer;
+      }
+
+      // For debugging: if we don't find the expected structure, log it
+      console.warn("Unexpected response format:", response.data);
+
+      // Try to extract any likely response text
+      if (typeof response.data === 'string') {
+        return response.data;
+      } else if (typeof response.data === 'object') {
+        // Check for common response fields
+        const possibleAnswer = response.data.output || 
+                               response.data.response || 
+                               response.data.message ||
+                               response.data.text ||
+                               response.data.content;
+
+        if (possibleAnswer) {
+          return possibleAnswer;
+        }
+      }
+
+      // Only return fallback if we absolutely cannot find a response
+      return "I'm sorry, I couldn't process the response properly. Please try again.";
     } catch (error) {
       console.error('Error sending message:', error);
       return "Sorry, there was an error processing your request. Please try again later.";
