@@ -509,7 +509,7 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
           <Box sx={{ mb: 3 }}>
             <Grid container spacing={2} sx={{ mb: 3 }}>
               {inputFiles.map((file) => (
-                <Grid item key={file.id} xs={6} sm={4} md={3} lg={2}>
+                  <Grid item key={file.id} xs={12} sm={6} md={4} lg={3} sx={{ minWidth: '120px' }}>
                   <Paper
                     elevation={2}
                     sx={{
@@ -649,7 +649,7 @@ const ScratchpadBrowser: React.FC<ScratchpadBrowserProps> = ({ runId }) => {
         {activeAgentId !== INPUT_ID && (
           <Grid container spacing={2}>
             {currentAgentFiles.map((file) => (
-              <Grid item key={file.id} xs={6} sm={4} md={3} lg={2}>
+                <Grid item key={file.id} xs={12} sm={6} md={4} lg={3} sx={{ minWidth: '120px' }}>
                 <Paper
                   elevation={2}
                   sx={{

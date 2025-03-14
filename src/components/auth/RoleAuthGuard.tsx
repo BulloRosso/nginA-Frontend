@@ -64,17 +64,7 @@ const RoleAuthGuard: React.FC<RoleAuthGuardProps> = ({
   // Show loading spinner while checking
   if (isLoading || isValidating) {
     return (
-      <Box 
-        display="flex" 
-        flexDirection="column"
-        justifyContent="center" 
-        alignItems="center" 
-        minHeight="100vh"
-        gap={2}
-      >
-        <CircularProgress />
-        <Typography variant="body1">Verifying access...</Typography>
-      </Box>
+     <div></div>
     );
   }
 
