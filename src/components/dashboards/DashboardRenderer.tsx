@@ -23,6 +23,7 @@ import TileChatbot from './TileChatbot';
 import TileKPI from './TileKPI';
 import TileScratchpadBrowser from './TileScratchpadBrowser';
 import TileAgentLauncher from './TileAgentLauncher';
+import TileHumanInTheLoopNotifications from './TileHumanInTheLoopNotifications';
 
 // Import event bus
 import eventBus from './DashboardEventBus';
@@ -51,9 +52,21 @@ const DashboardRenderer: React.FC<DashboardRendererProps> = ({
   isLoading = false,
   error = null
 }) => {
-  // State for component mapping
-  const [componentsMap, setComponentsMap] = useState<Record<string, React.ComponentType<any>>>({});
-
+  const componentsMap = {
+    'TileDisplayMarkdown': TileDisplayMarkdown,
+    'DisplayMarkdown': TileDisplayMarkdown,
+    'TileHumanInTheLoopNotifications': TileHumanInTheLoopNotifications,
+    'HumanInTheLoopNotifications': TileHumanInTheLoopNotifications,
+    'TileChatbot': TileChatbot,
+    'Chatbot': TileChatbot,
+    'TileKPI': TileKPI,
+    'KPI': TileKPI,
+    'TileScratchpadBrowser': TileScratchpadBrowser,
+    'ScratchpadBrowser': TileScratchpadBrowser,
+    'TileAgentLauncher': TileAgentLauncher,
+    'AgentLauncher': TileAgentLauncher
+  };
+  
   // State for settings dialog
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<DashboardComponentConfig | null>(null);
@@ -66,19 +79,6 @@ const DashboardRenderer: React.FC<DashboardRendererProps> = ({
 
   // Initialize component map
   useEffect(() => {
-    setComponentsMap({
-      'TileDisplayMarkdown': TileDisplayMarkdown,
-      'DisplayMarkdown': TileDisplayMarkdown,
-      'TileChatbot': TileChatbot,
-      'Chatbot': TileChatbot,
-      'TileKPI': TileKPI,
-      'KPI': TileKPI,
-      'TileScratchpadBrowser': TileScratchpadBrowser,
-      'ScratchpadBrowser': TileScratchpadBrowser,
-      'TileAgentLauncher': TileAgentLauncher,
-      'AgentLauncher': TileAgentLauncher
-    });
-
     // Get user ID from local storage/session
     const storedUserId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
     setUserId(storedUserId);
@@ -144,6 +144,7 @@ const DashboardRenderer: React.FC<DashboardRendererProps> = ({
   // Get component type from registry
   const getComponentType = (component: DashboardComponentConfig): React.ComponentType<any> | null => {
     // First try react_component_name
+    
     if (component.react_component_name && componentsMap[component.react_component_name]) {
       return componentsMap[component.react_component_name];
     }

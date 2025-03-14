@@ -9,6 +9,7 @@ import TileScratchpadBrowser from './TileScratchpadBrowser';
 import TileChatbot from './TileChatbot';
 import TileKPI from './TileKPI';
 import TileDisplayMarkdown from './TileDisplayMarkdown';
+import TileHumanInTheLoopNotifications from './TileHumanInTheLoopNotifications';
 
 interface ComponentLoaderProps {
   component: ConfigurationComponent;
@@ -24,6 +25,7 @@ const ComponentLoader: React.FC<ComponentLoaderProps> = ({ component, dashboardI
     'TileChatbot': TileChatbot,
     'TileKPI': TileKPI,
     'TileDisplayMarkdown': TileDisplayMarkdown,
+    'TileHumanInTheLoopNotifications': TileHumanInTheLoopNotifications,
   };
 
   // Get the component class from the mapping

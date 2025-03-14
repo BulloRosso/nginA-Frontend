@@ -3,6 +3,24 @@ import api from './api';
 import { Operation, OperationCreate, TeamStatus } from '../types/operation';
 import { UUID } from '../types/common';
 
+// Define the HumanFeedbackItem interface
+export interface HumanFeedbackItem {
+  id: UUID;
+  created_at: string;
+  run_id: UUID;
+  status: string;
+  email_settings: {
+    subject: string;
+    recipients: Array<{
+      email: string;
+      name: string;
+    }>;
+  };
+  reason: string | null;
+  callback_url: string | null;
+  workflow_id: string | null;
+}
+
 export const OperationService = {
   createOrUpdateOperation: async (data: OperationCreate): Promise<Operation> => {
     const response = await api.post('/api/v1/operations/run', data);
@@ -25,6 +43,29 @@ export const OperationService = {
 
   getAgentRunHistory: async (agentId: UUID): Promise<Operation[]> => {
     const response = await api.get(`/api/v1/operations/history/${agentId}`);
+    return response.data;
+  },
+
+  // Method to get human feedback items for a specific run
+  getHumanFeedbackItems: async (runId: UUID, status?: string): Promise<HumanFeedbackItem[]> => {
+    let url = `/api/v1/operations/human-feedback?run_id=${runId}`;
+    if (status) {
+      url += `&status=${status}`;
+    }
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Method to update human feedback status
+  updateHumanFeedback: async (
+    feedbackId: UUID, 
+    status: 'approved' | 'rejected', 
+    reason: string
+  ): Promise<any> => {
+    const response = await api.post(`/api/v1/operations/human-feedback/${feedbackId}/update`, {
+      status,
+      reason
+    });
     return response.data;
   },
 

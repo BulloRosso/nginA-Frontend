@@ -19,7 +19,8 @@
       "chatbot_tile": "Chatbot",
       "kpi_tile": "KPI Box",
       "display_markdown_tile": "Explanation",
-      "scratchpad_browser_tile": "Scratchpad"
+      "scratchpad_browser_tile": "Scratchpad",
+      "hil_notifications_tile": "Human in the Loop"
     },
     "run_results": "Scratchpad Browser",
     "results": "Results",
