@@ -192,14 +192,14 @@ const RunHistory: React.FC<RunHistoryProps> = ({
                     variant="outlined"
                     size="small"
                     startIcon={<FileIcon />}
-                    disabled={!hasResults}
+                    
                     onClick={() => {
-                      if (hasResults) {
+                      
                         onShowResults(
                           operation.results, 
                           operation.id.toString()
                         );
-                      }
+                      
                     }}
                   >
                     Results

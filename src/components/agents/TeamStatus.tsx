@@ -535,9 +535,9 @@ const TeamStatusComponent: React.FC = () => {
                           variant="outlined"
                           size="small"
                           startIcon={<FileIcon />}
-                          disabled={!hasResults}
+                          
                           onClick={() => {
-                            if (hasResults && agentStatus.lastRun) {
+                            if (agentStatus.lastRun) {
                               // Pass both the results and the run_id to handleShowResults
                               handleShowResults(
                                 agentStatus.lastRun.results, 
