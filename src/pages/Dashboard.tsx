@@ -43,6 +43,7 @@ const Dashboard: React.FC = () => {
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dashboardTitle, setDashboardTitle] = useState<string>('Dashboard');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   // Check if already authenticated via sessionStorage
   useEffect(() => {
@@ -205,17 +206,34 @@ const Dashboard: React.FC = () => {
     handleMenuClose();
   };
 
-  // Set dashboard title when dashboard data is fetched
-  const updateDashboardTitle = (title: string) => {
+  // Set dashboard title and logo when dashboard data is fetched
+  const updateDashboardInfo = (title: string, logo?: string) => {
     setDashboardTitle(title);
+    if (logo) {
+      setLogoUrl(logo);
+    }
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f8f7f3' }}>
       {/* Login Modal */}
       <Dialog open={openLoginModal} onClose={() => {}} maxWidth="sm" fullWidth>
-        <DialogTitle>Welcome to your automations</DialogTitle>
+       
         <DialogContent>
+          
+          {logoUrl && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, mt: 1 }}>
+              <Box
+                component="img"
+                src={logoUrl}
+                alt="Logo"
+                sx={{ width: '90px', height: 'auto' }}
+              />
+            </Box>
+          )}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1, mt: 1 }}>
+           <DialogTitle>Welcome to your automations dashboard!</DialogTitle>
+          </Box>
           <Box sx={{ mt: 2 }}>
             <TextField
               fullWidth
@@ -258,7 +276,11 @@ const Dashboard: React.FC = () => {
         <DialogActions>
           <Button 
             onClick={handleLogin} 
-            color="primary" 
+            color="secondary" 
+            sx={{
+              mr: '20px',
+              mb: '20px'
+            }}
             variant="contained"
             disabled={!loginData.email || !loginData.password || isLoggingIn}
           >
@@ -270,10 +292,33 @@ const Dashboard: React.FC = () => {
       {/* Dashboard content - only shown after authentication */}
       {isAuthenticated && dashboardId && (
         <>
-          {/* App Bar with Burger Menu */}
-          <AppBar>
-            <Toolbar>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {/* App Bar that scrolls with content (not fixed) */}
+          <AppBar sx={{ bgcolor: '#dedcd1', boxShadow: 1 }}>
+            <Toolbar sx={{ position: 'relative' }}>
+              {/* Logo on the left side if available */}
+              {logoUrl && (
+                <Box
+                  component="img"
+                  src={logoUrl}
+                  alt="Logo"
+                  sx={{ 
+                    width: '70px', 
+                    height: 'auto',
+                    position: 'absolute',
+                    left: '24px',
+                    top: '8px'
+                  }}
+                />
+              )}
+              <Typography 
+                variant="h6" 
+                component="div" 
+                sx={{ 
+                  flexGrow: 1, 
+                  paddingLeft: '90px',
+                  textAlign: logoUrl ? 'left' : 'left' // Center text if logo exists
+                }}
+              >
                 {dashboardTitle}
               </Typography>
               <IconButton
@@ -316,24 +361,19 @@ const Dashboard: React.FC = () => {
           </AppBar>
 
           {/* Main Content */}
-          <Box sx={{ 
-            flexGrow: 1, 
-            overflow: 'auto', 
-            width: '100%',
-            height: 'calc(100% - 64px)' // Subtract AppBar height
-          }}>
+          
             {/* Show content based on role */}
             {userRole === 'developer' ? (
               <DashboardFromLayout 
                 dashboardId={dashboardId} 
                 isDeveloper={true} 
-                onTitleChange={updateDashboardTitle}
+                onTitleChange={(title, logo) => updateDashboardInfo(title, logo)}
               />
             ) : userRole === 'customer' ? (
               <DashboardFromLayout 
                 dashboardId={dashboardId} 
                 isDeveloper={false}
-                onTitleChange={updateDashboardTitle} 
+                onTitleChange={(title, logo) => updateDashboardInfo(title, logo)}
               />
             ) : (
               <Box sx={{ width: '100%', height: '100%' }}>
@@ -344,11 +384,11 @@ const Dashboard: React.FC = () => {
                 <DashboardFromLayout 
                   dashboardId={dashboardId} 
                   isDeveloper={false}
-                  onTitleChange={updateDashboardTitle}
+                  onTitleChange={(title, logo) => updateDashboardInfo(title, logo)}
                 />
               </Box>
             )}
-          </Box>
+  
         </>
       )}
     </Box>

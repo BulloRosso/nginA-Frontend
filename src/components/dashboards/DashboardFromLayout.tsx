@@ -13,7 +13,7 @@ import TableBasedDashboardRenderer from './TableBasedDashboardRenderer';
 interface DashboardFromLayoutProps {
   dashboardId: string;
   isDeveloper?: boolean;
-  onTitleChange?: (title: string) => void;
+  onTitleChange?: (title: string, logoUrl?: string) => void;
 }
 
 const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({ 
@@ -53,9 +53,11 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
         const componentDefinitions = await DashboardService.getDashboardComponents(false);
         setComponents(componentDefinitions);
 
-        // Update title in parent component
+        // Update title and logo in parent component
         if (onTitleChange && dashboardData?.description?.en?.title) {
-          onTitleChange(dashboardData.description.en.title);
+          // Get the logo URL if available
+          const logoUrl = dashboardData?.style?.layout?.logoUrl;
+          onTitleChange(dashboardData.description.en.title, logoUrl);
         }
 
         setLoading(false);
@@ -142,31 +144,23 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
   }
 
   return (
-    <Box 
-      sx={{ 
-        height: '100vh', 
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
-      }}
-      className="dashboard-container"
-    >
+   <>
       {/* Dashboard description */}
       <Box 
         sx={{ 
-          p: 3, 
-          borderBottom: '1px solid #eaeaea',
+          p: 0, 
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           width: '100%',
+          paddingLeft: '114px',
+          marginTop: '88px',
           flexShrink: 0
         }}
         className="dashboard-header"
       >
         <Box>
-          <Typography variant="body1">
+          <Typography variant="body1" color="text.secondary">
             {dashboard?.description?.en?.description || 'No description available'}
           </Typography>
         </Box>
@@ -176,9 +170,10 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
       <Box 
         sx={{ 
           flexGrow: 1, 
-          width: '100%', 
+          width: '100%',
           overflow: 'hidden',
-          display: 'flex'
+          display: 'flex',
+          bgcolor: '#f8f7f3'
         }}
         className="dashboard-content"
       >
@@ -193,7 +188,7 @@ const DashboardFromLayout: React.FC<DashboardFromLayoutProps> = ({
           />
         )}
       </Box>
-    </Box>
+    </>
   );
 };
 

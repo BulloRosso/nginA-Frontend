@@ -27,6 +27,7 @@ import {
 } from '@mui/material';
 import { 
   Notifications as NotificationsIcon,
+  WavingHandOutlined as WavingHandOutlinedIcon,
   Reply as ReplyIcon
 } from '@mui/icons-material';
 import eventBus from './DashboardEventBus';
@@ -220,7 +221,7 @@ const TileHumanInTheLoopNotifications: React.FC<TileHumanInTheLoopNotificationsP
       {/* Using the common TileHeader component */}
       <TileHeader 
         title={localSettings.title || 'Human Feedback Requests'}
-        icon={<NotificationsIcon />}
+        icon={<WavingHandOutlinedIcon />}
         showInfo={true}
         infoText="View and respond to human-in-the-loop feedback requests"
       />

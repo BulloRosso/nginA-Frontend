@@ -24,6 +24,8 @@
     },
     "run_results": "Scratchpad Browser",
     "results": "Results",
+    "show_workflow": "n8n Workflow",
+    "run_history": "All Runs",
     "output": "output",
     "scratchpad_files": "Files",
     "input_data": "Output data (of selected agent)",
