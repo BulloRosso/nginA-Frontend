@@ -54,7 +54,9 @@ const getStatusColor = (status: string | null) => {
       return 'darkgreen';
     case 'failure':
       return 'darkred';
-    case 'pending','running':
+    case 'pending':
+      return 'darkorange';
+    case 'running':
       return 'darkorange'; // Changed from 'warning' to 'success' for dark green
     case null:
       return '#ccc';

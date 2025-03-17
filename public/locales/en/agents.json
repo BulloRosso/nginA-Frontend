@@ -22,6 +22,9 @@
       "scratchpad_browser_tile": "Scratchpad",
       "hil_notifications_tile": "Human in the Loop"
     },
+    "showing": "showing",
+    "of": "of",
+    "agents": "agents",
     "run_results": "Scratchpad Browser",
     "results": "Results",
     "show_workflow": "n8n Workflow",

@@ -1,6 +1,6 @@
 // src/components/agents/RunButton.tsx
 import React from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip, CircularProgress } from '@mui/material';
 import { 
   DirectionsRun as RunIcon,
   Pause as PauseIcon,
@@ -21,7 +21,7 @@ const RunButton: React.FC<RunButtonProps> = ({ agent, active, status, onStartRun
   const getFabIcon = (status: string | null) => {
     switch (status) {
       case 'pending':
-        return <PauseIcon />;
+        return <PauseIcon sx={{ color: 'darkorange' }} />;
       case 'human-in-the-loop':
         return <BackHandIcon />;
       default:
@@ -43,22 +43,51 @@ const RunButton: React.FC<RunButtonProps> = ({ agent, active, status, onStartRun
 
   return (
     <Tooltip title={active ? "Manage Run" : "Start Run"}>
-      <IconButton
-        aria-label="run"
-        type="button"
-        size="small"
+      <div style={{ position: 'relative', display: 'inline-flex' }}>
+        <IconButton
+          aria-label="run"
+          type="button"
+          size="small"
+          sx={{
+            color: status === 'pending' ? 'darkorange' : (active ? 'white' : 'inherit'),
+            backgroundColor: status === 'pending' ? 'white' : (active ? 'darkorange' : 'gold'),
+            padding: '8px',
+            '&:hover': {
+              backgroundColor: status === 'pending' ? 'white' : (active ? '#004d00' : 'gold'), 
+            },
+          }}
+          onClick={handleClick}
+        >
+          {getFabIcon(status)}
+        </IconButton>
+        {status === 'pending' && (
+      <>
+      <CircularProgress
+        size={38}
+        variant="determinate"
+        value={100}
         sx={{
-          color: active ? 'white' : 'inherit',
-          backgroundColor: active ? 'darkorange' : 'gold',
-          padding: '8px',
-          '&:hover': {
-             backgroundColor: active ? '#004d00' : 'gold', 
-          },
+          color: '#ccc',
+          position: 'absolute',
+          top: 1,
+          left: 1,
+          zIndex: 1,
         }}
-        onClick={handleClick}
-      >
-        {getFabIcon(status)}
-      </IconButton>
+      />
+      <CircularProgress
+        size={38}
+        sx={(theme) => ({
+          animationDuration: '10000ms',
+          color: 'darkorange',
+          position: 'absolute',
+          top: 1,
+          left: 1,
+          zIndex: 2
+        })}
+       
+      /> </>
+        )}
+      </div>
     </Tooltip>
   );
 };
