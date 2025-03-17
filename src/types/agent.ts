@@ -22,6 +22,7 @@ export interface Agent {
   credits_per_run: number;
   workflow_id?: string;
   stars: number;
+  content_extraction_file_extensions?: string;
   authentication: string;
   type: string;
   output_type: string;
@@ -41,6 +42,7 @@ export interface AgentCreateDto {
   workflow_id?: string;
   stars?: number;
   wrapped_url?: string;
+  content_extraction_file_extensions?: string;
   type: string;
   configuration?: any;
   icon_svg?: string;

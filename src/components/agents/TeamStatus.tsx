@@ -420,9 +420,11 @@ const TeamStatusComponent: React.FC = () => {
 
   if (!teamStatus || teamStatus.agents.length === 0) {
     return (
-      <Alert severity="info" sx={{ mt: 2, backgroundColor: '#d9f1f2' }}>
+      <div style={{ paddingBottom: '24px'}}>
+      <Alert severity="info" sx={{ mt: 2,  mb: 2, backgroundColor: '#d9f1f2' }}>
         { t('agents.no_agents_in_team') }
       </Alert>
+      </div>
     );
   }
 

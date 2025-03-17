@@ -18,6 +18,10 @@ interface RunButtonProps {
 // This is a separate component to prevent state updates in the parent component
 const RunButton: React.FC<RunButtonProps> = ({ agent, active, status, onStartRun }) => {
 
+  if (status === "running") {
+    status = "pending";
+  }
+  
   const getFabIcon = (status: string | null) => {
     switch (status) {
       case 'pending':
@@ -60,7 +64,7 @@ const RunButton: React.FC<RunButtonProps> = ({ agent, active, status, onStartRun
         >
           {getFabIcon(status)}
         </IconButton>
-        {status === 'pending' && (
+        {(status === 'running' || status === 'pending') && (
       <>
       <CircularProgress
         size={38}
