@@ -54,7 +54,7 @@ const getStatusColor = (status: string | null) => {
       return 'darkgreen';
     case 'failure':
       return 'darkred';
-    case 'pending':
+    case 'pending','running':
       return 'darkorange'; // Changed from 'warning' to 'success' for dark green
     case null:
       return '#ccc';
@@ -69,7 +69,7 @@ const getStatusFontColor = (status: string | null) => {
       return 'white';
     case 'failure':
       return 'white';
-    case 'pending':
+    case 'pending','running':
       return 'white'; // Changed from 'warning' to 'success' for dark green
     case null:
       return 'black';
@@ -234,7 +234,7 @@ const TeamStatusComponent: React.FC = () => {
 
   const handleOpenWorkflow = (workflowId: string) => {
     const n8nUrl = import.meta.env.VITE_N8N_URL;
-    window.open(`${n8nUrl}${workflowId}`, '_blank');
+    window.open(`${n8nUrl}/workflow/${workflowId}`, '_blank');
     handleMenuClose();
   };
 

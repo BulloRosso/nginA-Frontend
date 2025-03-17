@@ -11,7 +11,8 @@ import {
   ListItem,
   Chip,
   Button,
-  Divider
+  Divider,
+  Link
 } from '@mui/material';
 import { Close as CloseIcon, FilePresent as FileIcon } from '@mui/icons-material';
 import { Operation } from '../../types/operation';
@@ -65,6 +66,20 @@ const formatDuration = (seconds: number): string => {
 
 const formatDateTime = (dateString: string): string => {
   return new Date(dateString).toLocaleString();
+};
+
+// Helper to extract executionIds from results
+const getExecutionIds = (results: any): string[] => {
+  if (!results) return [];
+
+  // Check if 'flow' exists and is an array
+  if (results.flow && Array.isArray(results.flow)) {
+    return results.flow
+      .filter(item => item && item.executionId)
+      .map(item => item.executionId);
+  }
+
+  return [];
 };
 
 const RunHistory: React.FC<RunHistoryProps> = ({ 
@@ -153,6 +168,7 @@ const RunHistory: React.FC<RunHistoryProps> = ({
           {operations.map((operation) => {
             const duration = calculateDuration(operation);
             const hasResults = hasValidResults(operation);
+            const executionIds = getExecutionIds(operation.results);
 
             return (
               <ListItem 
@@ -185,6 +201,22 @@ const RunHistory: React.FC<RunHistoryProps> = ({
                           &#128336; {formatDuration(duration)}
                         </Typography>
                       )}
+
+                      {executionIds.length > 0 && (
+                        <span>
+                          {executionIds.map((executionId, index) => (
+                            <Link 
+                              key={index}
+                              href={`${import.meta.env.VITE_N8N_URL}/workflow/${operation.workflow_id}/executions/${executionId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{ display: 'block', ml: '10px', fontSize: '80%' }}
+                            >
+                              Execution #{executionId}
+                            </Link>
+                          ))}
+                          </span>
+                      )}
                     </Box>
                   </Box>
 
@@ -192,31 +224,18 @@ const RunHistory: React.FC<RunHistoryProps> = ({
                     variant="outlined"
                     size="small"
                     startIcon={<FileIcon />}
-                    
                     onClick={() => {
-                      
-                        onShowResults(
-                          operation.results, 
-                          operation.id.toString()
-                        );
-                      
+                      onShowResults(
+                        operation.results, 
+                        operation.id.toString()
+                      );
                     }}
                   >
                     Results
                   </Button>
                 </Box>
 
-                {operation.workflow_id && (
-                  <Typography variant="body2" color="text.secondary">
-                    Workflow ID: {operation.workflow_id}
-                  </Typography>
-                )}
 
-                {operation.finished_at && (
-                  <Typography variant="body2" color="text.secondary">
-                    Finished: {formatDateTime(operation.finished_at)}
-                  </Typography>
-                )}
               </ListItem>
             );
           })}
