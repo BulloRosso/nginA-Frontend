@@ -27,6 +27,7 @@ import {
   Autocomplete
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import PreviewIcon from '@mui/icons-material/Preview';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { DashboardService } from '../services/dashboards';
 import { AgentService } from '../services/agents';
@@ -741,6 +742,14 @@ const DashboardEditor: React.FC<{
     }
   };
 
+  const handlePreviewDashboard = () => {
+    if (!routeDashboardId) return;
+
+    // Construct the preview URL and open in new tab
+    const previewUrl = `${window.location.protocol}//${window.location.host}/customer-dashboards/${routeDashboardId}`;
+    window.open(previewUrl, '_blank');
+  };
+
   return (
     <Container maxWidth="lg">
       <Box 
@@ -952,7 +961,16 @@ const DashboardEditor: React.FC<{
       )}
 
       {/* Action Buttons */}
-      <Box sx={{ mt: 3, mb: 5, display: 'flex', justifyContent: 'flex-end' }}>
+      <Box sx={{ mt: 3, mb: 5, display: 'flex', justifyContent: 'space-between' }}>
+        <Button 
+          variant="outlined"
+          color="primary"
+          startIcon={<PreviewIcon />}
+          onClick={handlePreviewDashboard}
+          disabled={!routeDashboardId}
+        >
+          Preview
+        </Button>
         <Button 
           variant="contained" 
           color="primary" 

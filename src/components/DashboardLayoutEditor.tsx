@@ -483,7 +483,7 @@ const DashboardLayoutEditor: React.FC<DashboardLayoutEditorProps> = ({
             })()}
           </Box>
         ) : (
-          <Typography color="text.secondary">
+          <Typography color="text.secondary" sx={{ padding: '20px'}}>
             Select a component to view and edit its properties
           </Typography>
         )}
