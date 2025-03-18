@@ -56,8 +56,7 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
   // Authentication state
   const [authentication, setAuthentication] = useState<string>(agent.authentication || 'none');
   const [headerName, setHeaderName] = useState<string>('');
-  const [basicAuthLogin, setBasicAuthLogin] = useState<string>('');
-  const [basicAuthPassword, setBasicAuthPassword] = useState<string>('');
+  const [selectedKeyName, setSelectedKeyName] = useState<string>('');
 
   const [newCredential, setNewCredential] = useState<Credential>({
     service_name: agent.id,
@@ -67,17 +66,27 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
 
   // Initialize authentication details
   useEffect(() => {
-    // Parse current authentication format if needed
     if (agent.authentication?.startsWith('header:')) {
-      setAuthentication('header');
-      setHeaderName(agent.authentication.split(':')[1]);
+      const parts = agent.authentication.split(':');
+      if (parts.length >= 2) {
+        setAuthentication('header');
+        const headerParts = parts[1].split(',');
+        setHeaderName(headerParts[0]);
+        if (headerParts.length >= 2) {
+          setSelectedKeyName(headerParts[1]);
+        }
+      }
+    } else if (agent.authentication?.startsWith('bearer-token:')) {
+      setAuthentication('bearer-token');
+      const keyName = agent.authentication.split(':')[1];
+      setSelectedKeyName(keyName);
     } else if (agent.authentication?.startsWith('basic-auth:')) {
       setAuthentication('basic-auth');
-      const authParts = agent.authentication.substring('basic-auth:'.length).split(',');
-      if (authParts.length >= 1) setBasicAuthLogin(authParts[0]);
-      if (authParts.length >= 2) setBasicAuthPassword(authParts[1]);
+      const keyName = agent.authentication.split(':')[1];
+      setSelectedKeyName(keyName);
     } else {
       setAuthentication(agent.authentication || 'none');
+      setSelectedKeyName('');
     }
   }, [agent.authentication]);
 
@@ -157,22 +166,31 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
     setError(null);
 
     try {
+      // Validate key name is selected when authentication requires it
+      if ((authentication === 'bearer-token' || authentication === 'basic-auth' || authentication === 'header') && !selectedKeyName) {
+        setError('You must select a credential key name');
+        setIsLoading(false);
+        return;
+      }
+
+      // For header type, validate header name is provided
+      if (authentication === 'header' && !headerName) {
+        setError('Header name is required');
+        setIsLoading(false);
+        return;
+      }
+
       // Prepare the authentication value based on the selected type
-      let finalAuthentication = authentication;
+      let finalAuthentication = 'none';
+
       if (authentication === 'header') {
-        if (!headerName) {
-          setError('Header name is required');
-          setIsLoading(false);
-          return;
-        }
-        finalAuthentication = `header:${headerName}`;
+        finalAuthentication = `header:${headerName},${selectedKeyName}`;
+      } else if (authentication === 'bearer-token') {
+        finalAuthentication = `bearer-token:${selectedKeyName}`;
       } else if (authentication === 'basic-auth') {
-        if (!basicAuthLogin || !basicAuthPassword) {
-          setError('Username and password are required');
-          setIsLoading(false);
-          return;
-        }
-        finalAuthentication = `basic-auth:${basicAuthLogin},${basicAuthPassword}`;
+        finalAuthentication = `basic-auth:${selectedKeyName}`;
+      } else if (authentication === 'none') {
+        finalAuthentication = 'none';
       }
 
       // Get the current agent data first to preserve all fields
@@ -219,23 +237,35 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
   const handleCancel = () => {
     // Reset to original values
     if (agent.authentication?.startsWith('header:')) {
-      setAuthentication('header');
-      setHeaderName(agent.authentication.split(':')[1]);
+      const parts = agent.authentication.split(':');
+      if (parts.length >= 2) {
+        setAuthentication('header');
+        const headerParts = parts[1].split(',');
+        setHeaderName(headerParts[0]);
+        if (headerParts.length >= 2) {
+          setSelectedKeyName(headerParts[1]);
+        }
+      }
+    } else if (agent.authentication?.startsWith('bearer-token:')) {
+      setAuthentication('bearer-token');
+      const keyName = agent.authentication.split(':')[1];
+      setSelectedKeyName(keyName);
     } else if (agent.authentication?.startsWith('basic-auth:')) {
       setAuthentication('basic-auth');
-      const authParts = agent.authentication.substring('basic-auth:'.length).split(',');
-      if (authParts.length >= 1) setBasicAuthLogin(authParts[0]);
-      if (authParts.length >= 2) setBasicAuthPassword(authParts[1]);
+      const keyName = agent.authentication.split(':')[1];
+      setSelectedKeyName(keyName);
     } else {
       setAuthentication(agent.authentication || 'none');
+      setSelectedKeyName('');
       setHeaderName('');
-      setBasicAuthLogin('');
-      setBasicAuthPassword('');
     }
 
     setIsEditing(false);
     setError(null);
   };
+
+  // Determine if authentication editing should be enabled
+  const authEditingDisabled = filteredCredentials.length === 0;
 
   return (
     <Box>
@@ -253,6 +283,7 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
                 onClick={() => setIsEditing(true)}
                 variant="outlined"
                 size="small"
+                disabled={authEditingDisabled}
               >
                 Edit
               </Button>
@@ -282,6 +313,12 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
             )}
           </Box>
 
+          {authEditingDisabled && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Add at least one credential to enable authentication settings.
+            </Alert>
+          )}
+
           {!isEditing ? (
             <AuthenticationDisplay authType={agent.authentication || 'none'} />
           ) : (
@@ -302,6 +339,25 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
                 </Select>
               </FormControl>
 
+              {authentication !== 'none' && (
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel id="credential-key-label">Credential Key</InputLabel>
+                  <Select
+                    labelId="credential-key-label"
+                    value={selectedKeyName}
+                    label="Credential Key"
+                    onChange={(e) => setSelectedKeyName(e.target.value)}
+                    disabled={isLoading}
+                  >
+                    {filteredCredentials.map((credential) => (
+                      <MenuItem key={credential.id} value={credential.key_name}>
+                        {credential.key_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
               <Collapse in={authentication === 'header'}>
                 <TextField
                   fullWidth
@@ -312,29 +368,6 @@ export const CredentialsTab: React.FC<{ agent: Agent, onAgentUpdated?: (agent: A
                   disabled={isLoading}
                   sx={{ mb: 2 }}
                 />
-              </Collapse>
-
-              <Collapse in={authentication === 'basic-auth'}>
-                <Box sx={{ mb: 2 }}>
-                  <TextField
-                    fullWidth
-                    label={t('agents.username')}
-                    variant="outlined"
-                    value={basicAuthLogin}
-                    onChange={(e) => setBasicAuthLogin(e.target.value)}
-                    disabled={isLoading}
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    fullWidth
-                    label={t('agents.password')}
-                    type="password"
-                    variant="outlined"
-                    value={basicAuthPassword}
-                    onChange={(e) => setBasicAuthPassword(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </Box>
               </Collapse>
             </Box>
           )}

@@ -1,5 +1,5 @@
 // src/pages/ProfileSelection.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, useTransition } from 'react';
 import { 
   Container, 
   Paper, 
@@ -19,10 +19,10 @@ interface ProfileSelectionProps {
 }
 
 const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
-  
+  const [isPending, startTransition] = useTransition();
   const loading = false;
   const error = null;
-  const { t, i18n } = useTranslation(['agents','profile', 'invitation', 'interview', 'common']);
+  const { t, i18n } = useTranslation(['agents','profile', 'common']);
 
   // Map i18n languages to date-fns locales
   const locales = {
@@ -63,7 +63,13 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             </Typography>
           )}
 
-           <TeamStatus />
+          <Suspense fallback={<CircularProgress />}>
+            {isPending ? (
+              <CircularProgress />
+            ) : (
+              <TeamStatus />
+            )}
+          </Suspense>
           
         </Paper>
       </Box>
