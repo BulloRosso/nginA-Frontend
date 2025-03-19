@@ -151,11 +151,13 @@ const AgentInfoPage: React.FC = () => {
 
           <Fab
             size="medium"
+            disabled={ agent.wrappedURL != null }
             onClick={() => setTestDialogOpen(true)}
             sx={{
               position: 'absolute', 
               right: '6px',
               top: '4px', 
+             
               backgroundColor: 'gold',
               '&:hover': {
                 backgroundColor: '#DAA520', // Darker gold (goldenrod)
@@ -209,7 +211,7 @@ const AgentInfoPage: React.FC = () => {
             <Typography variant="body1" color="text.secondary">
               <small>{t('agents.is_online')}</small>
             </Typography>
-            <AgentStatusIndicator agentEndpoint={agent.agent_endpoint} />
+            <AgentStatusIndicator agentEndpoint={agent.wrapped_url} />
           </Box>
         </Paper>
       </Box>
