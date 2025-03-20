@@ -3,31 +3,31 @@
   "title": "nOblivion",
   "subtitle": "Precious memories persisted",
   "subtitle_business": "Never loose an expert again!",
-  "description": "Preserve your family's life stories through meaningful conversations with our AI interviewer.",
+  "description": "Self-Hostable Agentic Workflows",
   "decription_business": "The leaving experts situation is getting less painful if you preserve you expert's knowledge with nOblivion.",
-  "ds": "Share memories, add photos, and create a lasting legacy for generations to come.",
+  "ds": "Stop playing with Agents - start delivering business results!",
   "business_edition_hint": "...also available as business edition!",
-  "try_now": "Try it now",
+  "try_now": "Sign in",
   "how_it_works": "How it works",
+  "how_it_works_description": "Before you can make your agents available to colleagues in the form of dashboards, artifact UIs, or content pipelines, you need to describe the agent through the wrapper's properties. This description includes, for example, the required input values or necessary authentication data.",
   "ds_business": "You experts are available as AI chatbots 24/7 for your employees. Your IT experts can access the knowledge via API endpoints.",
-  "backstory": {
-    "quote": "Walking along the shore, we often stumble upon empty seashells – silent echoes of the past.",
-    "paragraph1": "Their stories remain a mystery, lost to time, yet they spark our imagination. These shells, once vibrant and alive in a colorful underwater world, now stand as fragile reminders of something greater. They teach us an essential truth: preserving the stories of the past gives us the wisdom to live more fully in the present.",
-    "paragraph2": "Let us honor these tales, for in understanding where we come from, we shape a brighter, more meaningful today."
+  "backstory": { "quote": "What use is it to me?", 
+    "paragraph1": "nginA provides n8n agents, workflows, and other automations to your internal or external customers. nginA complements workflow engines like n8n by adding a user interface and/or dashboards.", 
+    "paragraph2": "Especially for internal pipelines that generate content in the form of documents or text, nginA is a good choice." 
   },
-  "features": {
-    "create_profile": {
-      "title": "Create Profile",
-      "description": "Start by creating a profile with basic information about yourself or your loved one"
-    },
-    "share_memories": {
-      "title": "Share Memories",
-      "description": "Engage in natural conversations with our AI interviewer to capture life stories"
-    },
-    "preserve_legacy": {
-      "title": "Preserve Legacy",
-      "description": "Add photos, organize memories, and create a beautiful timeline of life events which can be printed as book from the PDF file we create for you!"
-    }
+  "features": { 
+    "create_profile": { 
+      "title": "Create Agent", 
+      "description": "In n8n, you create an agent that is triggered via a WebHook." 
+    }, 
+    "share_memories": { 
+      "title": "Create Wrapper", 
+      "description": "In the catalog section of the nginA user interface, you create a wrapper for your agent." 
+    }, 
+    "preserve_legacy": { 
+      "title": "Use Agent", 
+      "description": "Run the agent directly in runs or link multiple agents to create new agents." 
+    } 
   },
   "features_business": {
     "create_profile": {
@@ -43,9 +43,9 @@
       "description": "The wealth of your expert's experience can be accessed by your employees anytime in the form of an AI chatbot."
     }
   },
-  "cta": {
-    "title": "Gift yourself or a beloved one and start Preserving Your Memories Today",
-    "button": "Try it now"
+  "cta": { 
+    "title": "With nginA, you can effectively manage the work of your agents and deliver the results to your customers or colleagues in a smart way!", 
+    "button": "Sign In" 
   },
   "cta_business": {
     "title": "Try how easy it is using our personal edition",

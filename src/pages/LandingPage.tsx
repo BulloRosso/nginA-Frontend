@@ -127,11 +127,11 @@ export default function LandingPage() {
           <Typography variant="h3" textAlign="center" mb={8}>
             {t('landing.backstory.quote')}
           </Typography> 
-          <Typography variant="body1">
+          <Typography sx={{ fontSize: '120%' }} variant="body1">
             {t('landing.backstory.paragraph1')}
           </Typography>
           <img src="/img/ngina-usecase-bg.jpg" style={{ marginBottom: '24px', marginTop: '24px' }}></img>
-          <Typography variant="body1">
+          <Typography sx={{ fontSize: '120%' }} variant="body1">
             {t('landing.backstory.paragraph2')}
           </Typography>
         </Container>
@@ -142,6 +142,9 @@ export default function LandingPage() {
         <Container maxWidth="lg">
           <Typography variant="h3" textAlign="center" mb={8}>
             {t('landing.how_it_works')}
+          </Typography>
+          <Typography textAlign="center" sx={{ fontSize: '120%' }} variant="body1">
+            {t('landing.how_it_works_description')}
           </Typography>
           <Box 
             sx={{
@@ -154,25 +157,27 @@ export default function LandingPage() {
             }}
           >
             <Box sx={{ justifyItems: 'center', textAlign: 'center', p: 3 }}>
-
-              <img src="/img/n8n-agent.jpg" style={{ width: '300px'}}></img>
-               <br></br>
+              <Box sx={{ height: '300px', minHeight: '300px'}}>
+                <img src="/img/n8n-agent.jpg" style={{ width: '300px'}}></img>
+              </Box> 
               <Typography variant="h5" mb={2}>1. {t('landing.features.create_profile.title')}</Typography>
               <Typography color="text.secondary">
                 {t('landing.features.create_profile.description')}
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/img/wrapper.png" style={{ width: '120px'}}></img>
-              <br></br>
+               <Box sx={{ height: '300px', minHeight: '300px'}}>
+                <img src="/img/wrapper.png" style={{ width: '120px'}}></img>
+              </Box>
               <Typography variant="h5" mb={2}>2. {t('landing.features.share_memories.title')}</Typography>
               <Typography color="text.secondary">
                 {t('landing.features.share_memories.description')}
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/img/agent-run.jpg" style={{ width: '260px'}}></img>
-              <br></br>
+               <Box sx={{ height: '300px', minHeight: '300px'}}>
+                <img src="/img/agent-run.jpg" style={{ width: '260px'}}></img>
+              </Box>
               <Typography variant="h5" mb={2}>3. {t('landing.features.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">
                 {t('landing.features.preserve_legacy.description')}

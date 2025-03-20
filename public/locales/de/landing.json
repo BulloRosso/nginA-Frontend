@@ -9,6 +9,7 @@
   "ds_business": "Ihre Experten stehen den Kollegen rund um die Uhr als AI-Bot zur Verfügung und Ihre IT-Systeme können per API auf das Wissen zugreifen.",
   "try_now": "Zur Anmeldung",
   "how_it_works": "So funktioniert's",
+  "how_it_works_description": "Bevor Sie Ihre Agenten den Kollegen in Form von Dashboards, Artifact UIs oder Content Pipelines zur Verfügung stellen können, müssen Sie den Agenten über die Eigenschaften des Wrappers beschreiben. Diese Beschreibung enthält z. B. die benötigten Eingabewerte oder die notwendigen Authentifizierungsdaten.",
   "business_edition_hint": "...auch verfügbar als Business-Edition!",
   "backstory": {
     "quote": "Was nutzt mir das?",
