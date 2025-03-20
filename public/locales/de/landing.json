@@ -1,13 +1,13 @@
 { "landing":
 {
-  "title": "nOblivion",
-  "subtitle": "Wertvolle Erinnerungen bewahren",
+  "title": "nginA",
+  "subtitle": "",
   "subtitle_business": "Nie wieder einen Experten verlieren!",
-  "description": "Bewahren Sie die Lebensgeschichten Ihrer Familie durch Gespräche mit unserem KI-Interviewer.",
+  "description": "Self-Hostable Agentic Workflows",
   "description_business":"Die 'leaving experts'-Situation verliert ihren Schrecken, wenn Sie das Wissen ihrer Mitarbeitenden mit nOblivion konservieren.",
-  "ds": "Teilen Sie Erinnerungen, fügen Sie Fotos hinzu und schaffen Sie ein bleibendes Vermächtnis für kommende Generationen.",
+  "ds": "Stop playing with Agents - start delivering business results!",
   "ds_business": "Ihre Experten stehen den Kollegen rund um die Uhr als AI-Bot zur Verfügung und Ihre IT-Systeme können per API auf das Wissen zugreifen.",
-  "try_now": "Jetzt ausprobieren",
+  "try_now": "Zur Anmeldung",
   "how_it_works": "So funktioniert's",
   "business_edition_hint": "...auch verfügbar als Business-Edition!",
   "backstory": {

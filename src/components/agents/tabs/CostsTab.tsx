@@ -269,13 +269,16 @@ export const CostsTab: React.FC<{ agent: Agent; onAgentUpdated?: (agent: Agent) 
   return (
     <Box p={0}>
       <Paper sx={{ p: 3, mb: 4, position: 'relative' }}>
-        <IconButton 
+
+        <Button 
+          startIcon={<EditIcon />} 
           sx={{ position: 'absolute', top: 8, right: 8 }}
           onClick={toggleEditMode}
-          color={isEditMode ? "primary" : "default"}
+          variant="outlined"
+          size="small"
         >
-          {isEditMode ? <CloseIcon /> : <EditIcon />}
-        </IconButton>
+          {isEditMode ? <span>Save</span> : <span>Edit</span>}
+        </Button>
 
         <Typography variant="h6"   sx={{ borderBottom: 'solid 1px #ccc'}}>
           Agent Classification

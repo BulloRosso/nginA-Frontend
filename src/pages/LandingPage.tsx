@@ -9,7 +9,7 @@ export default function LandingPage() {
   const { t } = useTranslation(['landing', 'common']);
 
   const handleGetStarted = () => {
-    navigate('/introduction');
+    navigate('/login');
   };
 
   const handleGotoBusiness = () => {
@@ -22,11 +22,12 @@ export default function LandingPage() {
       <Box 
         sx={{ 
           maxHeight: '100vh',
+          minHeight: '600px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'start',
           backgroundColor: '#f8f9fa',
-          backgroundImage: 'url(/noblivion-opener.jpg)',
+          backgroundImage: 'url(/img/landingpage/supercharged.jpg)',
           backgroundSize: '100vw',
           backgroundRepeat: 'no-repeat',
           position: 'relative',
@@ -36,42 +37,21 @@ export default function LandingPage() {
         <Container maxWidth="lg">
           <Box 
             sx={{ 
-              justifyItems: 'center',
-              textAlign: 'center',
+              justifyItems: 'start',
+              textAlign: 'start',
               py: 6
             }}
           >
-            <img src="/conch-logo.png" alt="Conch Logo" width="100" />
+            <img src="/ngina-logo.jpg" alt="ngina Logo" width="300" />
 
-            <Typography 
-              variant="h2" 
-              component="h1"
-              sx={{ 
-                fontWeight: 'bold',
-                mb: 3,
-                color: '#2c3e50',
-                textShadow: '1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff',
-              }}
-            >
-              <span style={{ color: 'darkred'}}>nO</span>blivion
-            </Typography>
-            <Typography 
-              variant="h4" 
-              sx={{ 
-                mb: 4,
-                color: '#34495e'
-              }}
-            >
-              {t('landing.subtitle')}
-            </Typography>
+            
             <Typography 
               variant="h6" 
               sx={{ 
                 mb: 6,
                 color: '#fff',
                 textShadow: '2px 2px 2px #6B6B6B',
-                maxWidth: '800px',
-                mx: 'auto'
+                maxWidth: '800px'
               }}
             >
               {t('landing.description')}
@@ -88,6 +68,7 @@ export default function LandingPage() {
                 },
                 py: 2,
                 px: 6,
+                mt: '200px',
                 borderRadius: 2
               }}
             >
