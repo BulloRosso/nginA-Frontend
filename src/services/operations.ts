@@ -70,12 +70,13 @@ export const OperationService = {
   },
 
   // Method to start a run for a specific agent
-  startRun: async (agentId: UUID, parameters: any): Promise<Operation> => {
+  startRun: async (agentId: UUID, prompt: string, parameters: any): Promise<Operation> => {
     // Create the run object according to the expected backend API structure
     // Based on the backend code in operations.py
     const data: OperationCreate = {
       agent_id: agentId,
-      status: 'running',
+      prompt: prompt,
+      status: 'pending',
       results: {
         inputParameters: parameters
       }

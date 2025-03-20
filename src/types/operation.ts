@@ -26,6 +26,7 @@ export interface Operation {
   agent_id: UUID | null;
   results: any | null;
   status: string | null;
+  prompt: string | null;
   sum_credits: number | null;
   workflow_id: string | null;
   execution_id: string | null;
@@ -36,6 +37,7 @@ export interface OperationCreate {
   agent_id?: UUID;
   results?: any;
   status?: string;
+  prompt?: string;
   sum_credits?: number;
   workflow_id?: string;
   finished_at?: string;

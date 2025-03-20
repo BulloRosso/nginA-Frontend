@@ -414,7 +414,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
 
         try {
           // Call the API to start a new run
-          await OperationService.startRun(agent.id, runParams);
+          await OperationService.startRun(agent.id, promptText, runParams);
 
           // Close the dialog first to prevent UI freezing
           onClose();
