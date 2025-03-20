@@ -11,9 +11,9 @@
   "how_it_works": "So funktioniert's",
   "business_edition_hint": "...auch verfügbar als Business-Edition!",
   "backstory": {
-    "quote": "Am Strand finden wir oft leere Muscheln – stille Echos der Vergangenheit.",
-    "paragraph1": "Ihre Geschichten bleiben ein Geheimnis, verloren in der Zeit, und doch regen sie unsere Fantasie an. Diese Muscheln, einst lebendig in einer bunten Unterwasserwelt, stehen nun als zerbrechliche Erinnerungen an etwas Größeres. Sie lehren uns eine wesentliche Wahrheit: Das Bewahren der Geschichten der Vergangenheit gibt uns die Weisheit, intensiver in der Gegenwart zu leben.",
-    "paragraph2": "Wir sollten diese Geschichten ehren, denn das Verstehen unserer Herkunft hilft uns, ein helleres, bedeutungsvolleres Heute zu gestalten."
+    "quote": "Was nutzt mir das?",
+    "paragraph1": "nginA stellt n8n Agenten, Workflows und andere Automatisierungen Ihren internen oder externen Kunden zur Verfügung. nginA ergänzt Workflow Engines wie n8n um eine Benutzeroberfläche und/oder Cockpits.",
+    "paragraph2": "Besonders für interne Pipelines, über die Content in Form von Dokumenten oder Texten generiert wird, ist nginA eine gute Wahl."
   },
   "backstory_business": {
     "quote": "Das Wissen Ihrer Mitarbeiter ist der Charakter Ihres Unternehmens",
@@ -27,16 +27,16 @@
   },
   "features": {
     "create_profile": {
-      "title": "Profil erstellen",
-      "description": "Erstellen Sie ein Profil mit grundlegenden Informationen über sich oder Ihre Angehörigen"
+      "title": "Agent erstellen",
+      "description": "In n8n erstellen Sie einen Agenten, der über einen WebHook aufgerufen wird."
     },
     "share_memories": {
-      "title": "Erinnerungen teilen",
-      "description": "Führen Sie natürliche Gespräche mit unserem KI-Interviewer, um Lebensgeschichten festzuhalten"
+      "title": "Wrapper erstellen",
+      "description": "Im Katalog-Teil der nginA Benutzeroberfläche erstellen Sie einen Wrapper für Ihren Agenten."
     },
     "preserve_legacy": {
-      "title": "Vermächtnis bewahren",
-      "description": "Fügen Sie Fotos hinzu, organisieren Sie Erinnerungen und erstellen Sie eine schöne Zeitleiste von Lebensereignissen, die als Buch aus der von uns erstellten PDF-Datei gedruckt werden kann!"
+      "title": "Agent verwenden",
+      "description": "Führen Sie den Agenten in Runs direkt aus oder verknüpfen Sie mehrere Agenten zu neuen Agenten."
     }
   },
   "features_business": {
@@ -54,8 +54,8 @@
     }
   },
   "cta": {
-    "title": "Schenken Sie sich oder einer geliebten Person die Chance, Ihre Erinnerungen zu bewahren",
-    "button": "Jetzt ausprobieren"
+    "title": "Mit nginA verwalten Sie die Arbeit Ihrer Agenten effektiv und stellen die Ergebnisse Ihren Kunden oder Kollegen smart zur Verfügung!",
+    "button": "Zur Anmeldung"
   },
   "cta_business": {
     "title": "Testen Sie wie einfach es sich anfühlt mit unserer personal Edition",

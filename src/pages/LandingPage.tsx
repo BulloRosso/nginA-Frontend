@@ -1,5 +1,5 @@
 // src/components/LandingPage.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Container, Typography, Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,36 @@ import { useTranslation } from 'react-i18next';
 export default function LandingPage() {
   const navigate = useNavigate();
   const { t } = useTranslation(['landing', 'common']);
+  const [heroHeight, setHeroHeight] = useState('auto');
+
+  // Original image dimensions
+  const originalWidth = 1755;
+  const originalHeight = 916;
+
+  // Dynamically calculate hero section height based on viewport width
+  useEffect(() => {
+    const updateHeroHeight = () => {
+      const viewportWidth = Math.min(window.innerWidth, document.documentElement.clientWidth);
+      // Calculate the proportional height based on the image's aspect ratio
+      const aspectRatio = originalHeight / originalWidth;
+      const calculatedHeight = Math.round(viewportWidth * aspectRatio);
+
+      // Set minimum and maximum height constraints
+      const minHeight = 400;
+      const maxHeight = Math.min(window.innerHeight * 0.9, 916); // 90% of viewport height or original height
+
+      const finalHeight = Math.max(minHeight, Math.min(calculatedHeight, maxHeight));
+      setHeroHeight(`${finalHeight}px`);
+    };
+
+    // Update on mount and whenever window resizes
+    updateHeroHeight();
+    window.addEventListener('resize', updateHeroHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateHeroHeight);
+    };
+  }, []);
 
   const handleGetStarted = () => {
     navigate('/login');
@@ -21,15 +51,14 @@ export default function LandingPage() {
       {/* Hero Section */}
       <Box 
         sx={{ 
-          maxHeight: '100vh',
-          minHeight: '600px',
+          height: heroHeight,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'start',
+          justifyContent: 'space-between',
           backgroundColor: '#f8f9fa',
           backgroundImage: 'url(/img/landingpage/supercharged.jpg)',
-          backgroundSize: '100vw',
-          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center top',
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -39,12 +68,12 @@ export default function LandingPage() {
             sx={{ 
               justifyItems: 'start',
               textAlign: 'start',
-              py: 6
+              py: { xs: 3, md: 6 }
             }}
           >
             <img src="/ngina-logo.jpg" alt="ngina Logo" width="300" />
 
-            
+
             <Typography 
               variant="h6" 
               sx={{ 
@@ -56,6 +85,11 @@ export default function LandingPage() {
             >
               {t('landing.description')}
             </Typography>
+            <Box sx={{ 
+                width: '100%',
+                justifyItems: 'end',
+                textAlign: 'end',
+              }}>
             <Button 
               variant="contained" 
               size="large"
@@ -68,49 +102,38 @@ export default function LandingPage() {
                 },
                 py: 2,
                 px: 6,
-                mt: '200px',
+                mt: { xs: '50px', sm: '100px', md: '150px' },
                 borderRadius: 2
               }}
             >
               {t('landing.try_now')}
-            </Button>
+            </Button></Box>
           </Box>
         </Container>
       </Box>
 
-      <Box sx={{ py: 6, backgroundColor: '#f6f5ef' }}>
+      {/* Landing.ds Section - Positioned directly after the hero section */}
+      <Box sx={{ py: 6, backgroundColor: 'black', color: 'white',  borderTop: '1px solid black' }}>
         <Container maxWidth="lg">
-          <Typography variant="h6" textAlign="center" mb={2}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }} textAlign="center" mb={0}>
             {t('landing.ds')}
           </Typography>
         </Container>
       </Box>
 
-      {/* Backstroy Section */}
+      {/* Backstory Section */}
       <Box sx={{ py: 8, backgroundColor: '#f8f9fa', textAlign: 'center' }}>
         <Container maxWidth="md">
-          <Typography sx={{ 
-            color: '#1eb3b7',
-            fontSize: '22px',
-            fontWeight: 'bold',
-            fontFamily: 'Averia Libre',
-          }} textAlign="center" mb={8}>
+          <Typography variant="h3" textAlign="center" mb={8}>
             {t('landing.backstory.quote')}
-          </Typography>  
-          <Typography sx={{ 
-            color: '#777',
-            fontSize: '18px',
-            fontFamily: 'Averia Libre',
-          }} textAlign="center" mb={8}>
+          </Typography> 
+          <Typography variant="body1">
             {t('landing.backstory.paragraph1')}
-          </Typography>  
-          <Typography sx={{ 
-            color: '#777',
-            fontSize: '18px',
-            fontFamily: 'Averia Libre',
-          }} textAlign="center" mb={8}>
+          </Typography>
+          <img src="/img/ngina-usecase-bg.jpg" style={{ marginBottom: '24px', marginTop: '24px' }}></img>
+          <Typography variant="body1">
             {t('landing.backstory.paragraph2')}
-          </Typography>  
+          </Typography>
         </Container>
       </Box>
 
@@ -131,8 +154,8 @@ export default function LandingPage() {
             }}
           >
             <Box sx={{ justifyItems: 'center', textAlign: 'center', p: 3 }}>
-             
-              <img src="/noblivion-icon-1.png" style={{ width: '160px'}}></img>
+
+              <img src="/img/n8n-agent.jpg" style={{ width: '300px'}}></img>
                <br></br>
               <Typography variant="h5" mb={2}>1. {t('landing.features.create_profile.title')}</Typography>
               <Typography color="text.secondary">
@@ -140,7 +163,7 @@ export default function LandingPage() {
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/noblivion-icon-2.png" style={{ width: '160px'}}></img>
+              <img src="/img/wrapper.png" style={{ width: '120px'}}></img>
               <br></br>
               <Typography variant="h5" mb={2}>2. {t('landing.features.share_memories.title')}</Typography>
               <Typography color="text.secondary">
@@ -148,7 +171,7 @@ export default function LandingPage() {
               </Typography>
             </Box>
             <Box sx={{ justifyItems: 'center',textAlign: 'center', p: 3 }}>
-              <img src="/noblivion-icon-3.png" style={{ width: '160px'}}></img>
+              <img src="/img/agent-run.jpg" style={{ width: '260px'}}></img>
               <br></br>
               <Typography variant="h5" mb={2}>3. {t('landing.features.preserve_legacy.title')}</Typography>
               <Typography color="text.secondary">
@@ -169,7 +192,7 @@ export default function LandingPage() {
         }}
       >
         <Container maxWidth="md">
-          <Typography variant="h4" mb={4}>
+          <Typography variant="h5" mb={4}>
             {t('landing.cta.title')}
           </Typography>
           <Button 
@@ -186,9 +209,7 @@ export default function LandingPage() {
           >
             {t('landing.cta.button')}
           </Button>
-          <Typography variant="h5" mt={4}>
-            <Link to="/business" style={{ textDecoration: 'underline' }}>{t('landing.business_edition_hint')}</Link>
-          </Typography>
+      
         </Container>
       </Box>
     </Box>
