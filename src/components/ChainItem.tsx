@@ -78,7 +78,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
               '& svg': {
                 width: '100%',
                 height: '100%',
-                fill: '#c3c9d5'
+                fill: connectorValid ? '#c3c9d5' : '#ff9922'
               }
             }}
             dangerouslySetInnerHTML={{ __html: svgIcon }}
