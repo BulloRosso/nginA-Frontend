@@ -1,8 +1,8 @@
 {
-  "name": "noblivion-frontend",
-  "version": "1.0.0",
+  "name": "ngina-frontend",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Frontend for the Noblivion memory preservation system.",
+  "description": "Frontend for nginA - self-hostable agentic workflows",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -34,6 +34,7 @@
     "luxon": "^3.4.4",
     "marked": "^15.0.7",
     "mermaid": "^11.4.1",
+    "ngina-frontend": "file:",
     "noblivion-frontend": "file:",
     "nprogress": "^0.2.0",
     "react": "^18.2.0",

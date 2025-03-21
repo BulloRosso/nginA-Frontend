@@ -247,7 +247,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
             </Grid>
           </Grid>
 
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
+          <Box sx={{ mt: 3, textAlign: 'center', display: 'none' }}>
             <Typography variant="body2">
               {t('common.auth.new_account')}
               <Link sx={{ marginLeft: '8px' }} component={RouterLink} to="/register" variant="body2">
