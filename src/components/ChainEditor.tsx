@@ -3,8 +3,12 @@ import {
   Box, 
   Typography, 
   Paper, 
-  CircularProgress
+  CircularProgress,
+  Button,
+  Tabs,
+  Tab
 } from '@mui/material';
+import Editor from '@monaco-editor/react';
 import ConnectorArea from './ConnectorArea';
 import ChainItem from './ChainItem';
 import { Agent } from '../types/agent';
@@ -47,6 +51,26 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
   const isDataLoaded = useRef(false);
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [promptText, setPromptText] = useState("Enter your prompt for this agent (chain) here. It must satisfy the input requirements for the first agent in the chain.");
+
+  // Handle tab change
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setSelectedTab(newValue);
+  };
+
+  // Debug render
+  useEffect(() => {
+    console.log("Chain agents state:", chainAgents);
+  }, [chainAgents]);
+
+  // Deep compare for initialChain changes
+  useEffect(() => {
+    if (initialChain?.agents && initialChain.agents.length > 0) {
+      console.log("Updating chain from initialChain props", initialChain);
+      setChainAgents([...initialChain.agents]);
+    }
+  }, [initialChain]);
 
   // Load team and agents data once on component mount
   useEffect(() => {
@@ -150,6 +174,53 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
       }
     }
   }, [chainAgents, onChange, loading]);
+
+  // Helper to get previous agent IDs for a given agent index
+  const getPreviousAgentIds = useCallback((currentIndex: number): string[] => {
+    return chainAgents
+      .slice(0, currentIndex)
+      .map(agent => agent.agentId);
+  }, [chainAgents]);
+
+  // Handle removing an agent from the chain
+  const handleRemoveAgent = useCallback((index: number) => {
+    // Remove the agent at the specified index
+    setChainAgents(prevChainAgents => {
+      const updatedChain = [...prevChainAgents];
+      updatedChain.splice(index, 1);
+      return updatedChain;
+    });
+
+    // Close the connector area
+    setSelectedConnectorIndex(null);
+  }, []);
+
+  // Add a fallback handler that fixes the chain when agents aren't found
+  useEffect(() => {
+    if (!loading && teamAgents.length > 0 && chainAgents.length > 0) {
+      // Check if all agents in the chain exist in the team
+      const hasInvalidAgents = chainAgents.some(
+        chainAgent => !teamAgents.some(teamAgent => teamAgent.id === chainAgent.agentId)
+      );
+
+      if (hasInvalidAgents) {
+        console.log("Chain contains invalid agents - fixing...");
+        // Replace invalid agents with the first available agent
+        const fixedChain = chainAgents.map(chainAgent => {
+          const exists = teamAgents.some(teamAgent => teamAgent.id === chainAgent.agentId);
+          if (!exists) {
+            return {
+              ...chainAgent,
+              agentId: teamAgents[0].id
+            };
+          }
+          return chainAgent;
+        });
+
+        setChainAgents(fixedChain);
+      }
+    }
+  }, [loading, teamAgents, chainAgents]);
 
   // Get agent by ID - memoized to prevent recreating on every render
   const getAgentById = useCallback((id: string): Agent | undefined => {
@@ -297,90 +368,137 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
     <Paper 
       elevation={3} 
       sx={{
-        p: 2,
-        background: '#2d2e2e',
-        backgroundImage: `radial-gradient(#c3c9d5 1px, transparent 0)`,
-        backgroundSize: '24px 24px',
+        p: 0,
+        background: 'white',
         borderRadius: 2,
         width: '100%',
         overflow: 'hidden'
       }}
     >
-      <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>
-        Agent Chain Editor
-      </Typography>
-
-      {/* Chain Items Container */}
-      <Box
-        ref={scrollContainerRef}
-        sx={{
-          display: 'flex',
-          overflowX: 'auto',
-          pb: 2,
-          gap: 2,
-          '&::-webkit-scrollbar': {
-            height: '8px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-            borderRadius: '4px',
-          }
-        }}
-      >
-        {chainAgents.length === 0 ? (
-          <Box sx={{ 
-            width: '100%', 
-            textAlign: 'center', 
-            py: 4, 
-            color: 'rgba(255, 255, 255, 0.5)'
-          }}>
-            <Typography variant="body1">
-              No agents in the chain. Add your first agent by clicking below.
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 2 }}
-              onClick={handleAddAgent}
-            >
-              Add First Agent
-            </Button>
-          </Box>
-        ) : (
-          chainAgents.map((item, index) => {
-            const agent = getAgentById(item.agentId);
-            if (!agent) {
-              console.log(`Agent not found for ID: ${item.agentId}`);
-              return null;
-            }
-
-            return (
-              <ChainItem
-                key={`chain-item-${index}`}
-                agent={agent}
-                connectorType={item.connectorType}
-                connectorJsCode={item.connectorJsCode}
-                connectorValid={item.connectorValid}
-                isLast={index === chainAgents.length - 1}
-                onConnectorValidClick={() => toggleConnectorValid(index)}
-                onUpClick={() => handleSwitchToPrevAgent(index)}
-                onDownClick={() => handleSwitchToNextAgent(index)}
-                onAddClick={handleAddAgent}
-              />
-            );
-          })
-        )}
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0 }}>
+        <Tabs 
+          value={selectedTab} 
+          onChange={handleTabChange}
+          sx={{ 
+            '& .MuiTab-root': { color: '#333' },
+            '& .Mui-selected': { color: '#000' },
+            '& .MuiTabs-indicator': { backgroundColor: '#000' }
+          }}
+        >
+          <Tab label="Prompt" />
+          <Tab label="Chain Editor" />
+        </Tabs>
       </Box>
 
-      {/* Connector Area */}
-      {selectedConnectorIndex !== null && chainAgents[selectedConnectorIndex] && (
-        <ConnectorArea
-          connectorType={chainAgents[selectedConnectorIndex].connectorType}
-          connectorJsCode={chainAgents[selectedConnectorIndex].connectorJsCode}
-          onTypeChange={(type) => handleConnectorTypeChange(selectedConnectorIndex, type)}
-          onCodeChange={(code) => handleConnectorCodeChange(selectedConnectorIndex, code)}
-          onClose={() => setSelectedConnectorIndex(null)}
-        />
+      {/* Prompt Tab */}
+      {selectedTab === 0 && (
+        <Box sx={{ height: 400, mt: 2, border: '1px solid rgba(0, 0, 0, 0.1)', mb: 2 }}>
+          <Editor
+            height="400px"
+            defaultLanguage="markdown"
+            theme="vs-light"
+            value={promptText}
+            onChange={(value) => setPromptText(value || "")}
+            options={{
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              fontSize: 14,
+              wordWrap: 'on'
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Chain Editor Tab */}
+      {selectedTab === 1 && (
+        <Box
+          sx={{
+            background: '#2d2e2e',
+            backgroundImage: `radial-gradient(#c3c9d5 1px, transparent 0)`,
+            backgroundSize: '24px 24px',
+            p: 2,
+            borderRadius: 1,
+            color: 'white'
+          }}
+        >
+
+          {/* Chain Items Container */}
+          <Box
+            ref={scrollContainerRef}
+            sx={{
+              display: 'flex',
+              overflowX: 'auto',
+              pb: 2,
+              gap: 2,
+              '&::-webkit-scrollbar': {
+                height: '8px',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '4px',
+              }
+            }}
+          >
+            {chainAgents.length === 0 ? (
+              <Box sx={{ 
+                width: '100%', 
+                textAlign: 'center', 
+                py: 4, 
+                color: 'rgba(255, 255, 255, 0.5)'
+              }}>
+                <Typography variant="body1">
+                  No agents in the chain. Add your first agent by clicking below.
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 2 }}
+                  onClick={handleAddAgent}
+                >
+                  Add First Agent
+                </Button>
+              </Box>
+            ) : (
+              chainAgents.map((item, index) => {
+                const agent = getAgentById(item.agentId);
+                if (!agent) {
+                  console.log(`Agent not found for ID: ${item.agentId}`);
+                  return null;
+                }
+
+                return (
+                  <ChainItem
+                    key={`chain-item-${index}`}
+                    agent={agent}
+                    connectorType={item.connectorType}
+                    connectorJsCode={item.connectorJsCode}
+                    connectorValid={item.connectorValid}
+                    isLast={index === chainAgents.length - 1}
+                    onConnectorValidClick={() => toggleConnectorValid(index)}
+                    onUpClick={() => handleSwitchToPrevAgent(index)}
+                    onDownClick={() => handleSwitchToNextAgent(index)}
+                    onAddClick={handleAddAgent}
+                  />
+                );
+              })
+            )}
+          </Box>
+
+          {/* Connector Area */}
+          {selectedConnectorIndex !== null && chainAgents[selectedConnectorIndex] && (
+            <ConnectorArea
+              connectorType={chainAgents[selectedConnectorIndex].connectorType}
+              connectorJsCode={chainAgents[selectedConnectorIndex].connectorJsCode}
+              agentId={chainAgents[selectedConnectorIndex].agentId}
+              previousAgentIds={getPreviousAgentIds(selectedConnectorIndex)}
+              onTypeChange={(type) => handleConnectorTypeChange(selectedConnectorIndex, type)}
+              onCodeChange={(code) => handleConnectorCodeChange(selectedConnectorIndex, code)}
+              onClose={() => setSelectedConnectorIndex(null)}
+              onRemoveAgent={() => handleRemoveAgent(selectedConnectorIndex)}
+            />
+          )}
+        </Box>
       )}
     </Paper>
   );

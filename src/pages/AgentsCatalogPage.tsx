@@ -14,7 +14,6 @@ import DiscoveryModal from '../components/agents/DiscoveryModal';
 import AgentWrapperWizard from '../components/agents/AgentWrapperWizard';
 import AgentsFooter from '../components/AgentsFooter';
 import { useNavigate, useLocation } from 'react-router-dom';
-import ChainEditorDemo from '../components/ChainEditorDemo';
 
 const AgentsCatalogPage: React.FC = () => {
   const navigate = useNavigate();
@@ -44,8 +43,6 @@ const AgentsCatalogPage: React.FC = () => {
       <Box sx={{ paddingRight: '20px'}}>
         <AgentsCatalog key={refreshKey} />
       </Box>
-
-      <ChainEditorDemo />
 
       <AgentsFooter 
         onDiscoverClick={() => setIsDiscoveryModalOpen(true)}

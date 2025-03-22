@@ -14,7 +14,9 @@ import {
   StepLabel,
   createTheme,
   ThemeProvider,
-  CssBaseline
+  CssBaseline,
+  ToggleButtonGroup,
+  ToggleButton
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add'; // Import Add icon
 import { Global, css } from '@emotion/react';
@@ -25,12 +27,17 @@ import BuilderCanvas from '../components/agents/BuilderCanvas';
 import useAgentStore from '../../stores/agentStore';
 import { AgentService } from '../services/agents';
 import AgentSelectionModal from '../components/agents/AgentSelectionModal'; // Import the new component
+import ChainEditorDemo from '../components/ChainEditorDemo'; // Import ChainEditorDemo component
 
 interface ProfileSelectionProps {
   onSelect?: (profileId: string) => void;
 }
 
+type BuildMode = 'chain' | 'dynamic';
+
 const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
+  // Add state for mode toggle
+  const [buildMode, setBuildMode] = useState<BuildMode>('chain');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +67,16 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
     'de': 'de',
     'en': 'enUS',
     // Add more locales as needed
+  };
+
+  // Function to handle mode change
+  const handleModeChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newMode: BuildMode | null,
+  ) => {
+    if (newMode !== null) {
+      setBuildMode(newMode);
+    }
   };
 
   // Function to handle step navigation
@@ -146,78 +163,117 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
 
   return (
       <Container maxWidth="lg">
-        <Box sx={{ mt: 2, mb: 4 }}>
-          <Paper elevation={3} sx={{ p: 1, position: 'relative' }}>
-            {error && (
-              <Typography color="error" sx={{ mb: 2 }}>
-                {error}
-              </Typography>
-            )}
-
-            {/* Add Agents Button - Positioned absolute before stepper */}
-            <Button
+        <Box sx={{ mt: 2, mb: 0 }}>
+          {/* Toggle button group for build mode */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            mb: 0
+          }}>
+            <ToggleButtonGroup
               color="primary"
-              startIcon={<AddIcon />}
-              onClick={handleOpenAgentSelection}
+              value={buildMode}
+              exclusive
+              onChange={handleModeChange}
+              aria-label="build mode"
               sx={{
-                position: 'absolute !important',
-                top: '40px',
-                left: '16px',
-                zIndex: 1,
+                mb: 2,
+                '& .MuiToggleButtonGroup-grouped': {
+                  border: 1,
+                  borderColor: 'divider',
+                  '&.Mui-selected': {
+                    fontWeight: 'bold',
+                  },
+                },
               }}
             >
-              {t('agents.add_agents')}
-            </Button>
+              <ToggleButton value="chain" aria-label="chain mode">
+                Chain (manual)
+              </ToggleButton>
+              <ToggleButton value="dynamic" aria-label="dynamic mode">
+                Dynamic (guided)
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
 
-            {/* Step Indicator with Navigation */}
-            <Box sx={{ width: '100%', mb: 2, mt: 5 }}> {/* Added margin top to account for the button */}
-              <Stepper 
-                activeStep={activeStep} 
-                alternativeLabel
-                sx={{ 
-                  '& .MuiStepLabel-root': { 
-                    padding: '0px 8px',
-                  },
-                  '& .MuiStepConnector-line': {
-                    minHeight: '1px',
-                    marginTop: '-8px'
-                  },
-                  '& .MuiStepLabel-label': {
-                    fontSize: '0.85rem',
-                    marginTop: '-2px'
-                  },
-                  '& .MuiSvgIcon-root': {
-                    width: '1.5rem',
-                    height: '1.5rem'
-                  }
+          {/* Conditional rendering based on selected mode */}
+          {buildMode === 'chain' ? (
+            <ChainEditorDemo />
+          ) : (
+            <>
+            <Paper elevation={3} sx={{ p: 1, position: 'relative' }}>
+              {error && (
+                <Typography color="error" sx={{ mb: 2 }}>
+                  {error}
+                </Typography>
+              )}
+
+              {/* Add Agents Button - Positioned absolute before stepper */}
+              <Button
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={handleOpenAgentSelection}
+                sx={{
+                  position: 'absolute !important',
+                  top: '40px',
+                  left: '16px',
+                  zIndex: 1,
                 }}
               >
-                {steps.map((label, index) => {
-                  // Determine if step is enabled based on prerequisites
-                  const isStepDisabled = (index === 1 && !canProceedToTransformations) || 
-                                        (index === 2 && !canProceedToHumanInLoop);
+                {t('agents.add_agents')}
+              </Button>
 
-                  return (
-                    <Step key={label}>
-                      <StepLabel 
-                        onClick={() => !isStepDisabled && handleStepChange(index)} 
-                        sx={{ 
-                          cursor: isStepDisabled ? 'not-allowed' : 'pointer',
-                          opacity: isStepDisabled ? 0.5 : 1
-                        }}
-                      >
-                        {label}
-                      </StepLabel>
-                    </Step>
-                  );
-                })}
-              </Stepper>
-            </Box>
+              {/* Step Indicator with Navigation */}
+              <Box sx={{ width: '100%', mb: 2, mt: 5 }}> {/* Added margin top to account for the button */}
+                <Stepper 
+                  activeStep={activeStep} 
+                  alternativeLabel
+                  sx={{ 
+                    '& .MuiStepLabel-root': { 
+                      padding: '0px 8px',
+                    },
+                    '& .MuiStepConnector-line': {
+                      minHeight: '1px',
+                      marginTop: '-8px'
+                    },
+                    '& .MuiStepLabel-label': {
+                      fontSize: '0.85rem',
+                      marginTop: '-2px'
+                    },
+                    '& .MuiSvgIcon-root': {
+                      width: '1.5rem',
+                      height: '1.5rem'
+                    }
+                  }}
+                >
+                  {steps.map((label, index) => {
+                    // Determine if step is enabled based on prerequisites
+                    const isStepDisabled = (index === 1 && !canProceedToTransformations) || 
+                                          (index === 2 && !canProceedToHumanInLoop);
 
-            {/* Step Content */}
-            {renderStepContent()}
+                    return (
+                      <Step key={label}>
+                        <StepLabel 
+                          onClick={() => !isStepDisabled && handleStepChange(index)} 
+                          sx={{ 
+                            cursor: isStepDisabled ? 'not-allowed' : 'pointer',
+                            opacity: isStepDisabled ? 0.5 : 1
+                          }}
+                        >
+                          {label}
+                        </StepLabel>
+                      </Step>
+                    );
+                  })}
+                </Stepper>
+              </Box>
 
-          </Paper>
+              {/* Step Content */}
+              {renderStepContent()}
+            </Paper>
+            <BuilderBot />
+            </>
+          )}
         </Box>
 
         {/* Agent Selection Modal */}
@@ -258,7 +314,7 @@ const AgentBuilder: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
           </Alert>
         </Snackbar>
 
-        <BuilderBot />
+       
       </Container>
 )};
 

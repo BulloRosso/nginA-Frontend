@@ -34,11 +34,8 @@ const ChainEditorDemo: React.FC = () => {
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          Agent Chain Editor Demo
-        </Typography>
-
+      <Box sx={{ py: 0 }}>
+      
         <ChainEditor 
           onChange={handleChainChange} 
           initialChain={initialChain}

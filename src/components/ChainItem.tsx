@@ -69,7 +69,12 @@ const ChainItem: React.FC<ChainItemProps> = ({
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
+            cursor: 'pointer',
+            '&:hover': {
+              boxShadow: '0 0 8px rgba(195, 201, 213, 0.5)'
+            }
           }}
+          onClick={onConnectorValidClick} // Add click handler to show connector area
         >
           <Box
             sx={{
