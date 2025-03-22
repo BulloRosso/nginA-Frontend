@@ -6,6 +6,9 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import HelpIcon from '@mui/icons-material/Help';
+import CodeIcon from '@mui/icons-material/Code';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { Agent } from '../types/agent';
 
 interface ChainItemProps {
@@ -14,6 +17,7 @@ interface ChainItemProps {
   connectorJsCode: string;
   connectorValid: boolean;
   isLast: boolean;
+  isSelected?: boolean; // New prop to indicate if this item is selected
   onConnectorValidClick: () => void;
   onUpClick: () => void;
   onDownClick: () => void;
@@ -22,8 +26,11 @@ interface ChainItemProps {
 
 const ChainItem: React.FC<ChainItemProps> = ({
   agent,
+  connectorType,
+  connectorJsCode,
   connectorValid,
   isLast,
+  isSelected = false, // Default to false
   onConnectorValidClick,
   onUpClick,
   onDownClick,
@@ -34,6 +41,9 @@ const ChainItem: React.FC<ChainItemProps> = ({
 
   // Get agent title in the correct language
   const agentTitle = agent.title?.en || 'Unknown Agent';
+
+  // Gold color for selected state
+  const goldColor = '#FFD700';
 
   return (
     <Box
@@ -65,7 +75,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
             height: 128,
             background: '#414244',
             borderRadius: '8%',
-            border: '2px solid #c3c9d5',
+            border: isSelected ? `3px solid ${goldColor}` : '2px solid #c3c9d5', // Gold border when selected
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -83,14 +93,14 @@ const ChainItem: React.FC<ChainItemProps> = ({
               '& svg': {
                 width: '100%',
                 height: '100%',
-                fill: connectorValid ? '#c3c9d5' : '#ff9922'
+                fill: isSelected ? goldColor : (connectorValid ? '#c3c9d5' : '#ff9922')
               }
             }}
             dangerouslySetInnerHTML={{ __html: svgIcon }}
           />
         </Box>
 
-        {/* Connector Valid Indicator - upper left */}
+        {/* Connector Type Indicator - upper left */}
         <IconButton
           size="small"
           sx={{
@@ -102,9 +112,24 @@ const ChainItem: React.FC<ChainItemProps> = ({
           }}
           onClick={onConnectorValidClick}
         >
-          {connectorValid ? (
-            <CheckCircleIcon sx={{ color: 'green', fontSize: 39 }} />
-          ) : (
+          {/* Show Help Icon if connector type is empty and not valid */}
+          {(!connectorType || connectorType === '') && !connectorValid && (
+            <HelpIcon sx={{ color: '#808080', fontSize: 39 }} />
+          )}
+
+          {/* Show AutoFixHighIcon if connector type is magic */}
+          {connectorType === 'magic' && connectorValid && (
+            <AutoFixHighIcon sx={{ color: 'green', fontSize: 20, position:'relative', left: '9px', top: '8px' }} />
+          )}
+
+          {/* Show CodeIcon if connector type is code and has code */}
+          {connectorType === 'code' && connectorJsCode && connectorValid && (
+            <CodeIcon sx={{ color: 'green', fontSize: 20,position:'relative', left: '9px', top: '9px' }} />
+          )}
+
+          {/* Show CancelIcon for any other invalid state */}
+          {((connectorType === 'code' && !connectorJsCode) || 
+            (connectorValid === false && connectorType && connectorType !== '')) && (
             <CancelIcon sx={{ color: '#ff9922', fontSize: 39 }} />
           )}
         </IconButton>
@@ -120,7 +145,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
           }}
           onClick={onUpClick}
         >
-          <ArrowUpwardIcon sx={{ color: '#c3c9d5', fontSize: 24 }} />
+          <ArrowUpwardIcon sx={{ color: isSelected ? goldColor : '#c3c9d5', fontSize: 24 }} />
         </IconButton>
 
         {/* Down Arrow - lower right */}
@@ -134,7 +159,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
           }}
           onClick={onDownClick}
         >
-          <ArrowDownwardIcon sx={{ color: '#c3c9d5', fontSize: 24 }} />
+          <ArrowDownwardIcon sx={{ color: isSelected ? goldColor : '#c3c9d5', fontSize: 24 }} />
         </IconButton>
 
         {/* Left Connector - white circle */}
@@ -148,6 +173,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
             height: 32,
             backgroundColor: '#fff',
             borderRadius: '50%',
+            border: isSelected ? `2px solid ${goldColor}` : 'none',
           }}
         />
 
@@ -160,7 +186,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
             transform: 'translateY(-50%)',
             width: 16,
             height: 16,
-            backgroundColor: '#c3c9d5',
+            backgroundColor: isSelected ? goldColor : '#c3c9d5',
             borderRadius: '50%',
           }}
         />
@@ -180,20 +206,20 @@ const ChainItem: React.FC<ChainItemProps> = ({
             sx={{
               width: 55,
               height: 2,
-              backgroundColor: '#c3c9d5',
+              backgroundColor: isSelected ? goldColor : '#c3c9d5',
             }}
           />
           {isLast ? (
             <IconButton
               size="small"
               sx={{
-                backgroundColor: '#c3c9d5',
+                backgroundColor: isSelected ? goldColor : '#c3c9d5',
                 borderRadius: '4px',
                 width: 30,
                 height: 30,
                 padding: 0,
                 '&:hover': {
-                  backgroundColor: '#ddd',
+                  backgroundColor: isSelected ? '#FFC500' : '#ddd',
                 },
               }}
               onClick={onAddClick}
@@ -201,7 +227,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
               <AddIcon sx={{ color: 'black', fontSize: 26 }} />
             </IconButton>
           ) : (
-            <ArrowForwardIcon sx={{ marginLeft: '-7px', color: '#c3c9d5', fontSize: 26 }} />
+            <ArrowForwardIcon sx={{ marginLeft: '-7px', color: isSelected ? goldColor : '#c3c9d5', fontSize: 26 }} />
           )}
         </Box>
       </Box>
@@ -210,7 +236,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
       <Typography
         variant="body2"
         sx={{
-          color: '#fff',
+          color: isSelected ? goldColor : '#fff',
           fontWeight: 'bold',
           fontSize: '100%',
           mt: -3,

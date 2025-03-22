@@ -313,21 +313,16 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
 
   // Toggle connector valid status
   const toggleConnectorValid = useCallback((index: number) => {
+    // First, always update the selectedConnectorIndex to immediately select the item
+    setSelectedConnectorIndex(index);
+
     setChainAgents(prevChainAgents => {
       const updatedChain = [...prevChainAgents];
-      // Toggle connectorValid
+      // Set connectorValid to true for the selected item
       updatedChain[index] = {
         ...updatedChain[index],
-        connectorValid: !updatedChain[index].connectorValid
+        connectorValid: true
       };
-
-      // Show/hide connector area based on new valid state
-      if (updatedChain[index].connectorValid) {
-        setSelectedConnectorIndex(index);
-      } else {
-        setSelectedConnectorIndex(null);
-      }
-
       return updatedChain;
     });
   }, []);
@@ -471,6 +466,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                   <ChainItem
                     key={`chain-item-${index}`}
                     agent={agent}
+                    isSelected={selectedConnectorIndex === index}
                     connectorType={item.connectorType}
                     connectorJsCode={item.connectorJsCode}
                     connectorValid={item.connectorValid}
