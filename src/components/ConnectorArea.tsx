@@ -162,7 +162,7 @@ function transform(env) {
       sx={{
         mt: 2,
         p: 2,
-        background: '#1e1e1e',
+        background: '#efefef',
         borderRadius: 1,
         border: '1px solid rgba(255, 255, 255, 0.1)'
       }}
@@ -175,8 +175,8 @@ function transform(env) {
       }}>
         <Stack direction="row" spacing={2}>
           <Button
-            variant="outlined"
-            color="info"
+            variant="contained"
+            color="primary"
             onClick={handleShowEnvironment}
             disabled={isLoading}
           >
@@ -193,6 +193,7 @@ function transform(env) {
           <Button
             variant="contained"
             color="secondary"
+            sx={{ }}
             onClick={handleGenerateCode}
             disabled={!testSucceeded || isLoading}
           >
@@ -204,35 +205,27 @@ function transform(env) {
             onClick={onRemoveAgent}
             disabled={isLoading}
           >
-            Remove Agent from Chain
+            Remove Agent
           </Button>
         </Stack>
         <IconButton
           onClick={onClose}
-          sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+          sx={{ color: 'black' }}
         >
           <CloseIcon />
         </IconButton>
       </Box>
 
       <FormControl fullWidth variant="outlined" size="small" sx={{ mb: 2 }}>
-        <InputLabel id="connector-type-label" sx={{ color: 'white' }}>Connector Type</InputLabel>
+        <InputLabel id="connector-type-label" sx={{  }}>Input pre-processing</InputLabel>
         <Select
           labelId="connector-type-label"
           value={connectorType}
           onChange={(e) => onTypeChange(e.target.value as 'magic' | 'code')}
           label="Connector Type"
           sx={{
-            color: 'white',
-            '.MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(255, 255, 255, 0.5)',
-            },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'primary.main',
-            },
+          
+           
           }}
         >
           <MenuItem value="magic">
@@ -269,13 +262,13 @@ function transform(env) {
       )}
 
       {connectorType === 'magic' && (
-        <Box sx={{ p: 2, background: 'rgba(0, 0, 0, 0.2)', borderRadius: 1 }}>
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+        <Box sx={{ p: 2, backgroundColor: '#f7f0dd', borderRadius: 1 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Magic connector will automatically transform the output of the previous agent to match the input requirements of the next agent.
           </Typography>
 
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 1 }}>
-            The connector will analyze the output schema of the previous agent and the input schema of the next agent to determine how to transform the data.
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+            The connector will analyze the complete environment and the input schema of this agent to determine how to transform the data.
           </Typography>
         </Box>
       )}

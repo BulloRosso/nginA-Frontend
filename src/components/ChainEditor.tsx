@@ -258,7 +258,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
       agentId: nextAgent.id,
       connectorType: 'magic',
       connectorJsCode: '',
-      connectorValid: false
+      connectorValid: true
     };
 
     setChainAgents(prevChainAgents => [...prevChainAgents, newChainAgent]);
