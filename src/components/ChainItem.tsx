@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Box, Typography, IconButton } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Box, Typography, IconButton, Menu, MenuItem } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddIcon from '@mui/icons-material/Add';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HelpIcon from '@mui/icons-material/Help';
@@ -18,9 +16,9 @@ interface ChainItemProps {
   connectorValid: boolean;
   isLast: boolean;
   isSelected?: boolean; // New prop to indicate if this item is selected
+  teamAgents: Agent[]; // Add teamAgents prop to display in the menu
   onConnectorValidClick: () => void;
-  onUpClick: () => void;
-  onDownClick: () => void;
+  onAgentChange: (agentId: string) => void; // Change to handle agent selection
   onAddClick: () => void;
 }
 
@@ -30,12 +28,16 @@ const ChainItem: React.FC<ChainItemProps> = ({
   connectorJsCode,
   connectorValid,
   isLast,
-  isSelected = false, // Default to false
+  isSelected = false,
+  teamAgents,
   onConnectorValidClick,
-  onUpClick,
-  onDownClick,
+  onAgentChange,
   onAddClick
 }) => {
+  // State for the menu
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
   // Parse SVG icon
   const svgIcon = agent.icon_svg || '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" /></svg>';
 
@@ -44,6 +46,22 @@ const ChainItem: React.FC<ChainItemProps> = ({
 
   // Gold color for selected state
   const goldColor = '#FFD700';
+
+  // Handler for opening the menu
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // Handler for closing the menu
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Handler for selecting an agent from the menu
+  const handleAgentSelect = (agentId: string) => {
+    onAgentChange(agentId);
+    handleMenuClose();
+  };
 
   return (
     <Box
@@ -119,12 +137,12 @@ const ChainItem: React.FC<ChainItemProps> = ({
 
           {/* Show AutoFixHighIcon if connector type is magic */}
           {connectorType === 'magic' && connectorValid && (
-            <AutoFixHighIcon sx={{ color: 'green', fontSize: 20, position:'relative', left: '9px', top: '8px' }} />
+            <AutoFixHighIcon sx={{ color: 'green', fontSize: 39 }} />
           )}
 
           {/* Show CodeIcon if connector type is code and has code */}
           {connectorType === 'code' && connectorJsCode && connectorValid && (
-            <CodeIcon sx={{ color: 'green', fontSize: 20,position:'relative', left: '9px', top: '9px' }} />
+            <CodeIcon sx={{ color: 'green', fontSize: 39 }} />
           )}
 
           {/* Show CancelIcon for any other invalid state */}
@@ -134,7 +152,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
           )}
         </IconButton>
 
-        {/* Up Arrow - upper right */}
+        {/* Vertical Ellipsis - replace the up arrow */}
         <IconButton
           size="small"
           sx={{
@@ -143,24 +161,64 @@ const ChainItem: React.FC<ChainItemProps> = ({
             right: 42,
             padding: 0,
           }}
-          onClick={onUpClick}
+          onClick={handleMenuClick}
+          aria-controls={open ? "agent-menu" : undefined}
+          aria-haspopup="true"
+          aria-expanded={open ? "true" : undefined}
         >
-          <ArrowUpwardIcon sx={{ color: isSelected ? goldColor : '#c3c9d5', fontSize: 24 }} />
+          <MoreVertIcon sx={{ color: isSelected ? goldColor : '#c3c9d5', fontSize: 24 }} />
         </IconButton>
 
-        {/* Down Arrow - lower right */}
-        <IconButton
-          size="small"
-          sx={{
-            position: 'absolute',
-            bottom: 42,
-            right: 42,
-            padding: 0,
+        {/* Agent Selection Menu */}
+        <Menu
+          id="agent-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'agent-selection-button',
           }}
-          onClick={onDownClick}
+          sx={{
+            '& .MuiPaper-root': {
+              backgroundColor: '#2d2e2e',
+              color: 'white',
+              border: '1px solid #444'
+            }
+          }}
         >
-          <ArrowDownwardIcon sx={{ color: isSelected ? goldColor : '#c3c9d5', fontSize: 24 }} />
-        </IconButton>
+          {teamAgents.map((teamAgent) => (
+            <MenuItem 
+              key={teamAgent.id} 
+              onClick={() => handleAgentSelect(teamAgent.id)}
+              selected={teamAgent.id === agent.id}
+              sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                '&.Mui-selected': {
+                  backgroundColor: 'rgba(255, 215, 0, 0.2)'
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            >
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  '& svg': {
+                    width: '100%',
+                    height: '100%',
+                    fill: '#c3c9d5'
+                  }
+                }}
+                dangerouslySetInnerHTML={{ __html: teamAgent.icon_svg || svgIcon }}
+              />
+              {teamAgent.title?.en || 'Unknown Agent'}
+            </MenuItem>
+          ))}
+        </Menu>
 
         {/* Left Connector - white circle */}
         <Box

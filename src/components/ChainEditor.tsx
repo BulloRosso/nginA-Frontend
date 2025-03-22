@@ -59,6 +59,23 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
     setSelectedTab(newValue);
   };
 
+  const handleAgentChange = useCallback((index: number, agentId: string) => {
+    setChainAgents(prevChainAgents => {
+      // Update the agent at the specified index
+      const updatedChain = [...prevChainAgents];
+      updatedChain[index] = {
+        ...updatedChain[index],
+        agentId: agentId,
+        // Reset connector properties when changing agent
+        connectorValid: false
+      };
+      return updatedChain;
+    });
+
+    // Update selected index to the changed agent
+    setSelectedConnectorIndex(index);
+  }, []);
+
   // Debug render
   useEffect(() => {
     console.log("Chain agents state:", chainAgents);
@@ -120,7 +137,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                   agentId: validAgents[0].id,
                   connectorType: 'magic',
                   connectorJsCode: '',
-                  connectorValid: false
+                  connectorValid: true
                 }];
               } else if (initialChain && initialChain.agents.length > 0) {
                 // Check if initialChain agents exist in the team
@@ -141,7 +158,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                       agentId: validAgents[0].id,
                       connectorType: 'magic',
                       connectorJsCode: '',
-                      connectorValid: false
+                      connectorValid: true
                     }];
                   }
 
@@ -466,14 +483,14 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                   <ChainItem
                     key={`chain-item-${index}`}
                     agent={agent}
-                    isSelected={selectedConnectorIndex === index}
                     connectorType={item.connectorType}
                     connectorJsCode={item.connectorJsCode}
                     connectorValid={item.connectorValid}
                     isLast={index === chainAgents.length - 1}
+                    isSelected={selectedConnectorIndex === index}
+                    teamAgents={teamAgents} // Pass all team agents for the menu
                     onConnectorValidClick={() => toggleConnectorValid(index)}
-                    onUpClick={() => handleSwitchToPrevAgent(index)}
-                    onDownClick={() => handleSwitchToNextAgent(index)}
+                    onAgentChange={(agentId) => handleAgentChange(index, agentId)} // New handler
                     onAddClick={handleAddAgent}
                   />
                 );
