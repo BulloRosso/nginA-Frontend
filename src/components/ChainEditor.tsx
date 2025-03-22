@@ -376,14 +376,14 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
       }}
     >
       {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 0 }}>
+      <Box sx={{ mb: 0 }}>
         <Tabs 
           value={selectedTab} 
           onChange={handleTabChange}
           sx={{ 
             '& .MuiTab-root': { color: '#333' },
             '& .Mui-selected': { color: '#000' },
-            '& .MuiTabs-indicator': { backgroundColor: '#000' }
+            '& .MuiTabs-indicator': { height: '3px', backgroundColor: 'primary' }
           }}
         >
           <Tab label="Prompt" />
@@ -492,6 +492,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
               connectorJsCode={chainAgents[selectedConnectorIndex].connectorJsCode}
               agentId={chainAgents[selectedConnectorIndex].agentId}
               previousAgentIds={getPreviousAgentIds(selectedConnectorIndex)}
+              promptText={promptText} // Pass the prompt text to the ConnectorArea
               onTypeChange={(type) => handleConnectorTypeChange(selectedConnectorIndex, type)}
               onCodeChange={(code) => handleConnectorCodeChange(selectedConnectorIndex, code)}
               onClose={() => setSelectedConnectorIndex(null)}

@@ -26,6 +26,7 @@ interface ConnectorAreaProps {
   connectorJsCode: string;
   agentId: string;
   previousAgentIds: string[];
+  promptText: string; // Add this prop to receive the prompt text
   onTypeChange: (type: 'magic' | 'code') => void;
   onCodeChange: (code: string) => void;
   onClose: () => void;
@@ -37,6 +38,7 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
   connectorJsCode,
   agentId,
   previousAgentIds,
+  promptText, // Receive the prompt text from ChainEditor
   onTypeChange,
   onCodeChange,
   onClose,
@@ -49,6 +51,15 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
   const [testSucceeded, setTestSucceeded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    // Log to verify we're receiving the correct data
+    console.log("ConnectorArea props:", {
+      agentId,
+      previousAgentIds,
+      promptText
+    });
+  }, [agentId, previousAgentIds, promptText]);
+
   const closeModal = () => {
     setIsModalOpen(false);
   };
@@ -57,11 +68,11 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
   const handleShowEnvironment = async () => {
     setIsLoading(true);
     try {
-      // Call the simulate chain environment endpoint with previous agent IDs
+      // Use the actual prompt text and previousAgentIds from props
       const environmentData = await ContextService.simulateChainEnvironment(
         agentId,
-        "Sample prompt for simulation",
-        previousAgentIds
+        promptText || "Sample prompt for simulation", // Use the prompt text or a fallback
+        previousAgentIds // This should contain all previous agent IDs in the chain
       );
 
       setModalTitle('Environment Variables');
@@ -279,7 +290,7 @@ function transform(env) {
         <Paper 
           sx={{ 
             border: modalSuccess ? '2px solid green' : '2px solid red',
-            background: '#1e1e1e',
+            
             color: 'white'
           }}
         >
@@ -315,7 +326,7 @@ function transform(env) {
             </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeModal} variant="outlined" sx={{ color: 'white', borderColor: 'white' }}>
+            <Button onClick={closeModal} variant="outlined" sx={{  }}>
               Close
             </Button>
           </DialogActions>
