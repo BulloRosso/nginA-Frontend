@@ -132,23 +132,23 @@ const ChainItem: React.FC<ChainItemProps> = ({
         >
           {/* Show Help Icon if connector type is empty and not valid */}
           {(!connectorType || connectorType === '') && !connectorValid && (
-            <HelpIcon sx={{ color: '#808080', fontSize: 39 }} />
+            <HelpIcon sx={{ color: '#808080', fontSize: 24, position: 'relative', top: 7, left: 7 }} />
           )}
 
           {/* Show AutoFixHighIcon if connector type is magic */}
           {connectorType === 'magic' && connectorValid && (
-            <AutoFixHighIcon sx={{ color: 'green', fontSize: 39 }} />
+            <AutoFixHighIcon sx={{ color: 'green', fontSize: 24, position: 'relative', top: 7, left: 7 }} />
           )}
 
           {/* Show CodeIcon if connector type is code and has code */}
           {connectorType === 'code' && connectorJsCode && connectorValid && (
-            <CodeIcon sx={{ color: 'green', fontSize: 39 }} />
+            <CodeIcon sx={{ color: 'green', fontSize: 24, position: 'relative', top: 7, left: 7 }} />
           )}
 
           {/* Show CancelIcon for any other invalid state */}
           {((connectorType === 'code' && !connectorJsCode) || 
             (connectorValid === false && connectorType && connectorType !== '')) && (
-            <CancelIcon sx={{ color: '#ff9922', fontSize: 39 }} />
+            <CancelIcon sx={{ color: '#ff9922', fontSize: 24, position: 'relative', top: 7, left: 7 }} />
           )}
         </IconButton>
 
@@ -235,7 +235,7 @@ const ChainItem: React.FC<ChainItemProps> = ({
           }}
         />
 
-        {/* Right Connector - circle */}
+                  {/* Right Connector - circle */}
         <Box
           sx={{
             position: 'absolute',
@@ -248,6 +248,23 @@ const ChainItem: React.FC<ChainItemProps> = ({
             borderRadius: '50%',
           }}
         />
+
+        {/* Red disc indicator for missing output_example */}
+        {!agent.output_example && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 42,
+              right: 42,
+              width: 16,
+              height: 16,
+              backgroundColor: '#ff3333',
+              borderRadius: '50%',
+              border: '2px solid #2d2e2e',
+            }}
+            title="Missing output example"
+          />
+        )}
 
         {/* Right Connection Line + Icon */}
         <Box
