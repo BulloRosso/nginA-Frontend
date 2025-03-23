@@ -1,8 +1,8 @@
 
 import './App.css';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Login } from './components/auth/Login';
 import { Register } from './components/auth';
 import { ForgotPassword } from './components/auth';
@@ -35,6 +35,7 @@ import PromptEditor from './components/prompts/PromptEditor';
 import DashboardEditor from './components/DashboardEditor';
 import Dashboard from './pages/Dashboard'; 
 import RoleAuthGuard from './components/auth/RoleAuthGuard';
+import IntroductionAgents from './pages/IntroductionAgents';
 
 // Create the theme with error handling
 let theme;
@@ -57,6 +58,31 @@ try {
     },
   };
 }
+
+// Display agent types on first visit
+const OperatorRouteHandler = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  useEffect(() => {
+    // Check if intro_for_agents exists in localStorage
+    const introSeen = localStorage.getItem('intro_for_agents');
+
+    if (!introSeen && location.pathname === '/operator') {
+      // If not seen yet and on operator path, redirect to introduction
+      navigate('/introduction-agents');
+    } else {
+      setShouldRedirect(true);
+    }
+  }, [navigate, location.pathname]);
+
+  if (!shouldRedirect) {
+    return null; // Render nothing while checking
+  }
+
+  return <AgentOperator />;
+};
 
 const ProtectedRoute = ({ children }) => {
   return (
@@ -131,6 +157,16 @@ const App = () => {
 
                   {/* Protected routes - with header */}
                   <Route 
+                    path="/introduction-agents" 
+                    element={
+                      <ProtectedRoute>
+                        <VerifiedRoute>
+                          <IntroductionAgents />
+                        </VerifiedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
                     path="/builder" 
                     element={
                       <ProtectedRoute>
@@ -145,7 +181,7 @@ const App = () => {
                     element={
                       <ProtectedRoute>
                         <VerifiedRoute>
-                          <AgentOperator />
+                          <OperatorRouteHandler />
                         </VerifiedRoute>
                       </ProtectedRoute>
                     } 
