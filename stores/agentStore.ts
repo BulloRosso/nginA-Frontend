@@ -3,9 +3,11 @@ import { create } from 'zustand';
 import { Agent } from '../src/types/agent';
 import { Team } from '../src/types/team';
 import { TeamStatus } from '../src/types/operation';
+import { CreditReport, IntervalType, AgentUsage, BalanceResponse } from '../types/accounting';
 import { AgentService } from '../src/services/agents';
 import { TeamService } from '../src/services/teams';
 import { OperationService } from '../src/services/operations';
+import { AccountingService } from '../src/services/accounting';
 
 interface AgentChainItem {
   agent_id: string;
@@ -39,6 +41,14 @@ interface BuilderState {
   selectedTab: number;
 }
 
+// Accounting state interface
+interface AccountingState {
+  creditReport: CreditReport | null;
+  selectedInterval: IntervalType;
+  isLoadingCredits: boolean;
+  creditError: string | null;
+}
+
 interface AgentStore {
   // Builder state
   currentAgentChain: AgentChainItem[];
@@ -58,6 +68,9 @@ interface AgentStore {
 
   // ChainEditor state
   builderState: BuilderState;
+
+  // Accounting state
+  accountingState: AccountingState;
 
   // Builder actions
   setCurrentAgentChain: (chain: AgentChainItem[]) => void;
@@ -88,6 +101,10 @@ interface AgentStore {
   updateConnectorType: (index: number, type: 'magic' | 'code') => void;
   updateConnectorCode: (index: number, code: string) => void;
   updateConnectorValid: (index: number, valid: boolean) => void;
+
+  // Accounting actions
+  fetchCreditReport: (interval?: IntervalType) => Promise<void>;
+  setSelectedInterval: (interval: IntervalType) => void;
 }
 
 export const useAgentStore = create<AgentStore>((set, get) => ({
@@ -115,6 +132,14 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     },
     buildMode: 'chain',
     selectedTab: 0
+  },
+
+  // Accounting state
+  accountingState: {
+    creditReport: null,
+    selectedInterval: 'month',
+    isLoadingCredits: false,
+    creditError: null
   },
 
   // Builder actions
@@ -464,6 +489,56 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         }
       }
     };
+  }),
+
+  // Accounting actions
+  fetchCreditReport: async (interval) => {
+    // Use the provided interval or the current one from state
+    const intervalToUse = interval || get().accountingState.selectedInterval;
+
+    set((state) => ({
+      accountingState: {
+        ...state.accountingState,
+        isLoadingCredits: true,
+        creditError: null
+      }
+    }));
+
+    try {
+      const reportData = await AccountingService.getReport(intervalToUse);
+
+      set((state) => ({
+        accountingState: {
+          ...state.accountingState,
+          creditReport: reportData,
+          isLoadingCredits: false
+        }
+      }));
+    } catch (err) {
+      set((state) => ({
+        accountingState: {
+          ...state.accountingState,
+          creditError: err instanceof Error ? err.message : 'Failed to fetch credit information',
+          isLoadingCredits: false
+        }
+      }));
+    }
+  },
+
+  setSelectedInterval: (interval) => set((state) => {
+    // Only update if it's different from current interval
+    if (interval !== state.accountingState.selectedInterval) {
+      // Immediately trigger a data fetch with the new interval
+      setTimeout(() => get().fetchCreditReport(interval), 0);
+
+      return {
+        accountingState: {
+          ...state.accountingState,
+          selectedInterval: interval
+        }
+      };
+    }
+    return state;
   })
 }));
 

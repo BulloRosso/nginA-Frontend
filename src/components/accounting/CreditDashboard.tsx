@@ -1,5 +1,5 @@
 // src/components/accounting/CreditDashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { 
   Box, 
   Paper, 
@@ -16,7 +16,7 @@ import {
   ListItemIcon,
   ListItemText
 } from '@mui/material';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { 
   Today as DayIcon, 
   CalendarMonth as MonthIcon, 
@@ -26,10 +26,8 @@ import {
   FiberManualRecord as DotIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { AccountingService } from '../../services/accounting';
-import { AgentService } from '../../services/agents';
-import { CreditReport, IntervalType, AgentUsage, BalanceResponse } from '../../types/accounting';
-import { Agent } from '../../types/agent';
+import { IntervalType, AgentUsage } from '../../types/accounting';
+import useAgentStore from '../../../stores/agentStore';
 
 // Chart legend item component
 interface LegendItemProps {
@@ -195,10 +193,20 @@ export const CreditDashboard: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const [interval, setInterval] = useState<IntervalType>('month');
-  const [report, setReport] = useState<CreditReport | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Get accounting state and actions from Zustand store
+  const { 
+    accountingState, 
+    fetchCreditReport, 
+    setSelectedInterval 
+  } = useAgentStore();
+
+  // Destructure the accounting state
+  const { 
+    creditReport: report, 
+    selectedInterval: interval, 
+    isLoadingCredits: loading, 
+    creditError: error 
+  } = accountingState;
 
   // Handle interval change
   const handleIntervalChange = (
@@ -206,30 +214,14 @@ export const CreditDashboard: React.FC = () => {
     newInterval: IntervalType,
   ) => {
     if (newInterval !== null) {
-      setInterval(newInterval);
+      setSelectedInterval(newInterval);
     }
   };
 
-  // Fetch report data when interval changes
+  // Fetch report data on component mount and when interval changes
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Get usage report for the selected interval (now includes credits_remaining)
-        const reportData = await AccountingService.getReport(interval);
-        setReport(reportData);
-      } catch (err) {
-        console.error('Error fetching credit data:', err);
-        setError('Failed to load credit information');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [interval]);
+    fetchCreditReport();
+  }, []); // Only run once on mount since setSelectedInterval triggers a data fetch
 
   if (loading) {
     return (
