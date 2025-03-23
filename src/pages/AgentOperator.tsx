@@ -1,5 +1,5 @@
-// src/pages/ProfileSelection.tsx
-import React, { useState, useEffect, Suspense, useTransition } from 'react';
+// src/pages/AgentOperator.tsx
+import React, { useEffect, Suspense, useTransition } from 'react';
 import { 
   Container, 
   Paper, 
@@ -13,16 +13,26 @@ import { useTranslation } from 'react-i18next';
 import './styles/GoldButton.css';
 import SupportBot from '../components/SupportBot';
 import TeamStatus from '../components/agents/TeamStatus';
+import useAgentStore from '../../stores/agentStore';
 
-interface ProfileSelectionProps {
+interface AgentOperatorProps {
   onSelect?: (profileId: string) => void;
 }
 
-const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
+const AgentOperator: React.FC<AgentOperatorProps> = ({ onSelect }) => {
   const [isPending, startTransition] = useTransition();
-  const loading = false;
-  const error = null;
   const { t, i18n } = useTranslation(['agents','profile', 'common']);
+
+  // Pre-fetch data when component mounts
+  const { fetchAgentsAndTeam, fetchTeamStatus } = useAgentStore();
+
+  useEffect(() => {
+    // Start loading data when the component mounts
+    startTransition(() => {
+      fetchAgentsAndTeam();
+      fetchTeamStatus();
+    });
+  }, [fetchAgentsAndTeam, fetchTeamStatus]);
 
   // Map i18n languages to date-fns locales
   const locales = {
@@ -34,20 +44,6 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
   const getCurrentLocale = () => {
     return locales[i18n.language] || enUS;  // fallback to English
   };
-  
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ 
-        mt: 4, 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '50vh' 
-      }}>
-        <CircularProgress />
-      </Container>
-    );
-  }
 
   return (
     <Container maxWidth="lg">
@@ -57,25 +53,21 @@ const AgentOperator: React.FC<ProfileSelectionProps> = ({ onSelect }) => {
             {t('agents.select_agent')}
           </Typography>
 
-          {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
-              {error}
-            </Typography>
-          )}
-
           <Suspense fallback={<CircularProgress />}>
             {isPending ? (
-              <CircularProgress />
+              <Box display="flex" justifyContent="center" p={4}>
+                <CircularProgress />
+              </Box>
             ) : (
               <TeamStatus />
             )}
           </Suspense>
-          
+
         </Paper>
       </Box>
 
       <SupportBot />
-      
+
     </Container>
   );
 };

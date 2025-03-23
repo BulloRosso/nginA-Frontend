@@ -33,10 +33,7 @@ import {
   BackHand as BackHandIcon
 } from '@mui/icons-material';
 import RunHistory from './RunHistory';
-import { OperationService } from '../../services/operations';
-import { TeamStatus as TeamStatusType } from '../../types/operation';
 import { AgentService } from '../../services/agents';
-import { TeamService } from '../../services/teams';
 import { Agent } from '../../types/agent';
 import AgentIcon from './AgentIcon';
 import RunParameters from './RunParameters';
@@ -47,6 +44,7 @@ import { useNavigate } from 'react-router-dom';
 import ScratchpadBrowser from '../ScratchpadBrowser';
 import { supabase, subscribeToAgentRuns, initSupabaseAuth } from '../../services/supabase-client';
 import { useAuth } from '../../hooks/useAuth';
+import useAgentStore from '../../../stores/agentStore';
 
 const getStatusColor = (status: string | null) => {
   switch (status) {
@@ -87,31 +85,7 @@ const formatDuration = (seconds: number): string => {
   return `${minutes}m ${remainingSeconds}s`;
 };
 
-const xgetRelativeTime = (dateString: string, i18n: any, _trigger?: number): string => {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) {
-    return "just now";
-  } else if (diffInSeconds < 3600) {
-    const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 604800) {
-    const days = Math.floor(diffInSeconds / 86400);
-    return `${days} day${days !== 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 2592000) {
-    const weeks = Math.floor(diffInSeconds / 604800);
-    return `${weeks} week${weeks !== 1 ? 's' : ''} ago`;
-  } else {
-    return date.toLocaleDateString();
-  }
-};
-
-// New function to get relative time from timestamp
+// Get relative time from timestamp
 const getRelativeTime = (dateString: string, i18n: any, t: any, _trigger?: number): string => {
   const now = new Date();
   const date = new Date(dateString);
@@ -141,16 +115,24 @@ const getRelativeTime = (dateString: string, i18n: any, t: any, _trigger?: numbe
 const ITEMS_PER_PAGE = 3;
 
 const TeamStatusComponent: React.FC = () => {
-  const { t, i18n } = useTranslation(['agents' , 'common']);
+  const { t, i18n } = useTranslation(['agents', 'common']);
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Get data and functions from Zustand store
+  const {
+    teamStatus,
+    teamStatusLoading: loading,
+    teamStatusError: error,
+    catalogAgents: agents,
+    team,
+    fetchTeamStatus,
+    fetchAgentsAndTeam,
+    updateTeamMembership,
+    updateAgentRun
+  } = useAgentStore();
+
   // All useState hooks need to be called in the same order every render
-  const [teamStatus, setTeamStatus] = useState<TeamStatusType | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [team, setTeam] = useState<any>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null);
   const [resultsDialogOpen, setResultsDialogOpen] = useState(false);
@@ -198,21 +180,9 @@ const TeamStatusComponent: React.FC = () => {
 
     try {
       setIsAddingOrRemoving(agentId);
-
-      if (isAgentInTeam(agentId)) {
-        // Remove agent from team
-        const updatedTeam = await TeamService.removeAgent(agentId);
-        setTeam(updatedTeam);
-        // Refresh team status after removing an agent
-        const statusData = await OperationService.getTeamStatus();
-        setTeamStatus(statusData);
-      } else {
-        // Add agent to team
-        const updatedTeam = await TeamService.addAgent(agentId);
-        setTeam(updatedTeam);
-      }
+      await updateTeamMembership(agentId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update team');
+      console.error('Failed to update team membership:', err);
     } finally {
       setIsAddingOrRemoving(null);
     }
@@ -262,30 +232,14 @@ const TeamStatusComponent: React.FC = () => {
       setCurrentAgent(completeAgent);
       setRunParametersDialogOpen(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch agent details');
+      console.error('Failed to fetch agent details:', err);
     }
   }, []);
 
   const handleRunCreated = useCallback(async () => {
-    try {
-      // Refresh the team status data
-      const statusData = await OperationService.getTeamStatus();
-      setTeamStatus(statusData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh team status');
-    }
-  }, []);
-
-  const getFabIcon = (status: string | null) => {
-    switch (status) {
-      case 'pending':
-        return <PauseIcon />;
-      case 'human-in-the-loop':
-        return <BackHandIcon />;
-      default:
-        return <RunIcon />;
-    }
-  };
+    // Refresh the team status data
+    await fetchTeamStatus();
+  }, [fetchTeamStatus]);
 
   const isActiveRun = (lastRun: any) => {
     return lastRun && lastRun.startedAt && !lastRun.finishedAt;
@@ -299,40 +253,6 @@ const TeamStatusComponent: React.FC = () => {
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
   };
-
-  // Update a specific agent run in the team status
-  const updateAgentRun = useCallback((payload: any) => {
-    if (!teamStatus || !payload.new) return;
-
-    setTeamStatus(prevStatus => {
-      if (!prevStatus) return prevStatus;
-
-      // Find the agent that corresponds to this run
-      const updatedAgents = prevStatus.agents.map(agent => {
-        // Check if this agent's lastRun should be updated (by matching agent_id)
-        if (agent.lastRun && agent.lastRun.run_id === payload.new.id) {
-          return {
-            ...agent,
-            lastRun: {
-              ...agent.lastRun,
-              status: payload.new.status,
-              results: payload.new.results,
-              finishedAt: payload.new.finished_at,
-              duration: payload.new.finished_at 
-                ? Math.round((new Date(payload.new.finished_at).getTime() - new Date(agent.lastRun.startedAt).getTime()) / 1000)
-                : agent.lastRun.duration
-            }
-          };
-        }
-        return agent;
-      });
-
-      return {
-        ...prevStatus,
-        agents: updatedAgents
-      };
-    });
-  }, [teamStatus]);
 
   // Set up Supabase real-time subscription
   useEffect(() => {
@@ -369,26 +289,10 @@ const TeamStatusComponent: React.FC = () => {
 
   // Initial data fetching
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [statusData, agentsData, teamData] = await Promise.all([
-          OperationService.getTeamStatus(),
-          AgentService.getAgents(),
-          TeamService.getTeam()
-        ]);
-        setTeamStatus(statusData);
-        setAgents(agentsData);
-        setTeam(teamData);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch team status');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    // Fetch both agents/team and team status
+    fetchAgentsAndTeam();
+    fetchTeamStatus();
+  }, [fetchAgentsAndTeam, fetchTeamStatus]);
 
   // Calculate pagination values
   const getPaginatedData = () => {
@@ -539,7 +443,7 @@ const TeamStatusComponent: React.FC = () => {
                           variant="outlined"
                           size="small"
                           startIcon={<FileIcon />}
-                          
+
                           onClick={() => {
                             if (agentStatus.lastRun) {
                               // Pass both the results and the run_id to handleShowResults
@@ -655,9 +559,6 @@ const TeamStatusComponent: React.FC = () => {
               // Strip any existing path prefixes if they exist in the ID
               workflowId = workflowId.replace(/^\/workflow\/|^workflow\//, '');
               handleOpenWorkflow(workflowId);
-            } else {
-              // Show a notification or alert that no workflow ID is available
-              setError("No workflow ID available for this agent");
             }
           }}
         >
@@ -740,6 +641,7 @@ const TeamStatusComponent: React.FC = () => {
         agent={currentAgent}
         onRunCreated={handleRunCreated}
       />
+
       {/* Run History Drawer */}
       <RunHistory
         open={runHistoryOpen}

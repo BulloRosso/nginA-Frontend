@@ -2,34 +2,32 @@
 import React, { useState } from 'react';
 import { 
   Container, 
-  Box, 
-  Button,
-  Stack
+  Box
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import WidgetsIcon from '@mui/icons-material/Widgets';
 import { useTranslation } from 'react-i18next';
 import AgentsCatalog from '../components/AgentsCatalog';
 import DiscoveryModal from '../components/agents/DiscoveryModal';
 import AgentWrapperWizard from '../components/agents/AgentWrapperWizard';
 import AgentsFooter from '../components/AgentsFooter';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import useAgentStore from '../../stores/agentStore';
 
 const AgentsCatalogPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation(['agents']);
+  const refreshAgentsAndTeam = useAgentStore(state => state.refreshAgentsAndTeam);
+
   const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
   const [isWrapperWizardOpen, setIsWrapperWizardOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSuccess = () => {
-    setRefreshKey(prev => prev + 1);
+    refreshAgentsAndTeam();
   };
 
   const gotoBuilder = () => {
     navigate('/builder');
   }
-  
+
   return (
     <Container 
       maxWidth={false} 
@@ -41,7 +39,7 @@ const AgentsCatalogPage: React.FC = () => {
       }}
     >
       <Box sx={{ paddingRight: '20px'}}>
-        <AgentsCatalog key={refreshKey} />
+        <AgentsCatalog />
       </Box>
 
       <AgentsFooter 
@@ -49,7 +47,7 @@ const AgentsCatalogPage: React.FC = () => {
         onWrapperClick={() => setIsWrapperWizardOpen(true)}
         onBuildClick={() => gotoBuilder()}
       />
-      
+
       <DiscoveryModal
         open={isDiscoveryModalOpen}
         onClose={() => setIsDiscoveryModalOpen(false)}

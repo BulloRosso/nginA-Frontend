@@ -13,41 +13,29 @@ import {
 } from '@mui/material';
 import { Star as StarIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { AgentService } from '../services/agents';
-import { TeamService } from '../services/teams';
-import { Agent } from '../types/agent';
-import { Team } from '../types/team';
 import { useNavigate } from 'react-router-dom';
 import AgentIcon from './agents/AgentIcon';
+import useAgentStore from '../../stores/agentStore';
 
 const AgentsCatalog: React.FC = () => {
   const navigate = useNavigate();
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [addingAgent, setAddingAgent] = useState<string | null>(null);
   const { i18n, t } = useTranslation("agents");
+  const [processingAgentId, setProcessingAgentId] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    try {
-      const [agentsData, teamData] = await Promise.all([
-        AgentService.getAgents(),
-        TeamService.getTeam()
-      ]);
-      setAgents(agentsData);
-      setTeam(teamData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Get data and actions from the store
+  const { 
+    catalogAgents: agents, 
+    team, 
+    isLoading, 
+    hasError, 
+    fetchAgentsAndTeam, 
+    updateTeamMembership 
+  } = useAgentStore();
 
+  // Fetch data on component mount if not already loaded
   useEffect(() => {
-    fetchData();
-    console.log("Agents", agents)
-  }, []);
+    fetchAgentsAndTeam();
+  }, [fetchAgentsAndTeam]);
 
   const isAgentInTeam = (agentId: string): boolean => {
     return team?.agents.members.some(member => member.agentId === agentId) ?? false;
@@ -57,30 +45,19 @@ const AgentsCatalog: React.FC = () => {
     // Stop propagation to prevent card navigation when clicking on the icon
     event.stopPropagation();
 
-    if (addingAgent === agentId) {
+    if (processingAgentId === agentId) {
       return;
     }
 
+    setProcessingAgentId(agentId);
     try {
-      setAddingAgent(agentId);
-
-      if (isAgentInTeam(agentId)) {
-        // Remove agent from team
-        const updatedTeam = await TeamService.removeAgent(agentId);
-        setTeam(updatedTeam);
-      } else {
-        // Add agent to team
-        const updatedTeam = await TeamService.addAgent(agentId);
-        setTeam(updatedTeam);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update team');
+      await updateTeamMembership(agentId);
     } finally {
-      setAddingAgent(null);
+      setProcessingAgentId(null);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <CircularProgress />
@@ -88,11 +65,11 @@ const AgentsCatalog: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (hasError) {
     return (
       <Container maxWidth="lg">
         <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
+          {hasError}
         </Alert>
       </Container>
     );
@@ -102,7 +79,7 @@ const AgentsCatalog: React.FC = () => {
     <Grid container spacing={2}>
       {agents.map((agent) => {
         const inTeam = isAgentInTeam(agent.id);
-        const isAdding = addingAgent === agent.id;
+        const isProcessing = processingAgentId === agent.id;
 
         return (
           <Grid item xs={12} sm={6} md={4} lg={3} key={agent.id}>
@@ -170,7 +147,7 @@ const AgentsCatalog: React.FC = () => {
                       placement="top"
                     >
                       <span>
-                        {isAdding ? (
+                        {isProcessing ? (
                           <Box 
                             display="flex" 
                             justifyContent="center" 
