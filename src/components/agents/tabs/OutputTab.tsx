@@ -106,7 +106,7 @@ const FileExtensionsChips: React.FC<{
 
       {extensionList.length === 0 && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Currently no content will be extracted after the agent finished.
+          Currently no content will be extracted to the scratchpad after the agent finished.
         </Alert>
       )}
 

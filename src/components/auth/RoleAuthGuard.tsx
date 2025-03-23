@@ -59,7 +59,7 @@ const RoleAuthGuard: React.FC<RoleAuthGuardProps> = ({
     if (!isLoading) {
       checkTokenAndRole();
     }
-  }, [isLoading, validateToken, isAuthenticated, allowedRoles]);
+  }, [isLoading, validateToken]);
 
   // Show loading spinner while checking
   if (isLoading || isValidating) {
