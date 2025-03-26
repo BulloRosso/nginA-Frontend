@@ -24,11 +24,13 @@ import ContextService from '../services/contexts';
 interface ConnectorAreaProps {
   connectorType: 'magic' | 'code';
   connectorJsCode: string;
+  connectorPrompt: string; // New prop for storing the prompt
   agentId: string;
   previousAgentIds: string[];
-  promptText: string; // Add this prop to receive the prompt text
+  promptText: string;
   onTypeChange: (type: 'magic' | 'code') => void;
   onCodeChange: (code: string) => void;
+  onPromptChange: (prompt: string) => void; // New prop for handling prompt changes
   onClose: () => void;
   onRemoveAgent: () => void;
 }
@@ -36,11 +38,13 @@ interface ConnectorAreaProps {
 const ConnectorArea: React.FC<ConnectorAreaProps> = ({
   connectorType,
   connectorJsCode,
+  connectorPrompt, // Add the new prop
   agentId,
   previousAgentIds,
-  promptText, // Receive the prompt text from ChainEditor
+  promptText,
   onTypeChange,
   onCodeChange,
+  onPromptChange, // Add the new handler
   onClose,
   onRemoveAgent
 }) => {
@@ -56,9 +60,10 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
     console.log("ConnectorArea props:", {
       agentId,
       previousAgentIds,
-      promptText
+      promptText,
+      connectorPrompt
     });
-  }, [agentId, previousAgentIds, promptText]);
+  }, [agentId, previousAgentIds, promptText, connectorPrompt]);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -93,13 +98,31 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
     }
   };
 
+  // Updated handleTestChain method for ConnectorArea.tsx
+
   const handleTestChain = async () => {
     setIsLoading(true);
     try {
-      const response = await ContextService.getAgentInputFromEnv(agentId, null);
+      let response;
 
-      // For demonstration purposes, we're checking if we got a successful response by seeing 
-      // if we received an object rather than an error message
+      // Use different methods based on connector type
+      if (connectorType === 'magic') {
+        console.log("Testing magic connector for agent:", agentId);
+        console.log("Previous agents:", previousAgentIds);
+
+        // For magic connectors, use the simulateChainMagic method
+        response = await ContextService.simulateChainMagic(
+          agentId, 
+          promptText || "Sample prompt for simulation", 
+          previousAgentIds,
+          connectorPrompt || "" // Pass the connector prompt as transformation hints
+        );
+      } else {
+        // For code connectors, use the existing method
+        response = await ContextService.getAgentInputFromEnv(agentId, null);
+      }
+
+      // For demonstration purposes, we're checking if we got a successful response
       const isSuccess = response && typeof response === 'object' && !response.error;
 
       setModalTitle(isSuccess ? 'Parameters Found' : 'Parameters Incomplete');
@@ -108,8 +131,20 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
       setTestSucceeded(isSuccess);
       setIsModalOpen(true);
     } catch (error) {
+      console.error('Error testing chain:', error);
+
+      // Handle different error types
+      let errorMessage = 'Unknown error occurred';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object') {
+        errorMessage = JSON.stringify(error);
+      }
+
       setModalTitle('Error Testing Chain');
-      setModalContent({ error: 'Failed to test chain parameters. Please try again.' });
+      setModalContent({ error: errorMessage });
       setModalSuccess(false);
       setIsModalOpen(true);
     } finally {
@@ -150,12 +185,27 @@ function transform(env) {
       return {} 
 }`;
 
+  // Default prompt text if empty
+  const defaultConnectorPrompt = `# Connector Prompt
+Describe how to transform the output from the previous agent to match the input requirements of this agent.
+
+For example:
+- Extract specific fields from the previous agent's output
+- Format data in a specific way
+- Apply business logic to the data
+`;
+
   // Initialize editor with default code if empty
   useEffect(() => {
     if (connectorType === 'code' && !connectorJsCode) {
       onCodeChange(defaultTransformerCode);
     }
-  }, [connectorType, connectorJsCode, onCodeChange]);
+
+    // Initialize the prompt with default if empty
+    if (connectorType === 'magic' && !connectorPrompt) {
+      onPromptChange(defaultConnectorPrompt);
+    }
+  }, [connectorType, connectorJsCode, connectorPrompt, onCodeChange, onPromptChange]);
 
   return (
     <Box
@@ -224,8 +274,8 @@ function transform(env) {
           onChange={(e) => onTypeChange(e.target.value as 'magic' | 'code')}
           label="Connector Type"
           sx={{
-          
-           
+
+
           }}
         >
           <MenuItem value="magic">
@@ -262,15 +312,33 @@ function transform(env) {
       )}
 
       {connectorType === 'magic' && (
-        <Box sx={{ p: 2, backgroundColor: '#f7f0dd', borderRadius: 1 }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Magic connector will automatically transform the output of the previous agent to match the input requirements of the next agent.
-          </Typography>
+        <>
+          <Box sx={{ p: 2, backgroundColor: '#f7f0dd', borderRadius: 1, mb: 2 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Magic connector will call a LLM to transform the output of the previous agent to match the input requirements for the selected agent.
+            </Typography>
 
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-            The connector will analyze the complete environment and the input schema of this agent to determine how to transform the data.
-          </Typography>
-        </Box>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+              Please provide specific instructions below to guide the transformation process. The data is based on the current environment (button above).
+            </Typography>
+          </Box>
+
+          <Box sx={{ height: 400, border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <Editor
+              height="400px"
+              defaultLanguage="markdown"
+              theme="vs-dark"
+              value={connectorPrompt || defaultConnectorPrompt}
+              onChange={(value) => onPromptChange(value || defaultConnectorPrompt)}
+              options={{
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                wordWrap: 'on'
+              }}
+            />
+          </Box>
+        </>
       )}
 
       {/* Modal Dialog for Test Results */}
@@ -283,7 +351,7 @@ function transform(env) {
         <Paper 
           sx={{ 
             border: modalSuccess ? '2px solid green' : '2px solid red',
-            
+
             color: 'white'
           }}
         >

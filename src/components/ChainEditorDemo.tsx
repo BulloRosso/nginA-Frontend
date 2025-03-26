@@ -7,6 +7,7 @@ interface ChainConfig {
     agentId: string;
     connectorType: 'magic' | 'code';
     connectorJsCode: string;
+    connectorPrompt: string; // Add the new property
     connectorValid: boolean;
   }[];
 }
@@ -27,6 +28,7 @@ const ChainEditorDemo: React.FC = () => {
         agentId: '9df9a066-0abd-4fbf-bc05-c74ba8ed5cbb', // This would be your initial agent ID
         connectorType: 'magic',
         connectorJsCode: '',
+        connectorPrompt: '', // Initialize with empty prompt
         connectorValid: false
       }
     ]
@@ -35,7 +37,7 @@ const ChainEditorDemo: React.FC = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ py: 0 }}>
-      
+
         <ChainEditor 
           onChange={handleChainChange} 
           initialChain={initialChain}

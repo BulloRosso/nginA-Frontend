@@ -110,6 +110,25 @@ export const ContextService = {
 
       throw error;
     }
+  },
+
+  simulateChainMagic: async (agentId: string, prompt: string, chainAgentIds: string[], connectorPrompt: string): Promise<any> => {
+    try {
+      const request = {
+        prompt,
+        agents: chainAgentIds,
+        connector_prompt: connectorPrompt || ""
+      };
+      const response = await api.post(`/api/v1/context/simulation/chain/magic/${agentId}`, request);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error simulating chain magic:', error);
+      // Return error response if available, otherwise throw
+      if (error.response && error.response.data) {
+        return error.response.data;
+      }
+      throw error;
+    }
   }
 };
 

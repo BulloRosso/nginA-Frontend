@@ -6,6 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HelpIcon from '@mui/icons-material/Help';
 import CodeIcon from '@mui/icons-material/Code';
+import WarningIcon from '@mui/icons-material/Warning';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { Agent } from '../types/agent';
 
@@ -255,15 +256,12 @@ const ChainItem: React.FC<ChainItemProps> = ({
             sx={{
               position: 'absolute',
               bottom: 42,
-              right: 42,
-              width: 16,
-              height: 16,
-              backgroundColor: '#ff3333',
-              borderRadius: '50%',
-              border: '2px solid #2d2e2e',
+              right: 42
             }}
             title="Missing output example"
-          />
+          >
+            <WarningIcon sx={{ color: 'red', fontSize: 32, position: 'relative', top: 0 }} />
+          </Box>
         )}
 
         {/* Right Connection Line + Icon */}

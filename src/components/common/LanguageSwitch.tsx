@@ -6,10 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 const languages = {
   en: 'English',
-  de: 'Deutsch',
-  hy: 'Հայերեն',
-  fr: 'Français',
-  ja: '日本語',
+  de: 'Deutsch'
 };
 
 export const LanguageSwitch = () => {

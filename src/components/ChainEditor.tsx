@@ -25,6 +25,7 @@ interface ChainAgentItem {
   agentId: string;
   connectorType: 'magic' | 'code';
   connectorJsCode: string;
+  connectorPrompt: string; // Add the new property
   connectorValid: boolean;
 }
 
@@ -41,10 +42,13 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<Team | null>(null);
   const [teamAgents, setTeamAgents] = useState<Agent[]>([]);
-  // Initialize chainAgents directly from props
+  // Initialize chainAgents directly from props with default connectorPrompt
   const [chainAgents, setChainAgents] = useState<ChainAgentItem[]>(
     initialChain?.agents && initialChain.agents.length > 0 
-      ? [...initialChain.agents] 
+      ? initialChain.agents.map(agent => ({
+          ...agent,
+          connectorPrompt: agent.connectorPrompt || "" // Ensure connectorPrompt exists
+        }))
       : []
   );
   const [selectedConnectorIndex, setSelectedConnectorIndex] = useState<number | null>(null);
@@ -85,7 +89,11 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
   useEffect(() => {
     if (initialChain?.agents && initialChain.agents.length > 0) {
       console.log("Updating chain from initialChain props", initialChain);
-      setChainAgents([...initialChain.agents]);
+      // Make sure to add connectorPrompt to every agent if it doesn't exist
+      setChainAgents(initialChain.agents.map(agent => ({
+        ...agent,
+        connectorPrompt: agent.connectorPrompt || ""
+      })));
     }
   }, [initialChain]);
 
@@ -137,6 +145,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                   agentId: validAgents[0].id,
                   connectorType: 'magic',
                   connectorJsCode: '',
+                  connectorPrompt: '', // Initialize empty connectorPrompt
                   connectorValid: true
                 }];
               } else if (initialChain && initialChain.agents.length > 0) {
@@ -150,7 +159,10 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                   // Filter out agents that don't exist in the loaded agents
                   const validChainAgents = initialChain.agents.filter(chainAgent =>
                     validAgents.some(teamAgent => teamAgent.id === chainAgent.agentId)
-                  );
+                  ).map(agent => ({
+                    ...agent,
+                    connectorPrompt: agent.connectorPrompt || "" // Ensure connectorPrompt exists
+                  }));
 
                   // If no valid agents remain, use the first team agent
                   if (validChainAgents.length === 0) {
@@ -158,6 +170,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                       agentId: validAgents[0].id,
                       connectorType: 'magic',
                       connectorJsCode: '',
+                      connectorPrompt: '',
                       connectorValid: true
                     }];
                   }
@@ -275,6 +288,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
       agentId: nextAgent.id,
       connectorType: 'magic',
       connectorJsCode: '',
+      connectorPrompt: '', // Initialize with empty prompt
       connectorValid: true
     };
 
@@ -363,6 +377,18 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
       updatedChain[index] = {
         ...updatedChain[index],
         connectorJsCode: code
+      };
+      return updatedChain;
+    });
+  }, []);
+
+  // Handle connector prompt change (new handler)
+  const handleConnectorPromptChange = useCallback((index: number, prompt: string) => {
+    setChainAgents(prevChainAgents => {
+      const updatedChain = [...prevChainAgents];
+      updatedChain[index] = {
+        ...updatedChain[index],
+        connectorPrompt: prompt
       };
       return updatedChain;
     });
@@ -503,11 +529,13 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
             <ConnectorArea
               connectorType={chainAgents[selectedConnectorIndex].connectorType}
               connectorJsCode={chainAgents[selectedConnectorIndex].connectorJsCode}
+              connectorPrompt={chainAgents[selectedConnectorIndex].connectorPrompt} // Pass the prompt
               agentId={chainAgents[selectedConnectorIndex].agentId}
               previousAgentIds={getPreviousAgentIds(selectedConnectorIndex)}
-              promptText={promptText} // Pass the prompt text to the ConnectorArea
+              promptText={promptText}
               onTypeChange={(type) => handleConnectorTypeChange(selectedConnectorIndex, type)}
               onCodeChange={(code) => handleConnectorCodeChange(selectedConnectorIndex, code)}
+              onPromptChange={(prompt) => handleConnectorPromptChange(selectedConnectorIndex, prompt)} // New handler
               onClose={() => setSelectedConnectorIndex(null)}
               onRemoveAgent={() => handleRemoveAgent(selectedConnectorIndex)}
             />
