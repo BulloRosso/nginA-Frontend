@@ -155,20 +155,76 @@ const ConnectorArea: React.FC<ConnectorAreaProps> = ({
   const handleGenerateCode = async () => {
     setIsLoading(true);
     try {
-      const code = await ContextService.getAgentInputTransformerFromEnv(agentId, null);
+      let generatedCode;
 
-      // Check if we got a string (successful response) or an error object
-      if (typeof code === 'string') {
-        onCodeChange(code);
+      // Base on connector type, choose the code generation approach
+      if (connectorType === 'magic') {
+        console.log("Generating code from magic connector prompt");
+
+        // Call the new endpoint to generate code from the magic prompt
+        const response = await ContextService.generateChainCode(
+          agentId,
+          promptText || "Sample prompt for simulation",
+          previousAgentIds,
+          connectorPrompt || ""
+        );
+
+        if (response && response.code) {
+          generatedCode = response.code;
+        } else if (response && response.error) {
+          setModalTitle('Code Generation Failed');
+          setModalContent(response);
+          setModalSuccess(false);
+          setIsModalOpen(true);
+          setIsLoading(false);
+          return;
+        }
       } else {
-        setModalTitle('Code Generation Failed');
-        setModalContent(code);
-        setModalSuccess(false);
+        // For existing code connector type, use the existing method
+        const code = await ContextService.getAgentInputTransformerFromEnv(agentId, null);
+
+        // Check if we got a string (successful response) or an error object
+        if (typeof code === 'string') {
+          generatedCode = code;
+        } else {
+          setModalTitle('Code Generation Failed');
+          setModalContent(code);
+          setModalSuccess(false);
+          setIsModalOpen(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // If we got code, update the connector properties
+      if (generatedCode) {
+        // Update the code
+        onCodeChange(generatedCode);
+
+        // Switch to code connector type
+        onTypeChange('code');
+
+        // Mark connector as valid
+        // Note: This might need to be done in the parent component depending on your architecture
+        // If onTypeChange doesn't handle this, you might need to emit another event
+
+        // Show success message
+        setModalTitle('Code Generated Successfully');
+        setModalContent({
+          message: "Code has been generated and the connector has been switched to 'code' mode.",
+          preview: generatedCode.substring(0, 200) + (generatedCode.length > 200 ? '...' : '')
+        });
+        setModalSuccess(true);
+        setTestSucceeded(true);
         setIsModalOpen(true);
       }
     } catch (error) {
+      console.error('Error generating code:', error);
       setModalTitle('Error Generating Code');
-      setModalContent({ error: 'Failed to generate transformer code. Please try again.' });
+      setModalContent({ 
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        details: "See the browser console for more details."
+      });
       setModalSuccess(false);
       setIsModalOpen(true);
     } finally {
