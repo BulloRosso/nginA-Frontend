@@ -11,12 +11,15 @@ import {
   Tab,
   Grid,
   Snackbar,
-  Alert
+  Alert,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ChainEditor from './ChainEditor';
 import { AgentService } from '../services/agents';
 import useAgentStore from '../../stores/agentStore';
+import AddReactionOutlinedIcon from '@mui/icons-material/AddReactionOutlined';
 
 interface ChainConfig {
   agents: {
@@ -70,6 +73,7 @@ const ChainEditorDemo: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [iconSvg, setIconSvg] = useState<string>('');
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -155,6 +159,25 @@ const ChainEditorDemo: React.FC = () => {
     });
   };
 
+  const handleIconUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Check if the file is an SVG
+      if (file.type !== 'image/svg+xml') {
+        showSnackbar('Please upload an SVG file', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const svgContent = e.target?.result as string;
+        setIconSvg(svgContent);
+        showSnackbar('Icon uploaded successfully', 'success');
+      };
+      reader.readAsText(file);
+    }
+  };
+
   const fetchAgentInfo = async (agentId: string) => {
     try {
       return await AgentService.getAgent(agentId);
@@ -191,10 +214,11 @@ const ChainEditorDemo: React.FC = () => {
         input_example: firstAgent.input_example,
         output: lastAgent.output,
         output_example: lastAgent.output_example,
-        type: 'chain',
+        type: 'chain', // Ensure the type is explicitly set to 'chain'
         configuration: chainConfig,
         credits_per_run: 5, // Default value, adjust as needed
-        stars: 0
+        stars: 0,
+        icon_svg: iconSvg // Add the uploaded SVG icon
       };
 
       // Create the agent using the service - no mock data
@@ -248,7 +272,51 @@ const ChainEditorDemo: React.FC = () => {
                     placeholder="Enter agent title in English"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <input
+                            accept=".svg"
+                            id="icon-upload"
+                            type="file"
+                            style={{ display: 'none' }}
+                            onChange={handleIconUpload}
+                          />
+                          <label htmlFor="icon-upload">
+                            <IconButton 
+                              color="primary" 
+                              aria-label="upload icon" 
+                              component="span"
+                              title="Upload SVG Icon"
+                            >
+                              <AddReactionOutlinedIcon />
+                            </IconButton>
+                          </label>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
+                  {iconSvg && (
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                      <Box 
+                        sx={{ 
+                          width: 40, 
+                          height: 40, 
+                          mr: 1,
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          p: 0.5,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: iconSvg }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        SVG icon uploaded
+                      </Typography>
+                    </Box>
+                  )}
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
