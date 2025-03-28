@@ -42,6 +42,8 @@ import {
 import { Agent } from '../../types/agent';
 import SchemaForm from './tabs/InputFormForSchema';
 import { OperationService } from '../../services/operations';
+import { PromptService } from '../../services/prompts';
+import { Prompt } from '../../types/prompt';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import api from '../../services/api';
@@ -110,6 +112,11 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
   const [promptErrorMessage, setPromptErrorMessage] = useState('');
   const [isProcessingPrompt, setIsProcessingPrompt] = useState(false);
 
+  // New state for recent prompts feature
+  const [recentPrompts, setRecentPrompts] = useState<Prompt[]>([]);
+  const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
+  const [selectedPromptId, setSelectedPromptId] = useState('');
+
   // Error dialog state
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -126,8 +133,70 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
       setPromptText('');
       setPromptError(false);
       setPromptErrorMessage('');
+      setSelectedPromptId('');
+
+      // Load recent prompts when dialog opens
+      loadRecentPrompts();
     }
   }, [open, agent]);
+
+  // Fetch recent prompts
+  const loadRecentPrompts = async () => {
+    try {
+      setIsLoadingPrompts(true);
+
+      // Get all prompts
+      const allPrompts = await PromptService.getPrompts();
+
+      // Group by name and get only the latest version of each
+      const promptMap = new Map<string, Prompt>();
+
+      allPrompts.forEach(prompt => {
+        const existing = promptMap.get(prompt.name);
+
+        // If prompt with this name doesn't exist yet or current prompt is newer
+        if (!existing || new Date(prompt.created_at) > new Date(existing.created_at)) {
+          promptMap.set(prompt.name, prompt);
+        }
+      });
+
+      // Convert map values to array and sort by creation date (newest first)
+      const latestPrompts = Array.from(promptMap.values())
+        .sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        .slice(0, 10); // Get only the 10 most recent
+
+      setRecentPrompts(latestPrompts);
+    } catch (error) {
+      console.error('Error loading recent prompts:', error);
+      setSnackbarMessage('Failed to load recent prompts');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      setIsLoadingPrompts(false);
+    }
+  };
+
+  // Handle prompt selection
+  const handlePromptSelect = async (event: React.ChangeEvent<{ value: unknown }>) => {
+    const promptId = event.target.value as string;
+    setSelectedPromptId(promptId);
+
+    if (promptId) {
+      try {
+        const selectedPrompt = await PromptService.getPrompt(promptId);
+        if (selectedPrompt) {
+          setPromptText(selectedPrompt.prompt_text);
+        }
+      } catch (error) {
+        console.error('Error loading selected prompt:', error);
+        setSnackbarMessage('Failed to load selected prompt');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    }
+  };
 
   // Ensure form validation is updated when activeTab changes
   useEffect(() => {
@@ -343,7 +412,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
 
     return transformedData;
   };
-  
+
   // Pre-flight check to verify agent endpoint is available
   const preFlightCheck = async (): Promise<boolean> => {
     if (!agent || !agent.agent_endpoint) {
@@ -352,6 +421,11 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
         'The agent endpoint URL is missing. Please check agent configuration.'
       );
       return false;
+    }
+
+    if (agent.agent_endpoint.toLowerCase() === "internal") {
+      // skip for chains
+      return true;
     }
 
     try {
@@ -451,7 +525,7 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
         onClose={onClose}
         maxWidth="md"
         fullWidth
-       
+
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -486,6 +560,31 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
               {/* Prompt Tab */}
               <TabPanel value={activeTab} index={0}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Recent Prompts Selection */}
+                  <FormControl fullWidth variant="outlined">
+                    <InputLabel id="recent-prompts-label">Recent Prompts</InputLabel>
+                    <Select
+                      labelId="recent-prompts-label"
+                      id="recent-prompts-select"
+                      value={selectedPromptId}
+                      onChange={(e) => handlePromptSelect(e as React.ChangeEvent<{ value: unknown }>)}
+                      label="Recent Prompts"
+                      disabled={isLoadingPrompts}
+                    >
+                      <MenuItem value="">
+                        <em>Select a prompt</em>
+                      </MenuItem>
+                      {recentPrompts.map((prompt) => (
+                        <MenuItem key={prompt.id} value={prompt.id}>
+                          {prompt.name} (v{prompt.version})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>
+                      {isLoadingPrompts ? 'Loading prompts...' : 'Select from recent prompts'}
+                    </FormHelperText>
+                  </FormControl>
+
                   <TextField
                     label="Your prompt"
                     multiline
