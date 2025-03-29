@@ -23,7 +23,7 @@ import AddReactionOutlinedIcon from '@mui/icons-material/AddReactionOutlined';
 
 interface ChainConfig {
   agents: {
-    agentId: string;
+    id: string;
     connectorType: 'magic' | 'code';
     connectorJsCode: string;
     connectorPrompt: string;
@@ -123,7 +123,7 @@ const ChainEditorDemo: React.FC = () => {
     return {
       agents: [
         {
-          agentId: '9df9a066-0abd-4fbf-bc05-c74ba8ed5cbb', // This would be your initial agent ID
+          id: '9df9a066-0abd-4fbf-bc05-c74ba8ed5cbb', // This would be your initial agent ID
           connectorType: 'magic',
           connectorJsCode: '',
           connectorPrompt: '', // Initialize with empty prompt
@@ -193,11 +193,11 @@ const ChainEditorDemo: React.FC = () => {
     setIsLoading(true);
     try {
       // Get the first agent in the chain to extract input schema
-      const firstAgentId = chainConfig.agents[0].agentId;
+      const firstAgentId = chainConfig.agents[0].id;
       const firstAgent = await fetchAgentInfo(firstAgentId);
 
       // Get the last agent in the chain to extract output schema
-      const lastAgentId = chainConfig.agents[chainConfig.agents.length - 1].agentId;
+      const lastAgentId = chainConfig.agents[chainConfig.agents.length - 1].id;
       const lastAgent = await fetchAgentInfo(lastAgentId);
 
       if (!firstAgent || !lastAgent) {

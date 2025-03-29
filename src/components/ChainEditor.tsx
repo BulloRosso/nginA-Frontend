@@ -22,7 +22,7 @@ interface ChainEditorProps {
 }
 
 interface ChainAgentItem {
-  agentId: string;
+  id: string;
   connectorType: 'magic' | 'code';
   connectorJsCode: string;
   connectorPrompt: string; // Add the new property
@@ -69,7 +69,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
       const updatedChain = [...prevChainAgents];
       updatedChain[index] = {
         ...updatedChain[index],
-        agentId: agentId,
+        id: agentId,
         // Reset connector properties when changing agent
         connectorValid: false
       };
@@ -142,7 +142,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                 // If chain is empty, initialize with first agent
                 console.log("Initializing chain with first agent:", validAgents[0].id);
                 return [{
-                  agentId: validAgents[0].id,
+                  id: validAgents[0].id,
                   connectorType: 'magic',
                   connectorJsCode: '',
                   connectorPrompt: '', // Initialize empty connectorPrompt
@@ -151,14 +151,14 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
               } else if (initialChain && initialChain.agents.length > 0) {
                 // Check if initialChain agents exist in the team
                 const chainNeedsUpdate = initialChain.agents.some(chainAgent => 
-                  !validAgents.some(teamAgent => teamAgent.id === chainAgent.agentId)
+                  !validAgents.some(teamAgent => teamAgent.id === chainAgent.id)
                 );
 
                 if (chainNeedsUpdate) {
                   console.log("Some initial agent IDs not found in team - removing invalid agents");
                   // Filter out agents that don't exist in the loaded agents
                   const validChainAgents = initialChain.agents.filter(chainAgent =>
-                    validAgents.some(teamAgent => teamAgent.id === chainAgent.agentId)
+                    validAgents.some(teamAgent => teamAgent.id === chainAgent.id)
                   ).map(agent => ({
                     ...agent,
                     connectorPrompt: agent.connectorPrompt || "" // Ensure connectorPrompt exists
@@ -167,7 +167,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
                   // If no valid agents remain, use the first team agent
                   if (validChainAgents.length === 0) {
                     return [{
-                      agentId: validAgents[0].id,
+                      id: validAgents[0].id,
                       connectorType: 'magic',
                       connectorJsCode: '',
                       connectorPrompt: '',
@@ -209,7 +209,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
   const getPreviousAgentIds = useCallback((currentIndex: number): string[] => {
     return chainAgents
       .slice(0, currentIndex)
-      .map(agent => agent.agentId);
+      .map(agent => agent.id);
   }, [chainAgents]);
 
   // Handle removing an agent from the chain
@@ -230,18 +230,18 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
     if (!loading && teamAgents.length > 0 && chainAgents.length > 0) {
       // Check if all agents in the chain exist in the team
       const hasInvalidAgents = chainAgents.some(
-        chainAgent => !teamAgents.some(teamAgent => teamAgent.id === chainAgent.agentId)
+        chainAgent => !teamAgents.some(teamAgent => teamAgent.id === chainAgent.id)
       );
 
       if (hasInvalidAgents) {
         console.log("Chain contains invalid agents - fixing...");
         // Replace invalid agents with the first available agent
         const fixedChain = chainAgents.map(chainAgent => {
-          const exists = teamAgents.some(teamAgent => teamAgent.id === chainAgent.agentId);
+          const exists = teamAgents.some(teamAgent => teamAgent.id === chainAgent.id);
           if (!exists) {
             return {
               ...chainAgent,
-              agentId: teamAgents[0].id
+              id: teamAgents[0].id
             };
           }
           return chainAgent;
@@ -267,7 +267,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
     if (teamAgents.length === 0) return undefined;
 
     // Get all agent IDs currently in the chain
-    const currentAgentIds = new Set(chainAgents.map(item => item.agentId));
+    const currentAgentIds = new Set(chainAgents.map(item => item.id));
 
     // Find the first agent not in the chain
     const availableAgent = teamAgents.find(agent => !currentAgentIds.has(agent.id));
@@ -285,7 +285,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
     }
 
     const newChainAgent: ChainAgentItem = {
-      agentId: nextAgent.id,
+      id: nextAgent.id,
       connectorType: 'magic',
       connectorJsCode: '',
       connectorPrompt: '', // Initialize with empty prompt
@@ -305,7 +305,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
   // Handle switching to previous agent in the team list
   const handleSwitchToPrevAgent = useCallback((index: number) => {
     setChainAgents(prevChainAgents => {
-      const currentAgentId = prevChainAgents[index].agentId;
+      const currentAgentId = prevChainAgents[index].id;
       const currentAgentIndex = teamAgents.findIndex(agent => agent.id === currentAgentId);
 
       if (currentAgentIndex > 0) {
@@ -313,7 +313,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
         const updatedChain = [...prevChainAgents];
         updatedChain[index] = {
           ...updatedChain[index],
-          agentId: prevAgentId
+          id: prevAgentId
         };
         return updatedChain;
       }
@@ -325,7 +325,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
   // Handle switching to next agent in the team list
   const handleSwitchToNextAgent = useCallback((index: number) => {
     setChainAgents(prevChainAgents => {
-      const currentAgentId = prevChainAgents[index].agentId;
+      const currentAgentId = prevChainAgents[index].id;
       const currentAgentIndex = teamAgents.findIndex(agent => agent.id === currentAgentId);
 
       if (currentAgentIndex < teamAgents.length - 1) {
@@ -333,7 +333,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
         const updatedChain = [...prevChainAgents];
         updatedChain[index] = {
           ...updatedChain[index],
-          agentId: nextAgentId
+          id: nextAgentId
         };
         return updatedChain;
       }
@@ -499,9 +499,9 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
               </Box>
             ) : (
               chainAgents.map((item, index) => {
-                const agent = getAgentById(item.agentId);
+                const agent = getAgentById(item.id);
                 if (!agent) {
-                  console.log(`Agent not found for ID: ${item.agentId}`);
+                  console.log(`Agent not found for ID: ${item.id}`);
                   return null;
                 }
 
@@ -530,7 +530,7 @@ const ChainEditor: React.FC<ChainEditorProps> = ({
               connectorType={chainAgents[selectedConnectorIndex].connectorType}
               connectorJsCode={chainAgents[selectedConnectorIndex].connectorJsCode}
               connectorPrompt={chainAgents[selectedConnectorIndex].connectorPrompt} // Pass the prompt
-              agentId={chainAgents[selectedConnectorIndex].agentId}
+              agentId={chainAgents[selectedConnectorIndex].id}
               previousAgentIds={getPreviousAgentIds(selectedConnectorIndex)}
               promptText={promptText}
               onTypeChange={(type) => handleConnectorTypeChange(selectedConnectorIndex, type)}
