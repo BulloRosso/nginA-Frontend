@@ -214,6 +214,7 @@ const ChainEditorDemo: React.FC = () => {
         input_example: firstAgent.input_example,
         output: lastAgent.output,
         output_example: lastAgent.output_example,
+        agent_endpoint: 'internal',
         type: 'chain', // Ensure the type is explicitly set to 'chain'
         configuration: chainConfig,
         credits_per_run: 5, // Default value, adjust as needed
