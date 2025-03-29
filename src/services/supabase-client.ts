@@ -48,10 +48,13 @@ export const subscribeToAgentRuns = (userId: string, onUpdate: (payload: any) =>
         table: 'agent_runs',
         filter: `user_id=eq.${userId}`
       },
-      (payload) => onUpdate(payload)
+      (payload) => {
+        console.log('Agent runs subscription received payload:', payload);
+        onUpdate(payload)
+      }
     )
     .subscribe((status) => {
-      console.log(`Realtime subscription status: ${status}`);
+      console.log(`Realtime subscription status: ${status} for user ${userId}`);
     });
 
   // Return unsubscribe function

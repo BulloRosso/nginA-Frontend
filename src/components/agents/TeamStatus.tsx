@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import RunHistory from './RunHistory';
 import { AgentService } from '../../services/agents';
+import { OperationService } from '../../services/operations';
 import { Agent } from '../../types/agent';
 import AgentIcon from './AgentIcon';
 import RunParameters from './RunParameters';
@@ -298,6 +299,51 @@ const TeamStatusComponent: React.FC = () => {
     fetchTeamStatus();
   }, [fetchAgentsAndTeam, fetchTeamStatus]);
 
+  // ensure functionality even if realtime is not enabled on table (fallback)
+  useEffect(() => {
+    // Only set up polling if we have active runs
+    const activeRuns = teamStatus?.agents
+      .filter(agent => agent.lastRun && 
+             (agent.lastRun.status === 'pending' || agent.lastRun.status === 'running'))
+      .map(agent => ({
+        runId: agent.lastRun!.run_id,
+        agentId: getAgentForStatusItem(agent.title)?.id
+      }));
+
+    if (!activeRuns || activeRuns.length === 0) return;
+
+    console.log('[TeamStatus] Setting up polling for active runs:', activeRuns);
+
+    // Poll every 5 seconds for active runs
+    const intervalId = setInterval(async () => {
+      console.log('[TeamStatus] Polling for active run updates');
+
+      // Check each active run
+      for (const run of activeRuns) {
+        if (!run.runId || !run.agentId) continue;
+
+        try {
+          // Fetch the current status from the API
+          const response = await OperationService.getOperation(run.runId);
+          console.log(`[TeamStatus] Fetched status for run ${run.runId}:`, response);
+
+          // Update the store with the latest data
+          updateAgentRun({
+            new: response
+          });
+        } catch (err) {
+          console.error(`[TeamStatus] Error polling run ${run.runId}:`, err);
+        }
+      }
+    }, 5000);
+
+    // Clean up interval on unmount
+    return () => {
+      console.log('[TeamStatus] Cleaning up polling interval');
+      clearInterval(intervalId);
+    };
+  }, [teamStatus, updateAgentRun, getAgentForStatusItem]);
+  
   // Calculate pagination values
   const getPaginatedData = () => {
     if (!teamStatus || !teamStatus.agents) return [];
