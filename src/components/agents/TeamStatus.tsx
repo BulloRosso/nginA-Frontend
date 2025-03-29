@@ -129,7 +129,8 @@ const TeamStatusComponent: React.FC = () => {
     fetchTeamStatus,
     fetchAgentsAndTeam,
     updateTeamMembership,
-    updateAgentRun
+    updateAgentRun,
+    addNewRunToAgent 
   } = useAgentStore();
 
   // All useState hooks need to be called in the same order every render
@@ -236,10 +237,13 @@ const TeamStatusComponent: React.FC = () => {
     }
   }, []);
 
-  const handleRunCreated = useCallback(async () => {
-    // Refresh the team status data
-    await fetchTeamStatus();
-  }, [fetchTeamStatus]);
+  const handleRunCreated = useCallback(async (runId?: string, agentId?: string) => {
+    // If we have a run ID and agent ID, update the store immediately
+    if (runId && agentId) {
+      // Use our new store action to directly update the agent's status
+      addNewRunToAgent(agentId, runId);
+    }
+  }, [addNewRunToAgent]);
 
   const isActiveRun = (lastRun: any) => {
     return lastRun && lastRun.startedAt && !lastRun.finishedAt;

@@ -89,6 +89,7 @@ interface AgentStore {
   fetchTeamStatus: () => Promise<void>;
   refreshTeamStatus: () => Promise<void>;
   updateAgentRun: (payload: any) => void;
+  addNewRunToAgent: (agentId: string, runId: string) => void;
 
   // ChainEditor actions
   updateChainConfig: (config: ChainConfig) => void;
@@ -155,6 +156,50 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     });
   },
 
+  addNewRunToAgent: (agentId: string, runId: string) => set((state) => {
+    if (!state.teamStatus) return state;
+
+    const now = new Date().toISOString();
+
+    // Find the agent in teamStatus that corresponds to this agentId
+    const updatedAgents = state.teamStatus.agents.map(agentStatus => {
+      // Find the full agent to check ID
+      const fullAgent = state.catalogAgents.find(a => 
+        (a.title.en === agentStatus.title || Object.values(a.title).includes(agentStatus.title)) &&
+        a.id === agentId
+      );
+
+      // If this is the agent we're updating
+      if (fullAgent) {
+        // Create a new lastRun object with pending status
+        const newLastRun = {
+          run_id: runId,
+          startedAt: now,
+          finishedAt: null,
+          duration: 0,
+          workflowId: agentStatus.lastRun?.workflowId || fullAgent.workflow_id || null,
+          status: 'pending',
+          results: {}
+        };
+
+        return {
+          ...agentStatus,
+          lastRun: newLastRun
+        };
+      }
+
+      return agentStatus;
+    });
+
+    return {
+      ...state,
+      teamStatus: {
+        ...state.teamStatus,
+        agents: updatedAgents
+      }
+    };
+  }),
+  
   addAgentToChain: (agent) => set((state) => {
     const agentExists = state.currentAgentChain.some(item => item.agent_id === agent.id);
     if (agentExists) return state;
@@ -332,22 +377,35 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     set((state) => {
       if (!state.teamStatus) return state;
 
-      // Find the agent that corresponds to this run
+      // Find the agent that corresponds to this run based on the agent_id in the payload
       const updatedAgents = state.teamStatus.agents.map(agent => {
-        // Check if this agent's lastRun should be updated (by matching agent_id)
-        if (agent.lastRun && agent.lastRun.run_id === payload.new.id) {
-          return {
-            ...agent,
-            lastRun: {
-              ...agent.lastRun,
-              status: payload.new.status,
-              results: payload.new.results,
+        // Get the full agent details to check the ID
+        const fullAgent = state.catalogAgents.find(a => 
+          a.title.en === agent.title || Object.values(a.title).includes(agent.title)
+        );
+
+        // Check if this agent's ID matches the payload agent_id
+        if (fullAgent && fullAgent.id === payload.new.agent_id) {
+          // If the agent has never been run before or we're updating the current run
+          if (!agent.lastRun || (agent.lastRun && agent.lastRun.run_id === payload.new.id)) {
+            // Create a new lastRun object or update the existing one
+            const updatedLastRun = {
+              run_id: payload.new.id,
+              startedAt: payload.new.created_at || agent.lastRun?.startedAt || new Date().toISOString(),
               finishedAt: payload.new.finished_at,
-              duration: payload.new.finished_at 
+              status: payload.new.status,
+              results: payload.new.results || agent.lastRun?.results || {},
+              duration: payload.new.finished_at && agent.lastRun?.startedAt
                 ? Math.round((new Date(payload.new.finished_at).getTime() - new Date(agent.lastRun.startedAt).getTime()) / 1000)
-                : agent.lastRun.duration
-            }
-          };
+                : agent.lastRun?.duration || 0,
+              workflowId: agent.lastRun?.workflowId
+            };
+
+            return {
+              ...agent,
+              lastRun: updatedLastRun
+            };
+          }
         }
         return agent;
       });

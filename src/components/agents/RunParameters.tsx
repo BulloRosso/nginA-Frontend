@@ -91,7 +91,7 @@ interface RunParametersProps {
   open: boolean;
   onClose: () => void;
   agent: Agent | null;
-  onRunCreated: () => void;
+  onRunCreated: (runId?: string, agentId?: string) => void;
 }
 
 const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onRunCreated }) => {
@@ -488,13 +488,13 @@ const RunParameters: React.FC<RunParametersProps> = ({ open, onClose, agent, onR
 
         try {
           // Call the API to start a new run
-          await OperationService.startRun(agent.id, promptText, runParams);
+          const result = await OperationService.startRun(agent.id, promptText, runParams);
 
           // Close the dialog first to prevent UI freezing
           onClose();
 
           // Then notify parent component to refresh data
-          onRunCreated();
+          onRunCreated(result.id, agent.id);
         } catch (error) {
           // Handle API errors
           const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
