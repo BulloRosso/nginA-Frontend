@@ -17,6 +17,7 @@ import WidgetsIcon from '@mui/icons-material/Widgets';
 import BuildIcon from '@mui/icons-material/Build';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
+import CableIcon from '@mui/icons-material/Cable';
 
 interface FooterActionProps {
   title: string;
@@ -121,12 +122,14 @@ interface AgentsFooterProps {
   onDiscoverClick: () => void;
   onWrapperClick: () => void;
   onBuildClick: () => void;
+  onMCPToolsClick: () => void;
 }
 
 const AgentsFooter: React.FC<AgentsFooterProps> = ({
   onDiscoverClick,
   onWrapperClick,
-  onBuildClick
+  onBuildClick,
+  onMCPToolsClick
 }) => {
   const { t } = useTranslation(['agents']);
   const [expanded, setExpanded] = React.useState<boolean>(false);
@@ -158,7 +161,7 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
             aria-controls="agents-footer-content"
             id="agents-footer-header"
             sx={{ 
-             
+
             }}
           >
             <Typography variant="h6" fontWeight="medium">
@@ -167,7 +170,7 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
           </AccordionSummary>
           <AccordionDetails sx={{ py: 4 }}>
             <Grid container spacing={4}>
-              <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+              <Grid item xs={12} md={3} sx={{ display: 'flex' }}>
                 <FooterAction
                   title={t('agents.footer.discover_title')}
                   description={t('agents.footer.discover_description')}
@@ -178,7 +181,7 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+              <Grid item xs={12} md={3} sx={{ display: 'flex' }}>
                 <FooterAction
                   title={t('agents.footer.wrapper_title')}
                   description={t('agents.footer.wrapper_description')}
@@ -189,7 +192,7 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
                 />
               </Grid>
 
-              <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
+              <Grid item xs={12} md={3} sx={{ display: 'flex' }}>
                 <FooterAction
                   title={t('agents.footer.build_title')}
                   description={t('agents.footer.build_description')}
@@ -197,6 +200,17 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
                   buttonLabel={t('agents.build_new')}
                   icon={<BuildIcon />}
                   onClick={onBuildClick}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={3} sx={{ display: 'flex' }}>
+                <FooterAction
+                  title={t('agents.footer.mcp_tools_title')}
+                  description={t('agents.footer.mcp_tools_description')}
+                  imageSrc="/img/mcp-logo.png"
+                  buttonLabel={t('agents.connect_to_server')}
+                  icon={<CableIcon />}
+                  onClick={onMCPToolsClick}
                 />
               </Grid>
             </Grid>

@@ -22,6 +22,20 @@
       "scratchpad_browser_tile": "Scratchpad",
       "hil_notifications_tile": "Human in the Loop"
     },
+    "connect_to_mcp_server": "Connect to MCP Server",
+    "enter_mcp_server_url": "Enter the URL of the MCP server to connect to.",
+    "server_url": "Server URL",
+    "connect": "Connect",
+    "import_tools": "Import Tools",
+    "select_at_least_one_tool": "Please select at least one tool to import.",
+    "importing_tools": "Importing {{count}} of {{total}} tools...",
+    "importing": "Importing...",
+    "import": "Import",
+    "footer": {
+      "mcp_tools_title": "MCP Tools Import",
+      "mcp_tools_description": "Connect to a MCP SSE server and import selected tools as agents"
+    },
+    "connect_to_server": "Connect to server",
     "showing": "showing",
     "of": "of",
     "agents": "agents",
