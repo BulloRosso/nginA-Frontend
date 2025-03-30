@@ -142,15 +142,25 @@ const AgentsFooter: React.FC<AgentsFooterProps> = ({
     <Box 
       component="footer" 
       sx={{ 
-        mt: 4
+        mt: 4,
+        paddingLeft: 2,
+        paddingRight: 4,
       }}
     >
-      <Container maxWidth="lg">
+        <Container 
+          maxWidth={false} 
+          disableGutters 
+          sx={{ 
+            width: '100%',
+            px: 0 // Remove horizontal padding
+          }}
+        >
         <Accordion 
           expanded={expanded} 
           onChange={handleAccordionChange}
           sx={{ 
             backgroundColor: '#f7f0dd',
+            width: '100%',
             '&:before': {
               display: 'none', // Removes the default divider
             }
