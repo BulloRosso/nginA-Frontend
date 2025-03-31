@@ -31,10 +31,6 @@
     "importing_tools": "Importing {{count}} of {{total}} tools...",
     "importing": "Importing...",
     "import": "Import",
-    "footer": {
-      "mcp_tools_title": "MCP Tools Import",
-      "mcp_tools_description": "Connect to a MCP SSE server and import selected tools as agents"
-    },
     "connect_to_server": "Connect to server",
     "showing": "showing",
     "of": "of",
@@ -94,6 +90,8 @@
       }
     },
     "footer": {
+      "mcp_tools_title": "MCP Tools Import",
+      "mcp_tools_description": "Connect to a MCP SSE server and import selected tools as agents",
       "discover_title": "Discover Agents",
       "discover_description": "Simply add the URL of any agents supporting the nginA discovery specifications",
       "wrapper_title": "Create Wrapper",

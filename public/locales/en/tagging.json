@@ -9,7 +9,8 @@
       "compliance": {
         "HIPAA": "HIPAA",
         "PCI": "PCI",
-        "GDPR": "DSGVO"
+        "GDPR": "DSGVO",
+        "MCP": "MCP (Anthropic Model Context Protocol)"
       },
       "creates": {
         "text": "Text",

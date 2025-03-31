@@ -205,14 +205,15 @@ const MCPToolsDrawer: React.FC<MCPToolsDrawerProps> = ({
           ))}
         </List>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'end', pt: 2 }}>
           <Button
             variant="contained"
             onClick={handleImport}
             disabled={isImporting || selectedTools.length === 0}
             startIcon={isImporting ? <CircularProgress size={20} color="inherit" /> : null}
             sx={{
-              minWidth: '150px'
+              minWidth: '150px',
+              backgroundColor: 'gold'
             }}
           >
             {isImporting ? t('agents.importing') : t('agents.import')}
